@@ -102,7 +102,7 @@ ROOT_URLCONF = 'momends.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'momends.wsgi.application'
 
-TEMPLATE_DIRS = ('/Users/goktan/DEPO/Dropbox/workspace/momends/templates',)
+TEMPLATE_DIRS = ('/Users/goktan/DEPO/Dropbox/workspace/momends/WebManager/templates',)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
