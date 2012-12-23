@@ -1,3 +1,6 @@
-from django.db import models
+from ExternalProviders import BaseProviderModule
 
-# Create your models here.
+
+class FacebookProviderModule(BaseProviderModule):
+    pass
+
