@@ -116,12 +116,11 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'DataManager',
-    'DataEnrich',
-    'externalProviders.FacebookProvider',
-    'externalProviders.TwitterProvider',
-    'externalProviders.InstagramProvider',
-    'outputs.AnimationManager',
-    'outputs.VideoManager',
+    'ExternalProviders.FacebookProvider',
+    'ExternalProviders.TwitterProvider',
+    'ExternalProviders.InstagramProvider',
+    'Outputs.AnimationManager',
+    'Outputs.VideoManager',
     'WebManager',
 )
 

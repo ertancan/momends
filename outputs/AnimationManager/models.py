@@ -1,3 +1,10 @@
 from django.db import models
+from Outputs.BaseOutputModels import BaseOutputModel,BaseMomendsDataModel
 
-# Create your models here.
+
+class AnimationMomendData(BaseMomendsDataModel):
+    pass
+
+class AnimationData(BaseOutputModel):
+    momend = models.ForeignKey(AnimationMomendData)
+    pass
