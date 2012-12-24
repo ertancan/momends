@@ -1,6 +1,6 @@
 __author__ = 'goktan'
 
-from Outputs.BaseOutputManager import BaseOutputManager
+from Outputs.BaseOutputWorker import BaseOutputWorker
 
-class AnimationManagerWorker(BaseOutputManager):
+class AnimationWorkerWorker(BaseOutputWorker):
     pass

@@ -2,12 +2,13 @@ __author__ = 'goktan'
 
 import abc
 
-class BaseProviderWorker:
+class BaseOutputWorker:
     __metaclass__ = abc.ABCMeta
     @abc.abstractmethod
-    def collect_data(self):
+    def generate_output(self):
         pass
 
-    def auth(self):
+    @abc.abstractmethod
+    def _save_output(self):
         pass
 

@@ -1,4 +1,6 @@
 __author__ = 'goktan'
 
 class DataManager:
-    pass
+
+    def create_momend(self):
+        pass

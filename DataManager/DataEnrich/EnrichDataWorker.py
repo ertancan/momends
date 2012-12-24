@@ -1,4 +1,6 @@
 __author__ = 'goktan'
 
 class EnrichDataWorker:
-    pass
+
+    def enrich_data(self):
+        pass
