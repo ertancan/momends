@@ -8,7 +8,7 @@ class BaseProviderWorker(object):
 
     def getProvider(self):
         print self.__class__.__name__
-        return Provider.objects.get(worker_name = self.__class__.__name__)
+        return Provider.objects.get(worker_name=self.__class__.__name__)
 
 class BasePhotoProviderWorker(BaseProviderWorker):
     __metaclass__ = abc.ABCMeta

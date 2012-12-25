@@ -14,9 +14,9 @@ class Provider(BaseDataManagerModel):
     worker_name = models.CharField(max_length = 255)
 
 class RawData(BaseDataManagerModel):
-    path = models.CharField(max_length = 500)
-    original_id = models.TextField()
-    data = models.TextField()
+    original_path = models.CharField(max_length=500) #original path of data if it exists
+    original_id = models.TextField() #original id of data represents the source id #TODO check here if char is needed?
+    data = models.TextField() #main data to use in momend
 
     DATA_TYPE= {'Photo': 0,'Status': 1,'Checkin': 2} #TODO less ugly may be?
     _data_choices = (
