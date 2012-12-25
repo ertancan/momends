@@ -1,3 +1,5 @@
 from django.db import models
+from ExternalProviders.BaseProviderModule import BaseProviderModule
 
-# Create your models here.
+class TwitterProviderModule(BaseProviderModule):
+    user_secret = models.TextField()
