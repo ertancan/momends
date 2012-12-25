@@ -1,5 +1,5 @@
 from django.db import models
-import datetime
+from datetime import datetime
 # Create your models here.
 class BaseDataManagerModel(models.Model):
     class Meta:
@@ -7,7 +7,7 @@ class BaseDataManagerModel(models.Model):
         app_label = 'DataManager'
 
 class RawData(BaseDataManagerModel):
-    path = models.CharField(lenght=500)
+    path = models.CharField(max_length=500)
     _data_choices = (
         (0, 'Photo'),
         (1, 'Status'),
