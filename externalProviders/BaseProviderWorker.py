@@ -8,22 +8,22 @@ class BaseProviderWorker(object):
 
     def getProvider(self):
         print self.__class__.__name__
-        return Provider.objects.get(worker_name=self.__class__.__name__)
+        return Provider.objects.get(worker_name = self.__class__.__name__)
 
 class BasePhotoProviderWorker(BaseProviderWorker):
     __metaclass__ = abc.ABCMeta
     @abc.abstractmethod
-    def collect_photo(self,user,since,until):
+    def collect_photo(self, user, since, until):
         pass
 
 class BaseStatusProviderWorker(BaseProviderWorker):
     __metaclass__ = abc.ABCMeta
     @abc.abstractmethod
-    def collect_status(self,user,since,until):
+    def collect_status(self, user, since, until):
         pass
 
 class BaseLocationProviderWorker(BaseProviderWorker):
     __metaclass__ = abc.ABCMeta
     @abc.abstractmethod
-    def collect_checkin(self,user,since,until):
+    def collect_checkin(self, user, since, until):
         pass

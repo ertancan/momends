@@ -7,7 +7,7 @@ class DataManager:
     def create_momend(self):
         pass
 
-    def collect_user_data(self,user,since,until,inc_photo=True,inc_status=True,inc_checkin=True):
+    def collect_user_data(self, user, since, until, inc_photo=True, inc_status=True, inc_checkin=True):
         _user_data = []
         for obj in Provider.objects.all():
             if getattr(user,obj.module_name.lower()+'_set').count()>0:
@@ -21,7 +21,7 @@ class DataManager:
 
         return _user_data
 
-    def _instantiate_provider_worker(self,provider):
+    def _instantiate_provider_worker(self, provider):
         mod = importlib.import_module('ExternalProviders.'+provider.package_name+'.'+provider.module_name,provider.module_name)
         cl = getattr(mod,provider.module_name)
         return cl()
