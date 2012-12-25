@@ -6,8 +6,19 @@ class BaseDataManagerModel(models.Model):
         abstract = True
         app_label = 'DataManager'
 
+
+class Provider(BaseDataManagerModel):
+    name = models.CharField(max_length=50)
+    package_name = models.CharField(max_length=255)
+    module_name = models.CharField(max_length=255)
+    worker_name = models.CharField(max_length=255)
+
 class RawData(BaseDataManagerModel):
     path = models.CharField(max_length=500)
+    original_id = models.TextField()
+    data = models.TextField()
+
+    DATA_TYPE= {'Photo':0,'Status':1,'Checkin':2} #TODO less ugly may be?
     _data_choices = (
         (0, 'Photo'),
         (1, 'Status'),
@@ -15,13 +26,7 @@ class RawData(BaseDataManagerModel):
         )
     type = models.IntegerField(choices=_data_choices)
 
-    _source_choices = (
-        (0,'Local'),
-        (1,'Facebook'),
-        (2,'Twitter'),
-        (3,'Instagram')
-    )
-    source = models.IntegerField(choices=_source_choices)
+    source = models.ForeignKey(Provider)
 
     create_date = models.DateTimeField(default=datetime.now)
     fetch_date = models.DateTimeField(auto_now_add=True)

@@ -1,10 +1,14 @@
 __author__ = 'goktan'
 
 import abc
-
-class BaseProviderWorker:
+from DataManager.models import Provider
+class BaseProviderWorker(object):
     def auth(self):
         pass
+
+    def getProvider(self):
+        print self.__class__.__name__
+        return Provider.objects.get(worker_name=self.__class__.__name__)
 
 class BasePhotoProviderWorker(BaseProviderWorker):
     __metaclass__ = abc.ABCMeta
