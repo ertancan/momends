@@ -1,5 +1,7 @@
 Django==1.4.3
 distribute==0.6.27
 dj-database-url==0.2.1
+facebook-sdk==0.4.0
 psycopg2==2.4.6
+tweepy==1.12
 wsgiref==0.1.2
