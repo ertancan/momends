@@ -1,5 +1,6 @@
 __author__ = 'ertan'
 import tweepy
+import pytz
 from ExternalProviders.BaseProviderWorker import BaseStatusProviderWorker
 from models import TwitterProviderModule
 from DataManager.models import RawData
@@ -21,7 +22,8 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
                 return _raw_data
             for tweet in result:
                 if since<tweet.created_at<until:
-                    _raw = RawData(create_date=tweet.created_at, share_count=tweet.retweet_count)
+                    _raw = RawData(share_count=tweet.retweet_count)
+                    _raw.create_date = tweet.created_at.replace(tzinfo=pytz.UTC)
                     _raw.source = provider
                     _raw.type = RawData.DATA_TYPE['Status']
                     _raw.original_id = tweet.id_str

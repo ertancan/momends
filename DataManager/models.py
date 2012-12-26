@@ -75,7 +75,7 @@ class OutData(BaseDataManagerModel):
     animation_target = models.IntegerField(null=True,blank=True) #Animation layer to affect if inter-layer type like wait,block,unblock etc.
     animation_waitPrev = models.BooleanField(default=True) #Whether this animation should wait the previous one to finish or not.
     animation_triggerNext = models.BooleanField(default=True) #Whether this animation should trigger the next one in the queue or not
-    animation_force = models.BooleanField(null=True,blank=True) #Like force stop now or etc. #TODO serializer should ignore null fields may be?
+    animation_force = models.NullBooleanField(null=True,blank=True) #Like force stop now or etc. #TODO serializer should ignore null fields may be?
 
 
 
