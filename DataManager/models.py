@@ -16,6 +16,9 @@ class Momend(BaseDataManagerModel):
 
     #TODO stats
 
+    def __unicode__(self):
+        return str(self.owner) + ':'+str(self.momend_start_date)+' - '+str(self.momend_end_date)
+
 class AnimationLayer(BaseDataManagerModel):
     momend = models.ForeignKey(Momend)
     layer = models.IntegerField() #Like layer0, layer1 etc.
@@ -24,13 +27,21 @@ class AnimationLayer(BaseDataManagerModel):
     class Meta:
         unique_together = ('momend', 'layer')
 
+    def __unicode__(self):
+        return str(self.momend)+' : '+str(self.layer)+'-'+str(self.description)
+
 class Provider(BaseDataManagerModel):
     name = models.CharField(max_length = 50)
     package_name = models.CharField(max_length = 255)
     module_name = models.CharField(max_length = 255)
     worker_name = models.CharField(max_length = 255)
 
+    def __unicode__(self):
+        return str(self.name)
+
 class RawData(BaseDataManagerModel):
+    owner = models.ForeignKey(User)
+
     original_path = models.CharField(max_length=500) #original path of data if it exists
     original_id = models.CharField(max_length=255) #original id of data represents the source id
     data = models.TextField() #main data to use in momend
@@ -51,9 +62,12 @@ class RawData(BaseDataManagerModel):
 
     #TODO latitude,longitude etc.
 
+    def __unicode__(self):
+        return str(self.owner)+':'+str(self.source)+'='+str(self.original_id)
+
 class CoreAnimationData(BaseDataManagerModel):
     group = models.ForeignKey('AnimationGroup')
-    used_object_type = models.CharField(max_length=255)
+    used_object_type = models.CharField(max_length=255) #What kind of object? i.e., USER_PHOTO,THEME_BG
     #Consistent with javascript interpreter
     name = models.CharField(max_length=255, null=True, blank=True) #Optional, descriptive, human readable name
     type = models.CharField(max_length=50) #Type of the animation
@@ -64,6 +78,9 @@ class CoreAnimationData(BaseDataManagerModel):
     waitPrev = models.BooleanField(default=True) #Whether this animation should wait the previous one to finish or not.
     triggerNext = models.BooleanField(default=True) #Whether this animation should trigger the next one in the queue or not
     force = models.NullBooleanField(null=True, blank=True) #Like force stop now or etc. #TODO serializer should ignore null fields may be?
+
+    def __unicode__(self):
+        return str(self.group)+'-'+str(self.used_object_type)
 
 class OutData(BaseDataManagerModel):
     owner_layer = models.ForeignKey(AnimationLayer)
@@ -82,10 +99,16 @@ class OutData(BaseDataManagerModel):
     #Animation Data
     animation = models.ForeignKey(CoreAnimationData, null=True, blank= True)
 
+    def __unicode__(self):
+        return str(self.owner_layer)+':'+str(self.theme)+'='+str(self.animation)
+
 class Theme(BaseDataManagerModel):
     name = models.CharField(max_length=255)
 
     image_enhancement_function = models.CharField(max_length=255) #TODO External model to keep parameters etc.
+
+    def __unicode__(self):
+        return str(self.name)
 
 class ThemeData(BaseDataManagerModel):
     theme = models.ForeignKey(Theme)
@@ -102,10 +125,16 @@ class ThemeData(BaseDataManagerModel):
 
     #TODO Different resolutions may be?
 
+    def __unicode__(self):
+        return str(self.theme)+':'+str(type)+'='+str(self.data_path)
+
 class Scenario(BaseDataManagerModel):
     name = models.CharField(max_length=255)
 
     compatible_themes = models.ManyToManyField(Theme)
+
+    def __unicode__(self):
+        return str(self.name)
 
 class AnimationGroup(BaseDataManagerModel):
     name = models.CharField(max_length=255)
@@ -127,6 +156,9 @@ class AnimationGroup(BaseDataManagerModel):
     needed_photo = models.IntegerField(default=0)
     needed_status = models.IntegerField(default=0)
     needed_location = models.IntegerField(default=0)
+
+    def __unicode__(self):
+        return str(self.name)+':'+str(self.scenario)+'='+str(self.duration)
 
 
 

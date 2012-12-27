@@ -3,7 +3,9 @@ __author__ = 'goktan'
 from ExternalProviders.BaseProviderWorker import BaseLocationProviderWorker,BasePhotoProviderWorker,BaseStatusProviderWorker
 from models import FacebookProviderModule
 from DataManager.models import RawData
+import datetime
 import facebook
+import pytz
 
 class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker): #TODO not collecting location!
     def collect_photo(self,user,since,until):
@@ -20,12 +22,17 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
             _raw.type=RawData.DATA_TYPE['Photo']
             _raw.source = provider
             _raw.path = obj['source']
-            _raw.data = obj['name']
-            _raw.like_count = len(obj['likes'])
-            _raw.share_count = len(obj['sharedposts'])
-            _raw.comment_count = len(obj['comments'])
-            _raw.create_date = obj['created_time']
+            if 'name' in obj:
+                _raw.data = obj['name']
+            if 'likes' in obj:
+                _raw.like_count = len(obj['likes'])
+            if 'sharedposts' in obj:
+                _raw.share_count = len(obj['sharedposts'])
+            if 'comments' in obj:
+                _raw.comment_count = len(obj['comments'])
+            _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
             _raw.original_id = obj['id']
+            _raw.save()
             _raw_data.append(_raw)
 
         return _raw_data
@@ -45,11 +52,15 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
             _raw.type=RawData.DATA_TYPE['Status']
             _raw.source = provider
             _raw.data = obj['message']
-            _raw.like_count = len(obj['likes'])
-            _raw.share_count = len(obj['sharedposts'])
-            _raw.comment_count = len(obj['comments'])
-            _raw.create_date = obj['updated_time']
+            if 'likes' in obj:
+                _raw.like_count = len(obj['likes'])
+            if 'sharedposts' in obj:
+                _raw.share_count = len(obj['sharedposts'])
+            if 'comments' in obj:
+                _raw.comment_count = len(obj['comments'])
+            _raw.create_date = datetime.datetime.strptime(obj['updated_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
             _raw.original_id = obj['id']
+            _raw.save()
             _raw_data.append(_raw)
 
         return _raw_data
@@ -68,15 +79,18 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
             _raw.type = RawData.DATA_TYPE['Checkin']
             _raw.source = provider
             _raw.data = obj['place']['name']
-            _raw.like_count = len(obj['likes'])
-            _raw.comment_count = len(obj['comments'])
-            _raw.create_date = obj['created_time']
+            if 'likes' in obj:
+                _raw.like_count = len(obj['likes'])
+            if 'comments' in obj:
+                _raw.comment_count = len(obj['comments'])
+            _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
             _raw.original_id = obj['id']
+            _raw.save()
             _raw_data.append(_raw)
 
         return _raw_data
 
-def _get_access_token(self, user):
+    def _get_access_token(self, user):
         #TODO obtain access token and return
         _obj = FacebookProviderModule.objects.get(owner=user)
         return _obj.token
