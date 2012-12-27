@@ -1,25 +1,49 @@
 __author__ = 'goktan'
 from models import Provider
 import importlib
+from DataEnrich.EnrichDataWorker import EnrichDataWorker
 from ExternalProviders.BaseProviderWorker import BasePhotoProviderWorker,BaseStatusProviderWorker,BaseLocationProviderWorker
+from Outputs.AnimationManager.AnimationManagerWorker import AnimationManagerWorker
+from models import RawData,Momend
 class DataManager:
+    def __init__(self, user):
+        self.user = user
 
-    def create_momend(self):
-        pass
 
-    def collect_user_data(self, user, since, until, inc_photo=True, inc_status=True, inc_checkin=True):
-        _user_data = []
+    def create_momend(self, since, until, duration,
+                      inc_photo=True, inc_status=True, inc_checkin=True,
+                      enrichment_method=None, theme=None, scenario=None):
+        raw_data = self.collect_user_data(since,until,inc_photo,inc_status,inc_checkin)
+        enriched_data = self.enrich_user_data(raw_data, enrichment_method)
+        momend = Momend(owner=self.user, momend_start_date=since, momend_end_date=until)
+        momend.save()
+        animation_worker = AnimationManagerWorker(momend)
+        momend_animation = animation_worker.generate_output(enriched_data,duration,theme,scenario)
+        return momend_animation
+
+    def collect_user_data(self, since, until, inc_photo, inc_status, inc_checkin):
+        _raw_data = []
         for obj in Provider.objects.all():
-            if getattr(user,obj.module_name.lower()+'_set').count()>0:
+            if getattr(self.user,obj.module_name.lower()+'_set').count()>0:
                 worker = self._instantiate_provider_worker(obj)
                 if inc_photo and issubclass(worker.__class__,BasePhotoProviderWorker):
-                    _user_data = _user_data + worker.collect_photo(user,since,until)
+                    _raw_data = _raw_data + worker.collect_photo(self.user,since,until)
                 if inc_status and issubclass(worker.__class__,BaseStatusProviderWorker):
-                    _user_data = _user_data + worker.collect_status(user,since,until)
+                    _raw_data = _raw_data + worker.collect_status(self.user,since,until)
                 if inc_checkin and issubclass(worker.__class__,BaseLocationProviderWorker):
-                    _user_data = _user_data + worker.collect_checkin(user,since,until)
+                    _raw_data = _raw_data + worker.collect_checkin(self.user,since,until)
 
-        return _user_data
+
+        return _raw_data
+
+    def enrich_user_data(self, raw_data, method=None):
+        if not method:
+            method = 'date'
+
+        enrich_worker = EnrichDataWorker(self.user)
+        enriched_data = enrich_worker.enrich_data(raw_data) #TODO use method parameter
+        return enriched_data
+
 
     def _instantiate_provider_worker(self, provider):
         mod = importlib.import_module('ExternalProviders.'+provider.package_name+'.'+provider.worker_name,provider.worker_name)

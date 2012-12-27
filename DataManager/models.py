@@ -32,16 +32,13 @@ class Provider(BaseDataManagerModel):
 
 class RawData(BaseDataManagerModel):
     original_path = models.CharField(max_length=500) #original path of data if it exists
-    original_id = models.TextField() #original id of data represents the source id #TODO check here if char is needed?
+    original_id = models.CharField(max_length=255) #original id of data represents the source id
     data = models.TextField() #main data to use in momend
 
-    DATA_TYPE= {'Photo': 0,'Status': 1,'Checkin': 2} #TODO less ugly may be?
-    _data_choices = (
-        (0, 'Photo'),
-        (1, 'Status'),
-        (2, 'Checkin'),
-        )
-    type = models.IntegerField(choices = _data_choices)
+    DATA_TYPE= {'Photo': 0,
+                'Status': 1,
+                'Checkin': 2}
+    type = models.IntegerField(choices=[[DATA_TYPE[key],key] for key in DATA_TYPE.keys()])
 
     source = models.ForeignKey(Provider)
 
@@ -54,28 +51,83 @@ class RawData(BaseDataManagerModel):
 
     #TODO latitude,longitude etc.
 
+class CoreAnimationData(BaseDataManagerModel):
+    group = models.ForeignKey('AnimationGroup')
+    used_object_type = models.CharField(max_length=255)
+    #Consistent with javascript interpreter
+    name = models.CharField(max_length=255, null=True, blank=True) #Optional, descriptive, human readable name
+    type = models.CharField(max_length=50) #Type of the animation
+    duration = models.IntegerField(default=0) #Duration of certain types
+    pre = models.TextField(null=True, blank=True) #Precondition of the object to perform the animation
+    anim = models.TextField(null=True, blank=True) #Steps to be performed if the type is 'animation'
+    target = models.IntegerField(null=True, blank=True) #Animation layer to affect if inter-layer type like wait,block,unblock etc.
+    waitPrev = models.BooleanField(default=True) #Whether this animation should wait the previous one to finish or not.
+    triggerNext = models.BooleanField(default=True) #Whether this animation should trigger the next one in the queue or not
+    force = models.NullBooleanField(null=True, blank=True) #Like force stop now or etc. #TODO serializer should ignore null fields may be?
+
 class OutData(BaseDataManagerModel):
     owner_layer = models.ForeignKey(AnimationLayer)
-    raw = models.ForeignKey(RawData,null=True,blank=True) #If created by enriching or enhancing a raw data
+    raw = models.ForeignKey(RawData,null=True, blank=True) #If created by enriching or enhancing a raw data
 
     #Enriched Data
     priority = models.IntegerField(default=0)
-    selection_criteria = models.TextField() #TODO foreign key may be
+    selection_criteria = models.TextField(null=True, blank=True) #TODO foreign key may be
 
     #Enhanced Data
-    theme_id = models.IntegerField(default=0) #TODO foreign key to theme table
-    enhanced_data_path = models.TextField()
+    theme = models.ForeignKey('Theme', null=True, blank=True)
 
-    #Animation Data (parts after underscore is consistent with javascript interpreter)
-    animation_name = models.CharField(max_length=255,null=True,blank=True) #Optional, descriptive, human readable name if
-    animation_type = models.CharField(max_length=50) #Type of the animation
-    animation_duration = models.IntegerField(default=0) #Duration of certain types
-    animation_pre = models.TextField(null=True,blank=True) #Precondition of the object to perform the animation
-    animation_anim = models.TextField(null=True,blank=True) #Steps to be performed if the type is 'animation'
-    animation_target = models.IntegerField(null=True,blank=True) #Animation layer to affect if inter-layer type like wait,block,unblock etc.
-    animation_waitPrev = models.BooleanField(default=True) #Whether this animation should wait the previous one to finish or not.
-    animation_triggerNext = models.BooleanField(default=True) #Whether this animation should trigger the next one in the queue or not
-    animation_force = models.NullBooleanField(null=True,blank=True) #Like force stop now or etc. #TODO serializer should ignore null fields may be?
+    #Keeps the latest path or reference to the object
+    out_data = models.TextField(null=True, blank=True)
+
+    #Animation Data
+    animation = models.ForeignKey(CoreAnimationData, null=True, blank= True)
+
+class Theme(BaseDataManagerModel):
+    name = models.CharField(max_length=255)
+
+    image_enhancement_function = models.CharField(max_length=255) #TODO External model to keep parameters etc.
+
+class ThemeData(BaseDataManagerModel):
+    theme = models.ForeignKey(Theme)
+
+    THEME_DATA_TYPE = {
+        'Background': 0,
+        'Frame': 1,
+        'StubPhoto': 2,
+        'Font': 3,
+        'Music': 4,
+    }
+    type = models.IntegerField(choices=[[THEME_DATA_TYPE[key],key] for key in THEME_DATA_TYPE.keys()])
+    data_path = models.CharField(max_length=255)
+
+    #TODO Different resolutions may be?
+
+class Scenario(BaseDataManagerModel):
+    name = models.CharField(max_length=255)
+
+    compatible_themes = models.ManyToManyField(Theme)
+
+class AnimationGroup(BaseDataManagerModel):
+    name = models.CharField(max_length=255)
+
+    scenario = models.ForeignKey(Scenario)
+
+    duration = models.IntegerField()
+
+    ANIMATION_GROUP_TYPE = {
+        'Background': 0,
+        'Music': 0,
+        'SceneChange': 0,
+        'Normal': 0,
+    }
+    type = models.IntegerField(choices=[[ANIMATION_GROUP_TYPE[key],key] for key in ANIMATION_GROUP_TYPE.keys()])
+
+    needed_bg = models.IntegerField(default=0)
+    needed_music = models.IntegerField(default=0)
+    needed_photo = models.IntegerField(default=0)
+    needed_status = models.IntegerField(default=0)
+    needed_location = models.IntegerField(default=0)
+
 
 
 

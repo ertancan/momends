@@ -28,6 +28,7 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
                     _raw.type = RawData.DATA_TYPE['Status']
                     _raw.original_id = tweet.id_str
                     _raw.data = tweet.text
+                    _raw.save()
                     _raw_data.append(_raw);
                 elif tweet.created_at<since:
                     return _raw_data
