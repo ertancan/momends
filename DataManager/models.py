@@ -1,6 +1,7 @@
 from django.db import models
 from datetime import datetime
 from django.contrib.auth.models import User
+from django.forms.models import model_to_dict
 # Create your models here.
 class BaseDataManagerModel(models.Model):
     class Meta:
@@ -19,6 +20,14 @@ class Momend(BaseDataManagerModel):
     def __unicode__(self):
         return str(self.owner) + ':'+str(self.momend_start_date)+' - '+str(self.momend_end_date)
 
+    def encode(self):
+        enc = model_to_dict(self)
+        layers = []
+        for layer in AnimationLayer.objects.filter(momend=self):
+            layers.append(layer.encode())
+        enc['animation_layers'] = layers
+        return enc
+
 class AnimationLayer(BaseDataManagerModel):
     momend = models.ForeignKey(Momend)
     layer = models.IntegerField() #Like layer0, layer1 etc.
@@ -29,6 +38,12 @@ class AnimationLayer(BaseDataManagerModel):
 
     def __unicode__(self):
         return str(self.momend)+' : '+str(self.layer)+'-'+str(self.description)
+
+    def encode(self):
+        enc = []
+        for out in OutData.objects.filter(owner_layer=self):
+            enc.append(out.encode())
+        return enc
 
 class Provider(BaseDataManagerModel):
     name = models.CharField(max_length = 50)
@@ -82,6 +97,10 @@ class CoreAnimationData(BaseDataManagerModel):
     def __unicode__(self):
         return str(self.group)+'-'+str(self.used_object_type)
 
+    def encode(self):
+        enc = model_to_dict(self,exclude=['group'])
+        return enc
+
 class OutData(BaseDataManagerModel):
     owner_layer = models.ForeignKey(AnimationLayer)
     raw = models.ForeignKey(RawData,null=True, blank=True) #If created by enriching or enhancing a raw data
@@ -102,6 +121,12 @@ class OutData(BaseDataManagerModel):
     def __unicode__(self):
         return str(self.owner_layer)+':'+str(self.theme)+'='+str(self.animation)
 
+    def encode(self):
+        enc = model_to_dict(self,fields=['priority','selection_criteria','out_data'])
+        enc['theme'] = self.theme.encode()
+        enc['animation'] = self.animation.encode()
+        return enc
+
 class Theme(BaseDataManagerModel):
     name = models.CharField(max_length=255)
 
@@ -109,6 +134,9 @@ class Theme(BaseDataManagerModel):
 
     def __unicode__(self):
         return str(self.name)
+
+    def encode(self):
+        return self.name
 
 class ThemeData(BaseDataManagerModel):
     theme = models.ForeignKey(Theme)
@@ -152,9 +180,9 @@ class AnimationGroup(BaseDataManagerModel):
 
     ANIMATION_GROUP_TYPE = {
         'Background': 0,
-        'Music': 0,
-        'SceneChange': 0,
-        'Normal': 0,
+        'Music': 1,
+        'SceneChange': 2,
+        'Normal': 3,
     }
     type = models.IntegerField(choices=[[ANIMATION_GROUP_TYPE[key],key] for key in ANIMATION_GROUP_TYPE.keys()])
 

@@ -10,7 +10,7 @@ class DataManager:
         self.user = user
 
 
-    def create_momend(self, since, until, duration,
+    def create_momend(self, since, until, duration, #TODO check if dates has timezone information = tzinfo
                       inc_photo=True, inc_status=True, inc_checkin=True,
                       enrichment_method=None, theme=None, scenario=None):
         raw_data = self.collect_user_data(since,until,inc_photo,inc_status,inc_checkin)

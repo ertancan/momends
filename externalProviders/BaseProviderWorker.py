@@ -2,6 +2,7 @@ __author__ = 'goktan'
 
 import abc
 from DataManager.models import Provider
+
 class BaseProviderWorker(object):
     def auth(self):
         pass

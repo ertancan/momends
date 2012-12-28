@@ -1,9 +1,10 @@
+from Outputs.AnimationManager.ScenarioManager import ScenarioManagerWorker
+
 __author__ = 'goktan'
 
 from Outputs.BaseOutputWorker import BaseOutputWorker
-from DataManager.models import Momend,Scenario,Theme,OutData,RawData
-from DataManager.ScenarioManager import ScenarioManagerWorker
-from DataManager.ThemeManager import ThemeManagerWorker
+from DataManager.models import Momend, Theme,OutData
+from Outputs.AnimationManager.ThemeManager import ThemeManagerWorker
 
 class DataCountException(Exception):
     PHOTO_TYPE = 0
@@ -30,19 +31,16 @@ class AnimationManagerWorker(BaseOutputWorker):
             theme = Theme.objects.order_by('?')[0]
 
         scenarioWorker = ScenarioManagerWorker.ScenarioManagerWorker()
-        prepared_scenario, duration, used_bg_count, used_photo_count, used_status_count, used_checkin_count = scenarioWorker.prepare_scenario(duration,theme,scenario)
+        prepared_scenario, duration, used_bg_count, used_photo_count, used_status_count, used_checkin_count = scenarioWorker.prepare_scenario(self.momend, duration, theme,scenario)
         try:
             self._validate_data_count(enriched_data, used_bg_count, used_photo_count, used_status_count, used_checkin_count)
         except DataCountException, e:
             print(e.message)
             return False
 
-        for layer in prepared_scenario: #Set layer momend, ScenarioManager doesn't know the momend
-            layer.momend = self.momend
+        filled_scenario = self._fill_user_data(prepared_scenario['objects'],enriched_data)
 
-        filled_scenario = self._fill_user_data(prepared_scenario,enriched_data)
-
-        themeWorker = ThemeManagerWorker.ThemeManagerWorker()
+        themeWorker = ThemeManagerWorker.ThemeManagerWorker(theme)
         self.animation = themeWorker.apply_theme(filled_scenario)
         return self.animation
 
@@ -67,23 +65,30 @@ class AnimationManagerWorker(BaseOutputWorker):
             for animation_object in level:
                 assert isinstance(animation_object,OutData)
                 used_enriched_object = None
-                if animation_object.animation.used_object_type == '{{USER_PHOTO}}':
+                object_type = animation_object.animation.used_object_type
+                if object_type == '{{USER_PHOTO}}' or object_type == '{{NEXT_USER_PHOTO}}':
+                    if len(object_type) > 15: #Not to compare strings again (This is NEXT_USER_PHOTO)
+                        photo_index += 1
                     used_enriched_object = enriched_data['photo'][photo_index]
-                    photo_index += 1
-                if animation_object.animation.used_object_type == '{{USER_STATUS}}':
+                if object_type == '{{USER_STATUS}}' or object_type == '{{NEXT_USER_STATUS}}':
+                    if len(object_type) >17:
+                        status_index += 1
                     used_enriched_object = enriched_data['status'][status_index]
-                    status_index += 1
-                if animation_object.animation.used_object_type == '{{USER_CHECKIN}}':
+                if object_type == '{{USER_CHECKIN}}' or object_type == '{{NEXT_USER_CHECKIN}}':
+                    if len(object_type) > 18:
+                        checkin_index += 1
                     used_enriched_object = enriched_data['checkin'][checkin_index]
-                    checkin_index += 1
-                if animation_object.animation.used_object_type == '{{USER_BACKGROUND}}':
+                if object_type == '{{USER_BACKGROUND}}' or object_type == '{{NEXT_USER_BACKGROUND}}':
+                    if len(object_type) > 21:
+                        bg_index += 1
                     used_enriched_object = enriched_data['background'][bg_index]
-                    bg_index += 1
 
                 if used_enriched_object:
                     animation_object.raw = used_enriched_object.raw
                     animation_object.selection_criteria = used_enriched_object.criteria
                     animation_object.priority = used_enriched_object.priority
+
+                animation_object.save() #Outside of the if, because they aren't saved before
 
         return scenario
 
