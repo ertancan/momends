@@ -19,6 +19,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         _raw_data= []
         for obj in result['data']:
             _raw = RawData()
+            _raw.owner = user
             _raw.type=RawData.DATA_TYPE['Photo']
             _raw.source = provider
             _raw.path = obj['source']
@@ -49,6 +50,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         _raw_data= []
         for obj in result['data']:
             _raw = RawData()
+            _raw.owner = user
             _raw.type=RawData.DATA_TYPE['Status']
             _raw.source = provider
             _raw.data = obj['message']
@@ -76,6 +78,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         _raw_data= []
         for obj in result['data']:
             _raw = RawData()
+            _raw.owner = user
             _raw.type = RawData.DATA_TYPE['Checkin']
             _raw.source = provider
             _raw.data = obj['place']['name']

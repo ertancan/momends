@@ -10,3 +10,6 @@ class BaseProviderModule(models.Model):
 
     owner = models.ForeignKey(User)
     token = models.TextField()
+
+    def __unicode__(self):
+        return str(self.owner)+':'+str(self.token)

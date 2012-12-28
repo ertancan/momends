@@ -1,8 +1,11 @@
 __author__ = 'ertan'
 from DataManager.models import Theme,AnimationGroup,AnimationLayer,CoreAnimationData,OutData,Scenario
 class ScenarioManagerWorker(object):
-    def prepare_scenario(self, duration, theme, scenario=None, selection='basic', max_photo=0, max_bg=0, max_status=0, max_checkin=0):
-        """
+    def prepare_scenario(self, momend, duration, theme, scenario=None, selection='basic', max_photo=0, max_bg=0, max_status=0, max_checkin=0):
+        """Currently first 3 levels are assigned; 0-Background Layer, 1-Foreground Layer, 2-Music Layer. You can use any layer and
+        any other layer as you wish. I believed these can make inter-layer communication a bit easier, e.g., You can wait until music changes
+        by waiting the 2nd layer or wait until background change animation to disappear by waiting layer 0.
+        I may introduce breakpoint broadcasting soon.
         :param duration: Approximate duration of the output animation
         :param theme: Theme to be used in animation
         :param scenario: If the scenario is known, None if it will be chosen randomly
@@ -15,7 +18,7 @@ class ScenarioManagerWorker(object):
         """
 
         if not scenario:
-            scenario = Scenario.objects.filter(theme=theme).order_by('?')[0]
+            scenario = Scenario.objects.filter(compatible_themes=theme).order_by('?')[0]
 
         compatible_animation_groups = AnimationGroup.objects.filter(scenario=scenario)
 
@@ -25,22 +28,28 @@ class ScenarioManagerWorker(object):
         bgLayer = AnimationLayer()
         bgLayer.description = 'Background Layer'
         bgLayer.layer = 0
+        bgLayer.momend = momend
+        bgLayer.save()
         used_bg_groups = []
 
         frontLayer = AnimationLayer()
         frontLayer.description = 'Main Layer'
         frontLayer.layer = 1
+        frontLayer.momend = momend
+        frontLayer.save()
         used_front_groups = []
 
         musicLayer = AnimationLayer()
         musicLayer.description = 'Music Layer'
         musicLayer.layer = 2
+        musicLayer.momend = momend
+        musicLayer.save()
         used_music_groups = []
 
 
-        bgGroup = compatible_animation_groups.filter(type=AnimationGroup.ANIMATION_GROUP_TYPE['Background']).get()
-        frontGroup = compatible_animation_groups.filter(type=AnimationGroup.ANIMATION_GROUP_TYPE['Normal']).get() #TODO use screen change,too
-        musicGroup = compatible_animation_groups.filter(type=AnimationGroup.ANIMATION_GROUP_TYPE['Music']).get()
+        bgGroup = compatible_animation_groups.filter(type=AnimationGroup.ANIMATION_GROUP_TYPE['Background'])
+        frontGroup = compatible_animation_groups.filter(type=AnimationGroup.ANIMATION_GROUP_TYPE['Normal']) #TODO use screen change,too
+        musicGroup = compatible_animation_groups.filter(type=AnimationGroup.ANIMATION_GROUP_TYPE['Music'])
 
         used_photo = 0
         used_status = 0
@@ -64,9 +73,9 @@ class ScenarioManagerWorker(object):
 
         for anim in frontGroup:
             if front_duration + anim.duration <= duration:
-                if used_photo + anim.needed_photo <= max_photo and used_checkin + anim.needed_checkin <= max_checkin and used_status + anim.needed_status <= max_status:
+                if used_photo + anim.needed_photo <= max_photo and used_checkin + anim.needed_location <= max_checkin and used_status + anim.needed_status <= max_status:
                     used_photo += anim.needed_photo
-                    used_checkin += anim.needed_checkin
+                    used_checkin += anim.needed_location
                     used_status += anim.needed_status
                     front_duration += anim.duration
                     used_front_groups.append(anim)
@@ -96,13 +105,12 @@ class ScenarioManagerWorker(object):
         for i in range(0,len(layers)): #For every layer of data
             result.append([])
             for group in group_layers[i]: #For every AnimationGroup in layers
-                group_objects = CoreAnimationData.objects.get(group=group)
+                group_objects = CoreAnimationData.objects.filter(group=group)
                 for obj in group_objects: #For every CoreAnimation in each AnimationGroup
                     outData = OutData()
                     outData.owner_layer = layers[i]
                     outData.animation = obj
                     outData.theme = theme
-                    outData.save()
                     result[i].append(outData)
 
         return result

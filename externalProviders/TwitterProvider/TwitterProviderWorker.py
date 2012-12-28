@@ -23,6 +23,7 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
             for tweet in result:
                 if since<tweet.created_at<until:
                     _raw = RawData(share_count=tweet.retweet_count)
+                    _raw.owner = user
                     _raw.create_date = tweet.created_at.replace(tzinfo=pytz.UTC)
                     _raw.source = provider
                     _raw.type = RawData.DATA_TYPE['Status']
