@@ -22,6 +22,10 @@ class Theme(BaseDataManagerModel):
         return self.name
 
 class ThemeData(BaseDataManagerModel):
+    class Meta:
+        verbose_name_plural = 'ThemeData'
+        verbose_name = 'ThemeData'
+        app_label = 'DataManager'
     theme = models.ForeignKey(Theme)
 
     THEME_DATA_TYPE = {

@@ -152,3 +152,5 @@ LOGGING = {
         },
     }
 }
+
+COLLECTED_FILE_PATH = 'collected/'

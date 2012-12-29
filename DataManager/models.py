@@ -55,11 +55,15 @@ class Provider(BaseDataManagerModel):
         return str(self.name)
 
 class RawData(BaseDataManagerModel):
+    class Meta:
+        verbose_name_plural = 'RawData'
+        verbose_name = 'RawData'
     owner = models.ForeignKey(User)
 
     original_path = models.CharField(max_length=500) #original path of data if it exists
     original_id = models.CharField(max_length=255) #original id of data represents the source id
     data = models.TextField() #main data to use in momend
+    title = models.CharField(max_length=255)
 
     DATA_TYPE= {'Photo': 0,
                 'Status': 1,
@@ -79,9 +83,12 @@ class RawData(BaseDataManagerModel):
     #TODO latitude,longitude etc.
 
     def __unicode__(self):
-        return str(self.owner)+':'+str(self.provider)+'='+str(self.original_id)
+        return str(self.owner)+'_'+str(self.provider)+'_'+str(self.original_id)
 
 class CoreAnimationData(BaseDataManagerModel):
+    class Meta:
+        verbose_name_plural = 'CoreAnimationData'
+        verbose_name = 'CoreAnimationData'
     group = models.ForeignKey('AnimationGroup')
     used_object_type = models.CharField(max_length=255,null=True,blank=True) #What kind of object? i.e., USER_PHOTO,THEME_BG
     #Consistent with javascript interpreter
@@ -103,6 +110,9 @@ class CoreAnimationData(BaseDataManagerModel):
         return enc
 
 class OutData(BaseDataManagerModel):
+    class Meta:
+        verbose_name_plural = 'OutData'
+        verbose_name = 'OutData'
     owner_layer = models.ForeignKey(AnimationLayer)
     raw = models.ForeignKey(RawData,null=True, blank=True) #If created by enriching or enhancing a raw data
 

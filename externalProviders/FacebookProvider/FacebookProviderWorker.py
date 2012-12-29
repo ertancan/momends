@@ -6,25 +6,28 @@ from DataManager.models import RawData
 import datetime
 import facebook
 import pytz
+import urllib2
+from django.conf import settings
 
 class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker): #TODO not collecting location!
-    def collect_photo(self,user,since,until):
+    def collect_photo(self, user, since, until):
         access_token=self._get_access_token(user)
         api = facebook.GraphAPI(access_token)
 
         provider = self.getProvider()
 
         result=api.get_connections('me', 'photos', limit=200, since=str(since), until=str(until),
-            fields = 'likes.limit(500),comments.limit(500),source,name,sharedposts')
+            fields = 'likes.limit(500),comments.limit(500),source,name,sharedposts,images')
         _return_data= []
         for obj in result['data']:
             _raw = RawData()
             _raw.owner = user
             _raw.type=RawData.DATA_TYPE['Photo']
-            _raw.source = provider
-            _raw.path = obj['source']
+            _raw.provider = provider
+            print obj
+            _raw.original_path = obj['images'][0]['source']
             if 'name' in obj:
-                _raw.data = obj['name']
+                _raw.title = obj['name']
             if 'likes' in obj:
                 _raw.like_count = len(obj['likes'])
             if 'sharedposts' in obj:
@@ -33,6 +36,8 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 _raw.comment_count = len(obj['comments'])
             _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
             _raw.original_id = obj['id']
+            #TODO error handling (goktan)
+            _raw.data = self._fetch_photo(_raw.original_path, str(_raw))
             _return_data.append(_raw)
 
         return _return_data
@@ -51,7 +56,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
             _raw = RawData()
             _raw.owner = user
             _raw.type=RawData.DATA_TYPE['Status']
-            _raw.source = provider
+            _raw.provider = provider
             _raw.data = obj['message']
             if 'likes' in obj:
                 _raw.like_count = len(obj['likes'])
@@ -78,7 +83,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
             _raw = RawData()
             _raw.owner = user
             _raw.type = RawData.DATA_TYPE['Checkin']
-            _raw.source = provider
+            _raw.provider = provider
             _raw.data = obj['place']['name']
             if 'likes' in obj:
                 _raw.like_count = len(obj['likes'])
@@ -94,3 +99,12 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         #TODO obtain access token and return
         _obj = FacebookProviderModule.objects.get(owner=user)
         return _obj.token
+
+    def _fetch_photo(self, url, name):
+        _file_path = settings.COLLECTED_FILE_PATH + name
+
+        _url = urllib2.urlopen(url)
+        with open(_file_path, "wb") as _local_file:
+            _local_file.write(_url.read())
+        _local_file.close()
+        return _file_path
