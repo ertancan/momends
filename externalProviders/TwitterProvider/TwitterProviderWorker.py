@@ -25,7 +25,7 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
                     _raw = RawData(share_count=tweet.retweet_count)
                     _raw.owner = user
                     _raw.create_date = tweet.created_at.replace(tzinfo=pytz.UTC)
-                    _raw.source = provider
+                    _raw.provider = provider
                     _raw.type = RawData.DATA_TYPE['Status']
                     _raw.original_id = tweet.id_str
                     _raw.data = tweet.text
