@@ -15,7 +15,7 @@ class ThemeManagerWorker:
 
 
     def _fill_theme_data(self, outdata_layers):
-        theme_assets = ThemeData.objects.filter(theme= self.theme)
+        theme_assets = ThemeData.objects.filter(theme=self.theme)
         theme_assets = self._group_theme_data(theme_assets)
         keywords = ThemeData.THEME_DATA_TYPE_KEYWORDS
         current_indexes = [-1 for i in range(1,len(ThemeData.THEME_DATA_TYPE))] # For -1 array?
@@ -29,7 +29,7 @@ class ThemeManagerWorker:
                     if (should_increase or current_indexes[obj_type] == -1) and \
                        current_indexes[obj_type] < len(theme_assets[obj_type]) -1: #No one wanted a data in this type before. Actually a misuse.
                         current_indexes[obj_type] += 1
-                    outData.out_data = theme_assets[obj_type][current_indexes[obj_type]].data_path
+                    outData.final_data_path = theme_assets[obj_type][current_indexes[obj_type]].data_path
                     outData.selection_criteria = 'Theme Asset'
                     outData.save() #Update db
 

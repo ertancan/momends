@@ -89,8 +89,9 @@ class ScenarioManagerWorker(object):
                 music_duration += musicAnim.duration
 
         #Generate output
-        out_layers = [bgLayer,frontLayer,musicLayer]
-        out = {'layers':out_layers,'objects':self._generate_outdata_from_groups(theme,out_layers,[used_bg_groups,used_front_groups,used_music_groups])}
+        out_layers = [bgLayer, frontLayer, musicLayer]
+        out = {'layers':out_layers,
+               'objects':self._generate_outdata_from_groups(theme,out_layers,[used_bg_groups,used_front_groups,used_music_groups])}
         return out, front_duration, used_bg, used_photo, used_status, used_checkin
 
     def _generate_outdata_from_groups(self,theme,layers,group_layers):

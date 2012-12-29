@@ -16,7 +16,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
 
         result=api.get_connections('me', 'photos', limit=200, since=str(since), until=str(until),
             fields = 'likes.limit(500),comments.limit(500),source,name,sharedposts')
-        _raw_data= []
+        _return_data= []
         for obj in result['data']:
             _raw = RawData()
             _raw.owner = user
@@ -33,10 +33,9 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 _raw.comment_count = len(obj['comments'])
             _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
             _raw.original_id = obj['id']
-            _raw.save()
-            _raw_data.append(_raw)
+            _return_data.append(_raw)
 
-        return _raw_data
+        return _return_data
 
     def collect_status(self, user, since, until):
         access_token=self._get_access_token(user)
@@ -47,7 +46,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         result=api.get_connections('me', 'statuses', limit=200, since=str(since), until=str(until),
             fields='id,message,likes.limit(500),comments.limit(500),sharedposts,updated_time')
 
-        _raw_data= []
+        _return_data= []
         for obj in result['data']:
             _raw = RawData()
             _raw.owner = user
@@ -62,20 +61,19 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 _raw.comment_count = len(obj['comments'])
             _raw.create_date = datetime.datetime.strptime(obj['updated_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
             _raw.original_id = obj['id']
-            _raw.save()
-            _raw_data.append(_raw)
+            _return_data.append(_raw)
 
-        return _raw_data
+        return _return_data
 
 
-    def collect_checkin(self,user,since,until):
+    def collect_checkin(self, user, since, until):
         access_token=self._get_access_token(user)
         api = facebook.GraphAPI(access_token)
         result=api.get_connections('me', 'checkins', limit=200, since=str(since), until=str(until),
             fields='id,place,likes.limit(500),comments.limit(500),created_time') #TODO hardcoded limits will go to config file
         provider = self.getProvider()
 
-        _raw_data= []
+        _return_data= []
         for obj in result['data']:
             _raw = RawData()
             _raw.owner = user
@@ -88,10 +86,9 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 _raw.comment_count = len(obj['comments'])
             _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
             _raw.original_id = obj['id']
-            _raw.save()
-            _raw_data.append(_raw)
+            _return_data.append(_raw)
 
-        return _raw_data
+        return _return_data
 
     def _get_access_token(self, user):
         #TODO obtain access token and return

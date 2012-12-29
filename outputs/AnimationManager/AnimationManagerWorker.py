@@ -1,10 +1,10 @@
-from Outputs.AnimationManager.ScenarioManager import ScenarioManagerWorker
+from Outputs.AnimationManager.ScenarioManager.ScenarioManagerWorker import ScenarioManagerWorker
 
 __author__ = 'goktan'
 
 from Outputs.BaseOutputWorker import BaseOutputWorker
 from DataManager.models import Momend, Theme,OutData
-from Outputs.AnimationManager.ThemeManager import ThemeManagerWorker
+from Outputs.AnimationManager.ThemeManager.ThemeManagerWorker import ThemeManagerWorker
 
 class DataCountException(Exception):
     PHOTO_TYPE = 0
@@ -30,7 +30,7 @@ class AnimationManagerWorker(BaseOutputWorker):
         if not theme:
             theme = Theme.objects.order_by('?')[0]
 
-        scenarioWorker = ScenarioManagerWorker.ScenarioManagerWorker()
+        scenarioWorker = ScenarioManagerWorker()
         prepared_scenario, duration, used_bg_count, used_photo_count, used_status_count, used_checkin_count = scenarioWorker.prepare_scenario(self.momend, duration, theme,scenario)
         try:
             self._validate_data_count(enriched_data, used_bg_count, used_photo_count, used_status_count, used_checkin_count)
@@ -38,9 +38,9 @@ class AnimationManagerWorker(BaseOutputWorker):
             print(e.message)
             return False
 
-        filled_scenario = self._fill_user_data(prepared_scenario['objects'],enriched_data)
+        filled_scenario = self._fill_user_data(prepared_scenario['objects'], enriched_data)
 
-        themeWorker = ThemeManagerWorker.ThemeManagerWorker(theme)
+        themeWorker = ThemeManagerWorker(theme)
         self.animation = themeWorker.apply_theme(filled_scenario)
         return self.animation
 
@@ -61,6 +61,7 @@ class AnimationManagerWorker(BaseOutputWorker):
         checkin_index = 0
         bg_index = 0
 
+        #TODO: CORRECT HERE WITH SWITCH CASE
         for level in scenario:
             for animation_object in level:
                 assert isinstance(animation_object,OutData)
