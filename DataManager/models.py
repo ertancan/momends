@@ -122,7 +122,7 @@ class OutData(BaseDataManagerModel):
         return str(self.owner_layer)+':'+str(self.theme)+'='+str(self.animation)
 
     def encode(self):
-        enc = model_to_dict(self,fields=['priority','selection_criteria','out_data'])
+        enc = model_to_dict(self,fields=['priority','selection_criteria','final_data_path'])
         enc['theme'] = self.theme.encode()
         enc['animation'] = self.animation.encode()
         return enc
@@ -186,11 +186,11 @@ class AnimationGroup(BaseDataManagerModel):
     }
     type = models.IntegerField(choices=[[ANIMATION_GROUP_TYPE[key],key] for key in ANIMATION_GROUP_TYPE.keys()])
 
-    needed_bg = models.IntegerField(default=0)
-    needed_music = models.IntegerField(default=0)
-    needed_photo = models.IntegerField(default=0)
-    needed_status = models.IntegerField(default=0)
-    needed_location = models.IntegerField(default=0)
+    needed_bg = models.IntegerField('Needed user background', default=0)
+    needed_music = models.IntegerField('Needed user music', default=0)
+    needed_photo = models.IntegerField('Needed user photo', default=0)
+    needed_status = models.IntegerField('Needed user status', default=0)
+    needed_location = models.IntegerField('Needed user location', default=0)
 
     def __unicode__(self):
         return str(self.name)+':'+str(self.scenario)+'='+str(self.duration)

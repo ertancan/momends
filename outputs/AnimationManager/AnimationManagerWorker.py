@@ -31,7 +31,10 @@ class AnimationManagerWorker(BaseOutputWorker):
             theme = Theme.objects.order_by('?')[0]
 
         scenarioWorker = ScenarioManagerWorker()
-        prepared_scenario, duration, used_bg_count, used_photo_count, used_status_count, used_checkin_count = scenarioWorker.prepare_scenario(self.momend, duration, theme,scenario)
+        prepared_scenario, duration, used_bg_count, used_photo_count, used_status_count, used_checkin_count =\
+        scenarioWorker.prepare_scenario(self.momend, duration, theme, scenario, max_photo=len(enriched_data['photo']),
+            max_status=len(enriched_data['status']), max_checkin=len(enriched_data['checkin']), max_bg=len(enriched_data['background']))
+        
         try:
             self._validate_data_count(enriched_data, used_bg_count, used_photo_count, used_status_count, used_checkin_count)
         except DataCountException, e:
