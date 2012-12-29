@@ -3,7 +3,8 @@ from Outputs.AnimationManager.ScenarioManager.ScenarioManagerWorker import Scena
 __author__ = 'goktan'
 
 from Outputs.BaseOutputWorker import BaseOutputWorker
-from DataManager.models import Momend, Theme,OutData
+from DataManager.models import Momend,OutData
+from Outputs.AnimationManager.models import Theme
 from Outputs.AnimationManager.ThemeManager.ThemeManagerWorker import ThemeManagerWorker
 
 class DataCountException(Exception):
@@ -34,7 +35,7 @@ class AnimationManagerWorker(BaseOutputWorker):
         prepared_scenario, duration, used_bg_count, used_photo_count, used_status_count, used_checkin_count =\
         scenarioWorker.prepare_scenario(self.momend, duration, theme, scenario, max_photo=len(enriched_data['photo']),
             max_status=len(enriched_data['status']), max_checkin=len(enriched_data['checkin']), max_bg=len(enriched_data['background']))
-        
+
         try:
             self._validate_data_count(enriched_data, used_bg_count, used_photo_count, used_status_count, used_checkin_count)
         except DataCountException, e:

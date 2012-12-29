@@ -1,5 +1,5 @@
 __author__ = 'ertan'
-from DataManager.models import ThemeData
+from Outputs.AnimationManager.models import ThemeData
 class ThemeManagerWorker:
     def __init__(self,theme):
         self.theme = theme
