@@ -113,7 +113,7 @@ class OutData(BaseDataManagerModel):
     theme = models.ForeignKey('Theme', null=True, blank=True)
 
     #Keeps the latest path or reference to the object
-    out_data = models.TextField(null=True, blank=True)
+    final_data_path = models.TextField(null=True, blank=True)
 
     #Animation Data
     animation = models.ForeignKey(CoreAnimationData, null=True, blank= True)

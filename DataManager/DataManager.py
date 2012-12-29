@@ -13,26 +13,28 @@ class DataManager:
     def create_momend(self, since, until, duration, #TODO check if dates has timezone information = tzinfo
                       inc_photo=True, inc_status=True, inc_checkin=True,
                       enrichment_method=None, theme=None, scenario=None):
-        raw_data = self.collect_user_data(since,until,inc_photo,inc_status,inc_checkin)
+        raw_data = self.collect_user_data(since, until, inc_photo, inc_status, inc_checkin)
         enriched_data = self.enrich_user_data(raw_data, enrichment_method)
         momend = Momend(owner=self.user, momend_start_date=since, momend_end_date=until)
         momend.save()
         animation_worker = AnimationManagerWorker(momend)
-        momend_animation = animation_worker.generate_output(enriched_data,duration,theme,scenario)
+        momend_animation = animation_worker.generate_output(enriched_data, duration, theme, scenario)
         return momend_animation
 
     def collect_user_data(self, since, until, inc_photo, inc_status, inc_checkin):
         _raw_data = []
         for obj in Provider.objects.all():
-            if getattr(self.user,obj.module_name.lower()+'_set').count()>0:
+            if getattr(self.user, obj.module_name.lower()+'_set').count()>0:
                 worker = self._instantiate_provider_worker(obj)
                 if inc_photo and issubclass(worker.__class__,BasePhotoProviderWorker):
-                    _raw_data = _raw_data + worker.collect_photo(self.user,since,until)
+                    _raw_data = _raw_data + worker.collect_photo(self.user, since, until)
                 if inc_status and issubclass(worker.__class__,BaseStatusProviderWorker):
-                    _raw_data = _raw_data + worker.collect_status(self.user,since,until)
+                    _raw_data = _raw_data + worker.collect_status(self.user, since, until)
                 if inc_checkin and issubclass(worker.__class__,BaseLocationProviderWorker):
-                    _raw_data = _raw_data + worker.collect_checkin(self.user,since,until)
-
+                    _raw_data = _raw_data + worker.collect_checkin(self.user, since, until)
+        #all incoming data shall be saved here instead of collection place
+        for obj in _raw_data:
+            obj.save()
 
         return _raw_data
 
