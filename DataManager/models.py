@@ -2,6 +2,7 @@ from django.db import models
 from datetime import datetime
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
+
 # Create your models here.
 class BaseDataManagerModel(models.Model):
     class Meta:
@@ -58,10 +59,12 @@ class RawData(BaseDataManagerModel):
     class Meta:
         verbose_name_plural = 'RawData'
         verbose_name = 'RawData'
+        unique_together = ("original_id", "provider")
+
     owner = models.ForeignKey(User)
 
     original_path = models.CharField(max_length=500) #original path of data if it exists
-    original_id = models.CharField(max_length=255) #original id of data represents the source id
+    original_id = models.CharField(max_length=255, db_index=True) #original id of data represents the source id
     data = models.TextField() #main data to use in momend
     title = models.CharField(max_length=255)
 
@@ -83,7 +86,7 @@ class RawData(BaseDataManagerModel):
     #TODO latitude,longitude etc.
 
     def __unicode__(self):
-        return str(self.owner)+'_'+str(self.provider)+'_'+str(self.original_id)
+        return str(self.owner) + '_' + str(self.provider) + '_' + str(self.original_id)
 
 class CoreAnimationData(BaseDataManagerModel):
     class Meta:
