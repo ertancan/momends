@@ -65,7 +65,7 @@ class AnimationManagerWorker(BaseOutputWorker):
         checkin_index = 0
         bg_index = 0
 
-        #TODO: CORRECT HERE WITH SWITCH CASE
+        #TODO: -- LIKE THEME DATA
         for level in scenario:
             for animation_object in level:
                 assert isinstance(animation_object,OutData)

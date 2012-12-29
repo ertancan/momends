@@ -13,3 +13,10 @@
     package_name: TwitterProvider
     module_name: TwitterProviderModule
     worker_name: TwitterProviderWorker
+
+- model: DataManager.ImageEnhancement
+  pk: 1
+  fields:
+    name: HighPass Filter
+    script_path: gaussian.sh
+    parameters: k high -m 10

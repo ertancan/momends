@@ -4,12 +4,41 @@ from models import *
 from ExternalProviders.FacebookProvider.models import FacebookProviderModule
 from ExternalProviders.TwitterProvider.models import TwitterProviderModule
 
-admin.site.register(Momend)
-admin.site.register(RawData)
-admin.site.register(AnimationLayer)
-admin.site.register(CoreAnimationData)
-admin.site.register(Provider)
-admin.site.register(OutData)
+class MomendAdmin(admin.ModelAdmin):
+    list_display = ('owner', 'create_date')
+    pass
 
-admin.site.register(FacebookProviderModule)
-admin.site.register(TwitterProviderModule)
+class RawDataAdmin(admin.ModelAdmin):
+    list_display = ('owner', 'type', 'provider', 'original_path',
+                    'original_id', 'fetch_date', 'data', 'title')
+    pass
+
+class AnimationLayerAdmin(admin.ModelAdmin):
+    pass
+
+class CoreAnimationDataAdmin(admin.ModelAdmin):
+    pass
+
+class ProviderAdmin(admin.ModelAdmin):
+    pass
+
+class OutDataAdmin(admin.ModelAdmin):
+    pass
+
+class FacebookProviderModuleAdmin(admin.ModelAdmin):
+    pass
+
+class TwitterProviderModuleAdmin(admin.ModelAdmin):
+    pass
+
+admin.site.register(Momend, MomendAdmin)
+admin.site.register(RawData, RawDataAdmin)
+admin.site.register(AnimationLayer, AnimationLayerAdmin)
+admin.site.register(CoreAnimationData, CoreAnimationDataAdmin)
+admin.site.register(Provider, ProviderAdmin)
+admin.site.register(OutData, OutDataAdmin)
+
+admin.site.register(FacebookProviderModule, FacebookProviderModuleAdmin)
+admin.site.register(TwitterProviderModule, TwitterProviderModuleAdmin)
+
+

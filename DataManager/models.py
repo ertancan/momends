@@ -2,6 +2,7 @@ from django.db import models
 from datetime import datetime
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
+
 # Create your models here.
 class BaseDataManagerModel(models.Model):
     class Meta:
@@ -55,11 +56,17 @@ class Provider(BaseDataManagerModel):
         return str(self.name)
 
 class RawData(BaseDataManagerModel):
+    class Meta:
+        verbose_name_plural = 'RawData'
+        verbose_name = 'RawData'
+        unique_together = ("original_id", "provider")
+
     owner = models.ForeignKey(User)
 
     original_path = models.CharField(max_length=500) #original path of data if it exists
-    original_id = models.CharField(max_length=255) #original id of data represents the source id
+    original_id = models.CharField(max_length=255, db_index=True) #original id of data represents the source id
     data = models.TextField() #main data to use in momend
+    title = models.CharField(max_length=255)
 
     DATA_TYPE= {'Photo': 0,
                 'Status': 1,
@@ -79,16 +86,19 @@ class RawData(BaseDataManagerModel):
     #TODO latitude,longitude etc.
 
     def __unicode__(self):
-        return str(self.owner)+':'+str(self.provider)+'='+str(self.original_id)
+        return str(self.owner) + '_' + str(self.provider) + '_' + str(self.original_id)
 
 class CoreAnimationData(BaseDataManagerModel):
+    class Meta:
+        verbose_name_plural = 'CoreAnimationData'
+        verbose_name = 'CoreAnimationData'
+
     USER_DATA_TYPE = [
         '{{USER_PHOTO}}', '{{NEXT_USER_PHOTO}}',
         '{{USER_STATUS}}', '{{NEXT_USER_STATUS}}',
         '{{USER_CHECKIN}}', '{{NEXT_USER_CHECKIN}}',
         '{{USER_BACKGROUND}}', '{{NEXT_USER_BACKGROUND}}'
     ]
-
     group = models.ForeignKey('AnimationGroup')
     used_object_type = models.CharField(max_length=255,null=True,blank=True) #What kind of object? i.e., USER_PHOTO,THEME_BG
     #Consistent with javascript interpreter
@@ -110,6 +120,9 @@ class CoreAnimationData(BaseDataManagerModel):
         return enc
 
 class OutData(BaseDataManagerModel):
+    class Meta:
+        verbose_name_plural = 'OutData'
+        verbose_name = 'OutData'
     owner_layer = models.ForeignKey(AnimationLayer)
     raw = models.ForeignKey(RawData,null=True, blank=True) #If created by enriching or enhancing a raw data
 
