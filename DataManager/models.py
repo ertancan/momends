@@ -82,6 +82,13 @@ class RawData(BaseDataManagerModel):
         return str(self.owner)+':'+str(self.provider)+'='+str(self.original_id)
 
 class CoreAnimationData(BaseDataManagerModel):
+    USER_DATA_TYPE = [
+        '{{USER_PHOTO}}', '{{NEXT_USER_PHOTO}}',
+        '{{USER_STATUS}}', '{{NEXT_USER_STATUS}}',
+        '{{USER_CHECKIN}}', '{{NEXT_USER_CHECKIN}}',
+        '{{USER_BACKGROUND}}', '{{NEXT_USER_BACKGROUND}}'
+    ]
+
     group = models.ForeignKey('AnimationGroup')
     used_object_type = models.CharField(max_length=255,null=True,blank=True) #What kind of object? i.e., USER_PHOTO,THEME_BG
     #Consistent with javascript interpreter

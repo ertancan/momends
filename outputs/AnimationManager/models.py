@@ -5,7 +5,8 @@ class ImageEnhancement(BaseDataManagerModel):
     name = models.CharField(max_length=255)
 
     script_path = models.TextField()
-    parameters = models.TextField()
+    parameters = models.TextField(null=True, blank=True)
+    example_path = models.TextField(null=True, blank=True)
 
     def __unicode__(self):
         return self.name
