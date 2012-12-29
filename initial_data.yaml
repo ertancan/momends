@@ -19,4 +19,4 @@
   fields:
     name: HighPass Filter
     script_path: gaussian.sh
-    parameters: k high -m 10
+    parameters: -k high -m 10

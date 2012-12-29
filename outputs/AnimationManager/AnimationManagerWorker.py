@@ -45,7 +45,7 @@ class AnimationManagerWorker(BaseOutputWorker):
         filled_scenario = self._fill_user_data(prepared_scenario['objects'], enriched_data)
 
         themeWorker = ThemeManagerWorker(theme)
-        self.animation = themeWorker.apply_theme(filled_scenario)
+        self.animation = themeWorker.apply_theme(filled_scenario,file_prefix=str(self.momend.pk))
         return self.animation
 
     def _validate_data_count(self,enriched_data, used_bg_count, used_photo_count, used_status_count, used_checkin_count):
