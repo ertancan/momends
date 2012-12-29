@@ -66,7 +66,7 @@ class RawData(BaseDataManagerModel):
                 'Checkin': 2}
     type = models.IntegerField(choices=[[DATA_TYPE[key],key] for key in DATA_TYPE.keys()])
 
-    source = models.ForeignKey(Provider)
+    provider = models.ForeignKey(Provider)
 
     create_date = models.DateTimeField(default = datetime.now)
     fetch_date = models.DateTimeField(auto_now_add = True)
@@ -78,7 +78,7 @@ class RawData(BaseDataManagerModel):
     #TODO latitude,longitude etc.
 
     def __unicode__(self):
-        return str(self.owner)+':'+str(self.source)+'='+str(self.original_id)
+        return str(self.owner)+':'+str(self.provider)+'='+str(self.original_id)
 
 class CoreAnimationData(BaseDataManagerModel):
     group = models.ForeignKey('AnimationGroup')
