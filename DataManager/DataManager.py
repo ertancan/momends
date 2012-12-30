@@ -18,8 +18,8 @@ class DataManager:
         momend = Momend(owner=self.user, name=name, momend_start_date=since, momend_end_date=until, privacy=privacy)
         momend.save()
         animation_worker = AnimationManagerWorker(momend)
-        momend_animation = animation_worker.generate_output(enriched_data, duration, theme, scenario)
-        return momend_animation
+        animation_worker.generate_output(enriched_data, duration, theme, scenario)
+        return momend.id
 
     def collect_user_data(self, since, until, inc_photo, inc_status, inc_checkin):
         _raw_data = []
