@@ -2,7 +2,7 @@ from django.db import models
 from datetime import datetime
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
-
+from django.utils import simplejson
 # Create your models here.
 class BaseDataManagerModel(models.Model):
     class Meta:
@@ -28,6 +28,9 @@ class Momend(BaseDataManagerModel):
             layers.append(layer.encode())
         enc['animation_layers'] = layers
         return enc
+
+    def toJSON(self):
+        return simplejson.dumps(self.encode(), default=lambda obj: obj.isoformat() if isinstance(obj, datetime) else None)
 
 class AnimationLayer(BaseDataManagerModel):
     momend = models.ForeignKey(Momend)
