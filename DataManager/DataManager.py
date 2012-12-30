@@ -4,11 +4,11 @@ import importlib
 from DataEnrich.EnrichDataWorker import EnrichDataWorker
 from ExternalProviders.BaseProviderWorker import BasePhotoProviderWorker,BaseStatusProviderWorker,BaseLocationProviderWorker
 from Outputs.AnimationManager.AnimationManagerWorker import AnimationManagerWorker
-from models import RawData,Momend
+from models import Momend
+
 class DataManager:
     def __init__(self, user):
         self.user = user
-
 
     def create_momend(self, since, until, duration, #TODO check if dates has timezone information = tzinfo
                       inc_photo=True, inc_status=True, inc_checkin=True,

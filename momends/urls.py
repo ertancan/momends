@@ -14,4 +14,7 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
+
+    #enable DataManager views as momend's main views
+    url(r'^momends/', include('WebManager.urls',namespace="momends")),
 )

@@ -17,6 +17,11 @@ class Momend(BaseDataManagerModel):
     momend_end_date = models.DateTimeField()
 
     #TODO stats
+    PRIVACY_CHOICES = (
+        ('1', 'Private'),
+        ('2', 'Public'),
+        )
+    privacy = models.IntegerField(choices=PRIVACY_CHOICES, default=1)
 
     def __unicode__(self):
         return str(self.owner) + ':'+str(self.momend_start_date)+' - '+str(self.momend_end_date)

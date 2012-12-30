@@ -107,7 +107,6 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
 
     def _fetch_photo(self, url, name):
         _file_path = settings.COLLECTED_FILE_PATH + name +'.jpg'
-
         _url = urllib2.urlopen(url)
         with open(_file_path, "wb") as _local_file:
             _local_file.write(_url.read())
