@@ -2,5 +2,3 @@ venv/
 .idea/
 *.pyc
 *.iml
-collected/*
-enhanced/*

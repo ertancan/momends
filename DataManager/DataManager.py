@@ -10,12 +10,12 @@ class DataManager:
     def __init__(self, user):
         self.user = user
 
-    def create_momend(self, since, until, duration, #TODO check if dates has timezone information = tzinfo
-                      inc_photo=True, inc_status=True, inc_checkin=True,
+    def create_momend(self, name, since, until, duration, #TODO check if dates has timezone information = tzinfo
+                      privacy=Momend.PRIVACY_CHOICES['Private'], inc_photo=True, inc_status=True, inc_checkin=True,
                       enrichment_method=None, theme=None, scenario=None):
         raw_data = self.collect_user_data(since, until, inc_photo, inc_status, inc_checkin)
         enriched_data = self.enrich_user_data(raw_data, enrichment_method)
-        momend = Momend(owner=self.user, momend_start_date=since, momend_end_date=until)
+        momend = Momend(owner=self.user, name=name, momend_start_date=since, momend_end_date=until, privacy=privacy)
         momend.save()
         animation_worker = AnimationManagerWorker(momend)
         momend_animation = animation_worker.generate_output(enriched_data, duration, theme, scenario)

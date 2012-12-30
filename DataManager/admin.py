@@ -5,13 +5,13 @@ from ExternalProviders.FacebookProvider.models import FacebookProviderModule
 from ExternalProviders.TwitterProvider.models import TwitterProviderModule
 
 class MomendAdmin(admin.ModelAdmin):
-    list_display = ('owner', 'create_date')
-    pass
+    list_display = ('owner', 'name', 'create_date',)
+
 
 class RawDataAdmin(admin.ModelAdmin):
     list_display = ('owner', 'type', 'provider', 'original_path',
                     'original_id', 'fetch_date', 'data', 'title')
-    pass
+
 
 class AnimationLayerAdmin(admin.ModelAdmin):
     pass

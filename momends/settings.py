@@ -153,7 +153,8 @@ LOGGING = {
     }
 }
 
-COLLECTED_FILE_PATH = 'collected/'
-ENHANCED_FILE_PATH = 'enhanced/'
+ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scripts/'
+COLLECTED_FILE_PATH = 'userdata/collected/'
+ENHANCED_FILE_PATH = 'userdata/enhanced/'
 TWITTER_CONSUMER_KEY = 'Od8344pHmAcVr4S2Zq0Nw'
 TWITTER_CONSUMER_SECRET = 'NO0b66jiMCroLZNZtAFOi0TzvE7M4pH1vBvCzrCRQ'

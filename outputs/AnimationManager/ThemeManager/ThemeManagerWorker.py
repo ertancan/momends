@@ -3,7 +3,7 @@ from Outputs.AnimationManager.models import ThemeData,ImageEnhancement
 from django.conf import settings
 import subprocess,os
 class ThemeManagerWorker:
-    ENHANCEMENT_SCRIPT_DIR = 'enhancement_scripts/'
+
     def __init__(self,theme):
         self.theme = theme
 
@@ -53,7 +53,7 @@ class ThemeManagerWorker:
         image_enhancements_str = self.theme.image_enhancement_functions
         if image_enhancements_str == '':
             return
-        os.environ['PATH'] += ':/usr/local/bin' #For mac os
+        os.environ['PATH'] += ':/usr/local/bin' #TODO: remove this on prod For mac os
 
         image_enhancements_ids =image_enhancements_str.split(',')
 
@@ -75,16 +75,13 @@ class ThemeManagerWorker:
                     name_part = last_filename[:dot_index]
                     ext_part = last_filename[dot_index:]
 
-                    try:
-                        name_part.index(settings.COLLECTED_FILE_PATH) #Exception if not found
+                    if settings.COLLECTED_FILE_PATH in name_part:
                         name_part = name_part[len(settings.COLLECTED_FILE_PATH):]
-                    except ValueError:
-                        pass
 
                     i = 1
                     for enhance in enhancement_objects:
                         enh_out_filename = settings.ENHANCED_FILE_PATH + name_part +'_' + file_prefix + '_enh'+str(i)+ ext_part #name file as filename_enh1.ext etc.
-                        params =ThemeManagerWorker.ENHANCEMENT_SCRIPT_DIR+enhance.script_path +' '
+                        params =settings.ENHANCEMENT_SCRIPT_DIR+enhance.script_path +' '
                         params += enhance.parameters
                         params += ' '
                         params += last_filename

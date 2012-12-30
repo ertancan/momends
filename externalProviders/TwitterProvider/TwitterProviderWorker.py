@@ -23,7 +23,7 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
             if len(result) == 0:
                 return _return_data
             for tweet in result:
-                if since<tweet.created_at<until:
+                if since<tweet.created_at.replace(tzinfo=pytz.UTC)<until:
 
                     if not RawData.objects.filter(original_id=tweet.id_str).filter(provider=provider).exists():
                         _raw = RawData(share_count=tweet.retweet_count)
@@ -39,7 +39,7 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
                         _raw = RawData.objects.filter(original_id=tweet.id_str).get(provider=provider)
                         print _raw.original_id + ' found in DB'
                     _return_data.append(_raw)
-                elif tweet.created_at<since:
+                elif tweet.created_at.replace(tzinfo=pytz.UTC)<since:
                     return _return_data
         return _return_data
     def _get_access_token_and_secret(self, user):

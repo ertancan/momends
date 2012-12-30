@@ -12,16 +12,17 @@ class BaseDataManagerModel(models.Model):
 class Momend(BaseDataManagerModel):
     owner = models.ForeignKey(User)
     create_date = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(null=False, blank=False, max_length=255)
 
     momend_start_date = models.DateTimeField()
     momend_end_date = models.DateTimeField()
 
     #TODO stats
-    PRIVACY_CHOICES = (
-        ('1', 'Private'),
-        ('2', 'Public'),
-        )
-    privacy = models.IntegerField(choices=PRIVACY_CHOICES, default=1)
+    PRIVACY_CHOICES = {
+        'Private' : 0,
+        'Public': 1,
+        }
+    privacy = models.IntegerField(choices=[[PRIVACY_CHOICES[key],key] for key in PRIVACY_CHOICES.keys()] , default=0)
 
     def __unicode__(self):
         return str(self.owner) + ':'+str(self.momend_start_date)+' - '+str(self.momend_end_date)
