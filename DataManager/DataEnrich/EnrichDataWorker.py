@@ -15,7 +15,14 @@ class EnrichDataWorker: #TODO keep this as base class and introduce different wo
         for _raw in raw_data_arr:
             tmp = TemporaryEnrichedObjectHolder(raw=_raw, criteria='Random', priority=random.randint(1,100))
             result[_raw.type].append(tmp)
-        return result
+        return self._sort_by_priority(result)
+
+    def _sort_by_priority(self,enriched_data):
+        sorted_data = []
+        for type_arr in enriched_data:
+            print type_arr
+            sorted_data.append(sorted(type_arr, key=lambda obj: obj.priority, reverse=True))
+        return sorted_data
 
 class TemporaryEnrichedObjectHolder(object):
     def __init__(self, raw, criteria, priority):
