@@ -3,7 +3,7 @@ from Outputs.AnimationManager.ScenarioManager.ScenarioManagerWorker import Scena
 __author__ = 'goktan'
 
 from Outputs.BaseOutputWorker import BaseOutputWorker
-from DataManager.models import Momend,OutData
+from DataManager.models import Momend,RawData,CoreAnimationData
 from Outputs.AnimationManager.models import Theme
 from Outputs.AnimationManager.ThemeManager.ThemeManagerWorker import ThemeManagerWorker
 
@@ -31,10 +31,11 @@ class AnimationManagerWorker(BaseOutputWorker):
         if not theme:
             theme = Theme.objects.order_by('?')[0]
 
+        types = RawData.DATA_TYPE
         scenarioWorker = ScenarioManagerWorker()
         prepared_scenario, duration, used_bg_count, used_photo_count, used_status_count, used_checkin_count =\
-        scenarioWorker.prepare_scenario(self.momend, duration, theme, scenario, max_photo=len(enriched_data['photo']),
-            max_status=len(enriched_data['status']), max_checkin=len(enriched_data['checkin']), max_bg=len(enriched_data['background']))
+        scenarioWorker.prepare_scenario(self.momend, duration, theme, scenario, max_photo=len(enriched_data[types['Photo']]),
+            max_status=len(enriched_data[types['Status']]), max_checkin=len(enriched_data[types['Checkin']]), max_bg=len(enriched_data[types['Background']]))
 
         try:
             self._validate_data_count(enriched_data, used_bg_count, used_photo_count, used_status_count, used_checkin_count)
@@ -49,53 +50,36 @@ class AnimationManagerWorker(BaseOutputWorker):
         return self.animation
 
     def _validate_data_count(self,enriched_data, used_bg_count, used_photo_count, used_status_count, used_checkin_count):
-        if len(enriched_data['photo']) < used_photo_count:
+        types = RawData.DATA_TYPE
+        if len(enriched_data[types['Photo']]) < used_photo_count:
             raise DataCountException(DataCountException.PHOTO_TYPE)
-        if len(enriched_data['status']) < used_status_count:
+        if len(enriched_data[types['Status']]) < used_status_count:
             raise DataCountException(DataCountException.STATUS_TYPE)
-        if len(enriched_data['checkin']) < used_checkin_count:
+        if len(enriched_data[types['Checkin']]) < used_checkin_count:
             raise DataCountException(DataCountException.CHECKIN_TYPE)
-        if len(enriched_data['background']) < used_bg_count:
+        if len(enriched_data[types['Background']]) < used_bg_count:
             raise DataCountException(DataCountException.BACKGROUND_TYPE)
         return True
 
     def _fill_user_data(self,scenario,enriched_data):
-        photo_index = 0
-        status_index = 0
-        checkin_index = 0
-        bg_index = 0
-
-        #TODO: -- LIKE THEME DATA
-        for level in scenario:
-            for animation_object in level:
-                assert isinstance(animation_object,OutData)
-                used_enriched_object = None
-                object_type = animation_object.animation.used_object_type
-                if object_type == '{{USER_PHOTO}}' or object_type == '{{NEXT_USER_PHOTO}}':
-                    if len(object_type) > 15: #Not to compare strings again (This is NEXT_USER_PHOTO)
-                        photo_index += 1
-                    used_enriched_object = enriched_data['photo'][photo_index]
-                if object_type == '{{USER_STATUS}}' or object_type == '{{NEXT_USER_STATUS}}':
-                    if len(object_type) >17:
-                        status_index += 1
-                    used_enriched_object = enriched_data['status'][status_index]
-                if object_type == '{{USER_CHECKIN}}' or object_type == '{{NEXT_USER_CHECKIN}}':
-                    if len(object_type) > 18:
-                        checkin_index += 1
-                    used_enriched_object = enriched_data['checkin'][checkin_index]
-                if object_type == '{{USER_BACKGROUND}}' or object_type == '{{NEXT_USER_BACKGROUND}}':
-                    if len(object_type) > 21:
-                        bg_index += 1
-                    used_enriched_object = enriched_data['background'][bg_index]
-
-                if used_enriched_object:
-                    animation_object.raw = used_enriched_object.raw
-                    animation_object.selection_criteria = used_enriched_object.criteria
-                    animation_object.priority = used_enriched_object.priority
-
-                animation_object.save() #Outside of the if, because they aren't saved before
-
-        return scenario
+        keywords = CoreAnimationData.USER_DATA_TYPE
+        current_indexes = [-1 for i in range(1,len(keywords)/2)] # For -1 array?
+        for object_layer in scenario:
+            for outData in object_layer:
+                used_type = outData.animation.used_object_type
+                if used_type in keywords:
+                    index = keywords.index(used_type)
+                    obj_type = index/2
+                    should_increase = index % 2 == 1
+                    if (should_increase or current_indexes[obj_type] == -1) and\
+                       current_indexes[obj_type] < len(enriched_data[obj_type]) -1: #No one wanted a data in this type before. Actually a misuse.
+                        current_indexes[obj_type] += 1
+                    used_object = enriched_data[obj_type][current_indexes[obj_type]]
+                    outData.raw = used_object.raw
+                    outData.selection_criteria = used_object.criteria
+                    outData.priority = used_object.priority
+                outData.save()
+        return  scenario
 
     def save_output(self): #TODO save to db
         pass

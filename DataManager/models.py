@@ -79,7 +79,9 @@ class RawData(BaseDataManagerModel):
 
     DATA_TYPE= {'Photo': 0,
                 'Status': 1,
-                'Checkin': 2}
+                'Checkin': 2,
+                'Background': 3, #NOT implemented yet, put here to be consistent with CoreAnimationData
+    }
     type = models.IntegerField(choices=[[DATA_TYPE[key],key] for key in DATA_TYPE.keys()])
 
     provider = models.ForeignKey(Provider)

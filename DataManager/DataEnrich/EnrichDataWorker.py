@@ -1,6 +1,6 @@
 __author__ = 'goktan'
 import random
-from DataManager.models import RawData
+from DataManager.models import RawData,CoreAnimationData
 class EnrichDataWorker: #TODO keep this as base class and introduce different workers
 
     def __init__(self, user):
@@ -8,15 +8,13 @@ class EnrichDataWorker: #TODO keep this as base class and introduce different wo
         self.user = user
 
     def enrich_data(self, raw_data_arr): #TODO enrich? :) #TODO Background
-        result = {'photo': [], 'status': [], 'checkin': [], 'background': []}
+        result = []
+        for i in range(0,len(CoreAnimationData.USER_DATA_TYPE)/2):
+            result.append([])
+
         for _raw in raw_data_arr:
             tmp = TemporaryEnrichedObjectHolder(raw=_raw, criteria='Random', priority=random.randint(1,100))
-            if _raw.type == RawData.DATA_TYPE['Photo']:
-                result['photo'].append(tmp)
-            elif _raw.type == RawData.DATA_TYPE['Status']:
-                result['status'].append(tmp)
-            elif _raw.type == RawData.DATA_TYPE['Checkin']:
-                result['checkin'].append(tmp)
+            result[_raw.type].append(tmp)
         return result
 
 class TemporaryEnrichedObjectHolder(object):

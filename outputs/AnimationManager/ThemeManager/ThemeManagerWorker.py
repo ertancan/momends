@@ -67,7 +67,9 @@ class ThemeManagerWorker:
                 if outData.animation.used_object_type in ['{{USER_PHOTO}}','{{NEXT_USER_PHOTO}}']: #TODO should we apply enhancement on background, too?
                     raw_filename= outData.raw.data
                     if raw_filename in applied_objects: #Don't apply enhancement on the same object twice
+                        print 'Image already enhanced'
                         outData.final_data_path = applied_objects[raw_filename]
+                        outData.save()
                         continue
 
                     last_filename = raw_filename
