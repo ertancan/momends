@@ -1,1 +1,33 @@
-{{ momend.toJSON }}
+{% extends "MainSite.html" %}
+
+{% load url from future %}
+
+{% block include %}
+<link href="{{ STATIC_URL }}/momend_style.css" rel="stylesheet" type="text/css" />
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="{{ STATIC_URL }}/animation.js"></script>
+<script src="{{ STATIC_URL }}/momend.js"></script>
+{% endblock include %}
+
+{% block scripts %}
+
+<body onload="init()">
+
+<script type="text/javascript">
+    function fetch_momend_data(){
+        $.getJSON( 'http://localhost:8000/momends/get/9/', function(data) {
+            momend_data = data;
+            momend_arrived();
+        });
+    }
+    function init(){
+        fetch_momend_data()
+    }
+</script>
+{% endblock scripts %}
+
+{% block content %}
+
+    <div class="scene"></div>
+
+{% endblock content %}

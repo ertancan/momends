@@ -1,14 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Momend create & Homepage</title>
-</head>
-<body>
+{% extends "MainSite.html" %}
+
+{% block content %}
 
 <form action="" method="post">{% csrf_token %}
     {{ form.as_p }}
     <input type="submit" value="Submit" />
 </form>
 
-</body>
-</html>
+{% endblock content %}

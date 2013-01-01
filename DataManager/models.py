@@ -80,7 +80,8 @@ class RawData(BaseDataManagerModel):
     DATA_TYPE= {'Photo': 0,
                 'Status': 1,
                 'Checkin': 2,
-                'Background': 3, #NOT implemented yet, put here to be consistent with CoreAnimationData
+                'Background': 3,
+                'Music' : 4, #NOT implemented yet, put here to be consistent with CoreAnimationData
     }
     type = models.IntegerField(choices=[[DATA_TYPE[key],key] for key in DATA_TYPE.keys()])
 
@@ -109,6 +110,7 @@ class CoreAnimationData(BaseDataManagerModel):
         '{{USER_STATUS}}', '{{NEXT_USER_STATUS}}',
         '{{USER_CHECKIN}}', '{{NEXT_USER_CHECKIN}}',
         '{{USER_BACKGROUND}}', '{{NEXT_USER_BACKGROUND}}'
+        '{{USER_MUSIC}}', '{{NEXT_USER_MUSIC}}'
     ]
     group = models.ForeignKey('AnimationGroup')
     used_object_type = models.CharField(max_length=255,null=True,blank=True) #What kind of object? i.e., USER_PHOTO,THEME_BG
