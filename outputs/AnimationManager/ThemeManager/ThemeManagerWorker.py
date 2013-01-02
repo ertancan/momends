@@ -48,7 +48,7 @@ class ThemeManagerWorker:
         :return: outData
         """
         rand_enhancement = self.theme.image_enhancement_groups.order_by('?')[0]
-        if not rand_enhancement:
+        if not rand_enhancement:    #TODO set final_data_path
             return outdata
 
         if outdata.animation.used_object_type in ['{{USER_PHOTO}}','{{NEXT_USER_PHOTO}}']: #TODO should we apply enhancement on background, too?
