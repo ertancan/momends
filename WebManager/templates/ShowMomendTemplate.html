@@ -8,14 +8,19 @@
 <script src="{{ STATIC_URL }}/animation.js"></script>
 <script src="{{ STATIC_URL }}/momend.js"></script>
 {% endblock include %}
+{% block content %}
+<body onload="init()">
+
+    <div class="scene"></div>
+
+{% endblock content %}
 
 {% block scripts %}
 
-<body onload="init()">
 
 <script type="text/javascript">
     function fetch_momend_data(){
-        $.getJSON( 'http://localhost:8000/momends/get/9/', function(data) {
+        $.getJSON( '../../get/9/', function(data) {
             momend_data = data;
             momend_arrived();
         });
@@ -26,8 +31,3 @@
 </script>
 {% endblock scripts %}
 
-{% block content %}
-
-    <div class="scene"></div>
-
-{% endblock content %}
