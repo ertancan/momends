@@ -11,10 +11,18 @@ class ImageEnhancement(BaseDataManagerModel):
     def __unicode__(self):
         return self.name
 
+class ImageEnhancementGroup(BaseDataManagerModel):
+    name = models.CharField(max_length=255)
+    image_enhancement_functions = models.CommaSeparatedIntegerField(max_length=255, null=True, blank=True)
+
+    def __unicode__(self):
+        return self.name+':'+str(self.image_enhancement_functions)
+
+
 class Theme(BaseDataManagerModel):
     name = models.CharField(max_length=255)
 
-    image_enhancement_functions = models.CommaSeparatedIntegerField(max_length=255, null=True, blank=True)
+    image_enhancement_groups = models.ManyToManyField(ImageEnhancementGroup)
 
     def __unicode__(self):
         return str(self.name)
@@ -36,12 +44,12 @@ class ThemeData(BaseDataManagerModel):
         'Font': 3,
         'Music': 4,
         }
-    THEME_DATA_TYPE_KEYWORDS = [ #Every data type has 2 keywords, 1st latest data, 2nd next data #!!DO NOT BREAK THE ORDER
-                                 '{{THEME_BG}}','{{NEXT_THEME_BG}}', #!!2 is necessary for all types even though you won't use it
-                                 '{{THEME_FRAME}}','{{NEXT_THEME_FRAME}}',
-                                 '{{THEME_STUB}}','{{NEXT_THEME_STUB}}',
-                                 '{{THEME_FONT}}','{{NEXT_THEME_FONT}}',
-                                 '{{THEME_MUSIC}}','{{NEXT_THEME_MUSIC}}',
+    THEME_DATA_TYPE_KEYWORDS = [ #Every data type has 2 keywords, 1st latest data, 2nd next data, 3rd random #!!DO NOT BREAK THE ORDER
+                                 '{{THEME_BG}}','{{NEXT_THEME_BG}}','{{RAND_THEME_BG}}', #!!3 is necessary for all types even though you won't use it
+                                 '{{THEME_FRAME}}','{{NEXT_THEME_FRAME}}', '{{RAND_THEME_FRAME}}',
+                                 '{{THEME_STUB}}','{{NEXT_THEME_STUB}}', '{{RAND_THEME_STUB}}',
+                                 '{{THEME_FONT}}','{{NEXT_THEME_FONT}}', '{{RAND_THEME_FONT}}',
+                                 '{{THEME_MUSIC}}','{{NEXT_THEME_MUSIC}}', '{{RAND_THEME_MUSIC}}',
                                  ]
     type = models.IntegerField(choices=[[THEME_DATA_TYPE[key],key] for key in THEME_DATA_TYPE.keys()])
     data_path = models.CharField(max_length=255)

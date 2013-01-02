@@ -13,11 +13,15 @@ class ThemeDataAdmin(admin.ModelAdmin):
 class ImageEnhancementAdmin(admin.ModelAdmin):
     pass
 
+class ImageEnhancementGroupAdmin(admin.ModelAdmin):
+    pass
+
 class ScenarioAdmin(admin.ModelAdmin):
     pass
 
-admin.site.register(AnimationGroup)
-admin.site.register(Theme)
-admin.site.register(ThemeData)
-admin.site.register(ImageEnhancement)
-admin.site.register(Scenario)
+admin.site.register(AnimationGroup,AnimationGroupAdmin)
+admin.site.register(Theme,ThemeAdmin)
+admin.site.register(ThemeData,ThemeDataAdmin)
+admin.site.register(ImageEnhancement,ImageEnhancementAdmin)
+admin.site.register(ImageEnhancementGroup,ImageEnhancementGroupAdmin)
+admin.site.register(Scenario,ScenarioAdmin)

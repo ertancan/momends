@@ -44,10 +44,9 @@ class AnimationManagerWorker(BaseOutputWorker):
             return False
 
         filled_scenario = self._fill_user_data(prepared_scenario['objects'], enriched_data)
+        self._apply_theme(filled_scenario,theme,str(self.momend.pk))
 
-        themeWorker = ThemeManagerWorker(theme)
-        self.animation = themeWorker.apply_theme(filled_scenario,file_prefix=str(self.momend.pk))
-        return self.animation
+        return filled_scenario
 
     def _validate_data_count(self,enriched_data, used_bg_count, used_photo_count, used_status_count, used_checkin_count):
         types = RawData.DATA_TYPE
@@ -63,7 +62,7 @@ class AnimationManagerWorker(BaseOutputWorker):
 
     def _fill_user_data(self,scenario,enriched_data):
         keywords = CoreAnimationData.USER_DATA_TYPE
-        current_indexes = [-1 for i in range(1,len(keywords)/2)] # For -1 array?
+        current_indexes = [-1 for i in range(0,len(keywords)/2)] # For -1 array?
         for object_layer in scenario:
             for outData in object_layer:
                 used_type = outData.animation.used_object_type
@@ -80,6 +79,13 @@ class AnimationManagerWorker(BaseOutputWorker):
                     outData.priority = used_object.priority
                 outData.save()
         return  scenario
+
+    def _apply_theme(self, scenario_layers, theme, prefix):
+        themeWorker = ThemeManagerWorker(theme)
+        for animation_layer in scenario_layers:
+            for outdata in animation_layer:
+                themeWorker.apply_theme(outdata,file_prefix=prefix)
+
 
     def save_output(self): #TODO save to db
         pass
