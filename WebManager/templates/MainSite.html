@@ -1,0 +1,36 @@
+{% load url from future %}
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+
+    <title>{% block title %} Momends {% endblock title %}</title>
+
+    {% block include %}
+
+    {% endblock include %}
+
+    {% block scripts %}
+
+    {% endblock scripts %}
+
+</head>
+
+<body>
+
+    {% block heading %}
+        <!--upper part of the site-->
+    {% endblock heading %}
+
+    {% block content %}
+
+                <!--> nothing on here, just template <-->
+    {% endblock content%}
+
+    {% block footer %}
+        <!--here comes footer-->
+    {% endblock footer %}
+
+</body>
+</html>

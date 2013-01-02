@@ -14,3 +14,8 @@ class CreateMomendForm(forms.Form):
         input_formats=['%d %b, %Y'], initial=date.today())
     privacy_type = forms.ChoiceField(choices=[[Momend.PRIVACY_CHOICES[key],key]
                                               for key in Momend.PRIVACY_CHOICES.keys()])
+    THEME_CHOICES = {
+        'Theme0' : 0,
+        'Theme1': 1,
+    }
+    momend_theme = forms.ChoiceField(choices=[[THEME_CHOICES[key],key] for key in THEME_CHOICES.keys()] )
