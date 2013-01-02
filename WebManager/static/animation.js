@@ -4,6 +4,7 @@ var queueOnAction;
 var currentAnimation;
 var _layerWaitQueue;
 var _layerBreakPointWaitQueue;
+MUSIC_ANIMATION_INTERVAL = 200;
 function __generateQueues(_level){
     animationQueue=new Array();
     finishedAnimationQueue=new Array();
@@ -69,8 +70,13 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
     if(typeof _animation['triggerNext']!=='undefined'){
         triggerNext=_animation['triggerNext'];
     }
+
     var _type=_animation['type'];
     var _obj=_node['object'];
+    if('duration' in _animation){
+        _duration=_animation['duration'];
+    }
+
     console.dir(_obj)
     if(_type==='animation'){
         var _duration=1;
@@ -81,9 +87,6 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
                 }
             }
             _obj.css(_animation['pre']);
-        }
-        if('duration' in _animation){
-            _duration=_animation['duration'];
         }
         for(key in _animation['anim']){
             if(typeof _animation['anim'][key] === 'function'){
@@ -131,6 +134,25 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
             _target=_layerBreakPointWaitQueue[_level].shift();
             startQueue(_target);
         }
+    }else if(_type === 'music-play'){
+        _obj.jPlayer("play");
+    }else if(_type === 'music-pause'){
+        _obj.jPlayer("pause");
+    }else if(_type ==='music-stop'){
+        _obj.jPlayer("stop");
+    }else if(_type === 'music-volume'){
+        var _target = _animation['target'];
+        var vol = parseFloat(_target);
+        if(!isNaN(vol)){
+            _obj.jPlayer("volume",vol);
+        }
+    }
+    else if(_type === 'music-fadein'){
+        var currentVol = _obj.jPlayer("option","volume");
+        _musicFade(_obj,true,(1-currentVol)/(_duration/MUSIC_ANIMATION_INTERVAL));
+    }else if(_type === 'music-fadeout'){
+        var currentVol = _obj.jPlayer("option","volume");
+        _musicFade(_obj,false,(1-currentVol)/(_duration/MUSIC_ANIMATION_INTERVAL));
     }
     if(_type!='animation' && triggerNext){
         nextAnimation(_level);
@@ -154,5 +176,20 @@ function nextAnimation(_level){
     _handleNode(_node,_level);
     if(animationQueue[_level].length!==0 && animationQueue[_level][0]['animation']['waitPrev']===false){
         nextAnimation(_level);
+    }
+}
+
+function _musicFade(_obj,isFadeIn,step){
+    var currentVol = _obj.jPlayer("option","volume");
+    if(isFadeIn){
+        var targetVol = currentVol + step;
+    }else{
+        var targetVol = currentVol - step;
+    }
+    _obj.jPlayer("volume",targetVol);
+    if(targetVol - step > 0 || targetVol + step <1){
+        setTimeout(function(){
+            _musicFade(_obj,isFadeIn,step);
+        },MUSIC_ANIMATION_INTERVAL);
     }
 }

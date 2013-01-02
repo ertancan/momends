@@ -1,4 +1,3 @@
-
 var momend_data;
 function momend_arrived(){
     create_objects_from_data();
@@ -20,6 +19,7 @@ function create_objects_from_data(){
             }
             switch(node['animation']['used_object_type']){
                 case '{{NEXT_THEME_BG}}':
+                case '{{RANDOM_THEME_BG}}':
                     jQuery('<div/>',{
                         id: 'bg'+i+''+j,
                         class: 'scene-background'
@@ -33,6 +33,7 @@ function create_objects_from_data(){
                     node['object'] = created_objects[node['final_data_path']];
                     break;
                 case '{{NEXT_USER_PHOTO}}':
+                case '{{RANDOM_USER_PHOTO}}':
                     jQuery('<div/>',{
                         id: 'photo'+i+''+j,
                         class: 'photo'
@@ -43,6 +44,30 @@ function create_objects_from_data(){
                     }).appendTo('#photo'+i+''+j);
                     created_objects[node['final_data_path']] = $('#photo'+i+''+j);
                 case '{{USER_PHOTO}}':
+                    node['object'] = created_objects[node['final_data_path']];
+                    break;
+                case '{{NEXT_THEME_MUSIC}}':
+                case '{{RAND_THEME_MUSIC}}':
+                case '{{NEXT_USER_MUSIC}}':
+                    jQuery('<div/>',{
+                        id:'music'+i+''+j,
+                        class:'jp-jplayer'
+                    }).appendTo('.music');
+                    $('#music'+i+''+j).jPlayer({
+                        ready: function (event){
+                            $(this).jPlayer("setMedia",{
+                                mp3:node['final_data_path']
+                            });
+                        },
+                        swfPath: 'static',
+                        supplied: 'mp3',
+                        wmode: 'window',
+                        volume: 0.01,
+                        loop: true
+                    });
+                    created_objects[node['final_data_path']] = $('#music'+i+''+j);
+                case '{{THEME_MUSIC}}':
+                case '{{USER_MUSIC}}':
                     node['object'] = created_objects[node['final_data_path']];
                     break;
             }
