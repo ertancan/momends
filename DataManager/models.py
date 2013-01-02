@@ -25,7 +25,7 @@ class Momend(BaseDataManagerModel):
     privacy = models.IntegerField(choices=[[PRIVACY_CHOICES[key],key] for key in PRIVACY_CHOICES.keys()] , default=0)
 
     def __unicode__(self):
-        return str(self.owner) + ':'+str(self.momend_start_date)+' - '+str(self.momend_end_date)
+        return str(self.pk) + ' : ' + str(self.owner) + ':'+str(self.momend_start_date)+' - '+str(self.momend_end_date)
 
     def encode(self):
         enc = model_to_dict(self)
@@ -160,6 +160,10 @@ class OutData(BaseDataManagerModel):
         enc['theme'] = self.theme.encode()
         enc['animation'] = self.animation.encode()
         return enc
+
+    def give_momend_name(self):
+        return self.owner_layer.momend
+    give_momend_name.short_description = 'Momend'
 
 
 

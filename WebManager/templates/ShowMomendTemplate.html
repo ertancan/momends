@@ -4,7 +4,6 @@
 
 {% block include %}
 <link href="{{ STATIC_URL }}/momend_style.css" rel="stylesheet" type="text/css" />
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script src="{{ STATIC_URL }}/animation.js"></script>
 <script src="{{ STATIC_URL }}/momend.js"></script>
 {% endblock include %}
@@ -20,7 +19,7 @@
 
 <script type="text/javascript">
     function fetch_momend_data(){
-        $.getJSON( '../../get/9/', function(data) {
+        $.getJSON( '{% url 'momends:get-momend' params.id %}', function(data) {
             momend_data = data;
             momend_arrived();
         });

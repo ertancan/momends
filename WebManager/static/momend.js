@@ -17,6 +17,10 @@ function create_objects_from_data(){
             if(_pre.length > 0){
                 node['animation']['pre'] = _parse_string_to_dict(_pre);
             }
+            var filepath = node['final_data_path'];
+            if(filepath != null && filepath.indexOf('http') != 0){
+                filepath = STATIC_URL + filepath;
+            }
             switch(node['animation']['used_object_type']){
                 case '{{NEXT_THEME_BG}}':
                 case '{{RANDOM_THEME_BG}}':
@@ -26,7 +30,7 @@ function create_objects_from_data(){
                     }).appendTo('.scene');
                     jQuery('<img/>',{
                         class: 'background-image',
-                        src: node['final_data_path']
+                        src: filepath
                     }).appendTo('#bg'+i+''+j);
                     created_objects[node['final_data_path']] = $('#bg'+i+''+j);
                 case '{{THEME_BG}}':
@@ -40,7 +44,7 @@ function create_objects_from_data(){
                     }).appendTo('.scene');
                     jQuery('<img/>',{
                         class: 'photo_image',
-                        src: node['final_data_path']
+                        src: filepath
                     }).appendTo('#photo'+i+''+j);
                     created_objects[node['final_data_path']] = $('#photo'+i+''+j);
                 case '{{USER_PHOTO}}':
@@ -56,7 +60,7 @@ function create_objects_from_data(){
                     $('#music'+i+''+j).jPlayer({
                         ready: function (event){
                             $(this).jPlayer("setMedia",{
-                                mp3:node['final_data_path']
+                                mp3:filepath
                             });
                         },
                         swfPath: 'static',

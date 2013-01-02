@@ -29,7 +29,6 @@ class HomePageFormView(FormView):
 
 
 class ShowMomendView(TemplateView):
-    context_object_name = 'momend'
     template_name = 'ShowMomendTemplate.html'
 
 class GetMomendView(DetailView):

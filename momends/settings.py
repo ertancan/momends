@@ -60,17 +60,20 @@ STATIC_ROOT = ''
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
-STATIC_URL = '/static/'
+STATIC_URL = '/momends/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+    #TODO(goktan) on production, check following line
+    #("userdata", "/path/to/userdata"),
 )
 
 # List of finder classes that know how to find static files in
 # various locations.
+#TODO(goktan): check http://django-storages.readthedocs.org/en/latest/backends/amazon-S3.html for s3
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',

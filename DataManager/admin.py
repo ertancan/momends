@@ -23,7 +23,7 @@ class ProviderAdmin(admin.ModelAdmin):
     pass
 
 class OutDataAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('raw', 'give_momend_name', 'final_data_path', 'animation', )
 
 class FacebookProviderModuleAdmin(admin.ModelAdmin):
     pass
