@@ -47,20 +47,27 @@ class ThemeManagerWorker:
         :param file_prefix: to be used while naming the output
         :return: outData
         """
-        rand_enhancement = self.theme.image_enhancement_groups.order_by('?')[0]
-        if not rand_enhancement:    #TODO set final_data_path
+        photo_keywords = ['{{USER_PHOTO}}','{{NEXT_USER_PHOTO}}','{{RAND_USER_PHOTO}}']
+        data_type = outdata.animation.used_object_type #Check if we need to apply enhancement on this data
+        if not data_type in photo_keywords:
             return outdata
 
-        if outdata.animation.used_object_type in ['{{USER_PHOTO}}','{{NEXT_USER_PHOTO}}']: #TODO should we apply enhancement on background, too?
-            raw_filename= outdata.raw.data
-            if raw_filename in self.enhancement_applied_objects: #Don't apply enhancement on the same object twice
-                print 'Image already enhanced'
-                outdata.final_data_path = self.enhancement_applied_objects[raw_filename]
-                outdata.save()
-                return outdata
+        rand_enhancement = self.theme.image_enhancement_groups.order_by('?')[0]
+        if not rand_enhancement: #Check if there is a theme enhancement, set final data to raw data otherwise
+            outdata.final_data_path = outdata.raw.data
+            outdata.save()
+            return outdata
 
-            last_filename = ImageEnhancementUtility.applyThemeEnhancementsOnImage(raw_filename,rand_enhancement.image_enhancement_functions,file_prefix)
+        raw_filename= outdata.raw.data
+        if raw_filename in self.enhancement_applied_objects: #Don't apply enhancement on the same object twice
+            print 'Image already enhanced'
+            outdata.final_data_path = self.enhancement_applied_objects[raw_filename]
+            outdata.save()
+            return outdata
 
-            outdata.final_data_path = last_filename #Update final data with enhanced one
-            self.enhancement_applied_objects[raw_filename] = last_filename
+        last_filename = ImageEnhancementUtility.applyThemeEnhancementsOnImage(raw_filename,rand_enhancement.image_enhancement_functions,file_prefix)
+
+        outdata.final_data_path = last_filename #Update final data with enhanced one
+        self.enhancement_applied_objects[raw_filename] = last_filename
+
         return outdata
