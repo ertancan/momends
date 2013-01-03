@@ -73,13 +73,13 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
 
     var _type=_animation['type'];
     var _obj=_node['object'];
+    var _duration=1;
     if('duration' in _animation){
         _duration=_animation['duration'];
     }
 
     console.dir(_obj)
     if(_type==='animation'){
-        var _duration=1;
         if('pre' in _animation){
             for(key in _animation['pre']){
                 if(typeof _animation['pre'][key] === 'function'){
@@ -192,4 +192,9 @@ function _musicFade(_obj,isFadeIn,step){
             _musicFade(_obj,isFadeIn,step);
         },MUSIC_ANIMATION_INTERVAL);
     }
+}
+
+function handleClick(_obj,_layer,_order){
+    console.log('kılik');
+    console.dir(_obj);
 }
