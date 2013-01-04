@@ -233,6 +233,9 @@ function handleClick(_obj){
     if(click_animation['stop_current_animation']){
         _obj.stop(true);
     }
+    if(click_animation['clear_further_animations']){
+        _clearObjectAnimationsFromQueues(_obj);
+    }
     _userInteractionQueue.push({'animation':{'type':'sleep','duration':(click_time-last_user_click)}});
     _userInteractionQueue.push({'object':_obj,'animation':{'type':'click'}});
     _addInteractionAnimationLayerForObject(click_animation['animations'])
@@ -251,21 +254,33 @@ function handleMouseEnter(_obj){
     if(enter_animation['stop_current_animation']){
         _obj.stop(true);
     }
+    if(enter_animation['clear_further_animations']){
+        _clearObjectAnimationsFromQueues(_obj);
+    }
     _userInteractionQueue.push({'animation':{'type':'sleep','duration':(enter_time-last_mouse_enter)}});
     _userInteractionQueue.push({'object':_obj,'animation':{'type':'hover'}});
     _addInteractionAnimationLayerForObject(enter_animation['animations'])
     last_mouse_enter=enter_time;
 }
-
+function _clearObjectAnimationsFromQueues(_obj){ //We may need to pass objects to sleep etc. functions to be able to remove them here
+    for(var i=0;i<animationQueue.length;i++){
+        for(var j=0;j<animationQueue[i].length;j++){
+            if(!animationQueue[i][j]['animation']['object']){
+                continue;
+            }
+            if(animationQueue[i][j]['animation']['object'].selector ==='#'+_obj[0].id){ //TODO something better than concatenating with # ??
+                animationQueue[i].splice(j,1);
+            }
+        }
+    }
+}
 
 function _findObjectNode(_obj){
-    console.dir(_obj);
     for(var i=0;i<momend_data['animation_layers'].length;i++){
         for(var j=0;j<momend_data['animation_layers'][i].length;j++){
             if(!momend_data['animation_layers'][i][j]['animation']['object']){
                 continue;
             }
-            console.log('search:'+_obj[0].id+' got:'+momend_data['animation_layers'][i][j]['animation']['object'].selector);
             if(momend_data['animation_layers'][i][j]['animation']['object'].selector ==='#'+_obj[0].id){
                 return momend_data['animation_layers'][i][j];
             }
