@@ -69,10 +69,12 @@ function create_objects_from_data(){
                         id:'music'+i+''+j,
                         class:'jp-jplayer'
                     }).appendTo('.music');
-                    $('#music'+i+''+j).jPlayer({
+                    var music_obj = $('#music'+i+''+j);
+                    music_obj.filepath = filepath;
+                    music_obj.jPlayer({
                         ready: function (event){
                             $(this).jPlayer("setMedia",{
-                                mp3:filepath
+                                mp3:$(this).filepath //TODO possible malfunction here because of the clojure
                             });
                         },
                         swfPath: 'static',
@@ -81,7 +83,7 @@ function create_objects_from_data(){
                         volume: 0.01,
                         loop: true
                     });
-                    created_objects[node['final_data_path']] = $('#music'+i+''+j);
+                    created_objects[node['final_data_path']] = music_obj;
                 case '{{THEME_MUSIC}}':
                 case '{{USER_MUSIC}}':
                     node['animation']['object'] = created_objects[node['final_data_path']];
