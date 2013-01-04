@@ -1,8 +1,8 @@
-var animationQueue;
-var finishedAnimationQueue;
-var queueOnAction;
-var currentAnimation;
-var _layerWaitQueue;
+var animationQueue; // Keeps layers of animation data
+var finishedAnimationQueue; //Keeps finished animations
+var queueOnAction; // Boolean array indicates the given layer is active or not (e.g. queueOnAction[0] will be true if layer 0 started and working now)
+var currentAnimation; //Keeps the animations which are being processed right now
+var _layerWaitQueue; //
 var _layerBreakPointWaitQueue;
 var _userInteractionQueue;
 MUSIC_ANIMATION_INTERVAL = 200;
