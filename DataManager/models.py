@@ -100,37 +100,6 @@ class RawData(BaseDataManagerModel):
     def __unicode__(self):
         return str(self.owner) + '_' + str(self.provider) + '_' + str(self.original_id)
 
-class CoreAnimationData(BaseDataManagerModel):
-    class Meta:
-        verbose_name_plural = 'CoreAnimationData'
-        verbose_name = 'CoreAnimationData'
-
-    USER_DATA_TYPE = [
-        '{{USER_PHOTO}}', '{{NEXT_USER_PHOTO}}',
-        '{{USER_STATUS}}', '{{NEXT_USER_STATUS}}',
-        '{{USER_CHECKIN}}', '{{NEXT_USER_CHECKIN}}',
-        '{{USER_BACKGROUND}}', '{{NEXT_USER_BACKGROUND}}'
-        '{{USER_MUSIC}}', '{{NEXT_USER_MUSIC}}'
-    ]
-    group = models.ForeignKey('AnimationGroup')
-    used_object_type = models.CharField(max_length=255,null=True,blank=True) #What kind of object? i.e., USER_PHOTO,THEME_BG
-    #Consistent with javascript interpreter
-    name = models.CharField(max_length=255, null=True, blank=True) #Optional, descriptive, human readable name
-    type = models.CharField(max_length=50) #Type of the animation
-    duration = models.IntegerField(default=0) #Duration of certain types
-    pre = models.TextField(null=True, blank=True) #Precondition of the object to perform the animation
-    anim = models.TextField(null=True, blank=True) #Steps to be performed if the type is 'animation'
-    target = models.IntegerField(null=True, blank=True) #Animation layer to affect if inter-layer type like wait,block,unblock etc.
-    waitPrev = models.BooleanField(default=True) #Whether this animation should wait the previous one to finish or not.
-    triggerNext = models.BooleanField(default=True) #Whether this animation should trigger the next one in the queue or not
-    force = models.NullBooleanField(null=True, blank=True) #Like force stop now or etc. #TODO serializer should ignore null fields may be?
-
-    def __unicode__(self):
-        return str(self.group)+'-'+str(self.used_object_type)
-
-    def encode(self):
-        enc = model_to_dict(self,exclude=['group'])
-        return enc
 
 class OutData(BaseDataManagerModel):
     class Meta:
@@ -150,7 +119,7 @@ class OutData(BaseDataManagerModel):
     final_data_path = models.TextField(null=True, blank=True)
 
     #Animation Data
-    animation = models.ForeignKey(CoreAnimationData, null=True, blank= True)
+    animation = models.ForeignKey('CoreAnimationData', null=True, blank= True)
 
     def __unicode__(self):
         return str(self.owner_layer)+':'+str(self.theme)+'='+str(self.animation)

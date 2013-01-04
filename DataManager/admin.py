@@ -16,9 +16,6 @@ class RawDataAdmin(admin.ModelAdmin):
 class AnimationLayerAdmin(admin.ModelAdmin):
     pass
 
-class CoreAnimationDataAdmin(admin.ModelAdmin):
-    pass
-
 class ProviderAdmin(admin.ModelAdmin):
     pass
 
@@ -34,7 +31,6 @@ class TwitterProviderModuleAdmin(admin.ModelAdmin):
 admin.site.register(Momend, MomendAdmin)
 admin.site.register(RawData, RawDataAdmin)
 admin.site.register(AnimationLayer, AnimationLayerAdmin)
-admin.site.register(CoreAnimationData, CoreAnimationDataAdmin)
 admin.site.register(Provider, ProviderAdmin)
 admin.site.register(OutData, OutDataAdmin)
 

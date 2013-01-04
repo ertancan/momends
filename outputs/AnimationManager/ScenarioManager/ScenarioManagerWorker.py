@@ -1,6 +1,6 @@
 __author__ = 'ertan'
-from DataManager.models import AnimationLayer,CoreAnimationData,OutData
-from Outputs.AnimationManager.models import AnimationGroup,Scenario
+from DataManager.models import AnimationLayer,OutData
+from Outputs.AnimationManager.models import AnimationGroup,Scenario,CoreAnimationData
 class ScenarioManagerWorker(object):
     def prepare_scenario(self, momend, duration, theme, scenario=None, selection='basic', max_photo=0, max_bg=0, max_status=0, max_checkin=0):
         """Currently first 3 levels are assigned; 0-Background Layer, 1-Foreground Layer, 2-Music Layer. You can use any layer and

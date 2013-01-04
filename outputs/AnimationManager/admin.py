@@ -19,9 +19,17 @@ class ImageEnhancementGroupAdmin(admin.ModelAdmin):
 class ScenarioAdmin(admin.ModelAdmin):
     pass
 
+class UserInteractionAnimationGroupAdmin(admin.ModelAdmin):
+    pass
+
+class CoreAnimationDataAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(AnimationGroup,AnimationGroupAdmin)
 admin.site.register(Theme,ThemeAdmin)
 admin.site.register(ThemeData,ThemeDataAdmin)
 admin.site.register(ImageEnhancement,ImageEnhancementAdmin)
 admin.site.register(ImageEnhancementGroup,ImageEnhancementGroupAdmin)
 admin.site.register(Scenario,ScenarioAdmin)
+admin.site.register(UserInteractionAnimationGroup,UserInteractionAnimationGroupAdmin)
+admin.site.register(CoreAnimationData, CoreAnimationDataAdmin)

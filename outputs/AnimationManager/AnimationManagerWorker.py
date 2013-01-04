@@ -3,8 +3,8 @@ from Outputs.AnimationManager.ScenarioManager.ScenarioManagerWorker import Scena
 __author__ = 'goktan'
 
 from Outputs.BaseOutputWorker import BaseOutputWorker
-from DataManager.models import Momend,RawData,CoreAnimationData
-from Outputs.AnimationManager.models import Theme
+from DataManager.models import Momend,RawData
+from Outputs.AnimationManager.models import Theme,CoreAnimationData
 from Outputs.AnimationManager.ThemeManager.ThemeManagerWorker import ThemeManagerWorker
 
 class DataCountException(Exception):

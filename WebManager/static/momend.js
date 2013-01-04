@@ -5,7 +5,7 @@ function momend_arrived(){
     startAllQueues();
 }
 function create_objects_from_data(){
-    var created_objects = {};
+    created_objects = {};
     for(var i = 0;i<momend_data['animation_layers'].length;i++){
         for(var j = 0;j < momend_data['animation_layers'][i].length;j++){
             var node = momend_data['animation_layers'][i][j];
@@ -42,11 +42,16 @@ function create_objects_from_data(){
                         id: 'photo'+i+''+j,
                         class: 'photo'
                     }).appendTo('.scene');
+                    var created_div = $('#photo'+i+''+j);
                     jQuery('<img/>',{
                         class: 'photo_image',
                         src: filepath
-                    }).appendTo('#photo'+i+''+j);
-                    created_objects[node['final_data_path']] = $('#photo'+i+''+j);
+                    }).appendTo(created_div);
+                    created_div.click(function(){
+                        handleClick($(this),i,j);
+                    });
+                    console.dir(created_div);
+                    created_objects[node['final_data_path']] = created_div;
                 case '{{USER_PHOTO}}':
                     node['object'] = created_objects[node['final_data_path']];
                     break;

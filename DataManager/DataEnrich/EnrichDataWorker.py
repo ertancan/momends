@@ -1,6 +1,6 @@
 __author__ = 'goktan'
 import random
-from DataManager.models import RawData,CoreAnimationData
+from Outputs.AnimationManager.models import CoreAnimationData
 class EnrichDataWorker: #TODO keep this as base class and introduce different workers
 
     def __init__(self, user):
