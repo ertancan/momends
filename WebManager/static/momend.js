@@ -1,4 +1,5 @@
 var momend_data;
+var created_objects;
 function momend_arrived(){
     create_objects_from_data();
     setAnimationQueue(momend_data['animation_layers']);
@@ -34,7 +35,7 @@ function create_objects_from_data(){
                     }).appendTo('#bg'+i+''+j);
                     created_objects[node['final_data_path']] = $('#bg'+i+''+j);
                 case '{{THEME_BG}}':
-                    node['object'] = created_objects[node['final_data_path']];
+                    node['animation']['object'] = created_objects[node['final_data_path']];
                     break;
                 case '{{NEXT_USER_PHOTO}}':
                 case '{{RANDOM_USER_PHOTO}}':
@@ -47,13 +48,19 @@ function create_objects_from_data(){
                         class: 'photo_image',
                         src: filepath
                     }).appendTo(created_div);
-                    created_div.click(function(){
-                        handleClick($(this),i,j);
-                    });
-                    console.dir(created_div);
+                    if(node['click_animation'] !== null){
+                        created_div.click(function(){
+                            handleClick($(this));
+                        });
+                    }
+                    if(node['hover_animation'] !== null){
+                        created_div.mouseenter(function(){
+                            handleMouseEnter($(this));
+                        });
+                    }
                     created_objects[node['final_data_path']] = created_div;
                 case '{{USER_PHOTO}}':
-                    node['object'] = created_objects[node['final_data_path']];
+                    node['animation']['object'] = created_objects[node['final_data_path']];
                     break;
                 case '{{NEXT_THEME_MUSIC}}':
                 case '{{RAND_THEME_MUSIC}}':
@@ -77,7 +84,7 @@ function create_objects_from_data(){
                     created_objects[node['final_data_path']] = $('#music'+i+''+j);
                 case '{{THEME_MUSIC}}':
                 case '{{USER_MUSIC}}':
-                    node['object'] = created_objects[node['final_data_path']];
+                    node['animation']['object'] = created_objects[node['final_data_path']];
                     break;
             }
         }
