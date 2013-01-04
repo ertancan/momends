@@ -69,12 +69,10 @@ function create_objects_from_data(){
                         id:'music'+i+''+j,
                         class:'jp-jplayer'
                     }).appendTo('.music');
-                    var music_obj = $('#music'+i+''+j);
-                    music_obj.filepath = filepath;
-                    music_obj.jPlayer({
+                    $('#music'+i+''+j).jPlayer({
                         ready: function (event){
                             $(this).jPlayer("setMedia",{
-                                mp3:$(this).filepath //TODO possible malfunction here because of the clojure
+                                mp3:filepath
                             });
                         },
                         swfPath: 'static',
@@ -83,7 +81,7 @@ function create_objects_from_data(){
                         volume: 0.01,
                         loop: true
                     });
-                    created_objects[node['final_data_path']] = music_obj;
+                    created_objects[node['final_data_path']] = $('#music'+i+''+j);
                 case '{{THEME_MUSIC}}':
                 case '{{USER_MUSIC}}':
                     node['animation']['object'] = created_objects[node['final_data_path']];
@@ -94,6 +92,9 @@ function create_objects_from_data(){
 }
 
 function _parse_string_to_dict(_str){
+    if(typeof _str !== 'string'){
+        return _str;
+    }
     var resp = {};
     var parts = _str.split(',');
     for(var i= 0; i<parts.length;i++){

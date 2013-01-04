@@ -236,9 +236,13 @@ function handleClick(_obj){
     if(click_animation['clear_further_animations']){
         _clearObjectAnimationsFromQueues(_obj);
     }
+    if(click_animation['disable_further_interaction']){
+        _obj.unbind('click');
+        _obj.unbind('mouseenter');
+    }
     _userInteractionQueue.push({'animation':{'type':'sleep','duration':(click_time-last_user_click)}});
     _userInteractionQueue.push({'object':_obj,'animation':{'type':'click'}});
-    _addInteractionAnimationLayerForObject(click_animation['animations'])
+    _addInteractionAnimationLayerForObject(jQuery.extend(true,[],click_animation['animations']))
     last_user_click=click_time;
 }
 
@@ -257,9 +261,13 @@ function handleMouseEnter(_obj){
     if(enter_animation['clear_further_animations']){
         _clearObjectAnimationsFromQueues(_obj);
     }
+    if(enter_animation['disable_further_interaction']){
+        _obj.unbind('click');
+        _obj.unbind('mouseenter');
+    }
     _userInteractionQueue.push({'animation':{'type':'sleep','duration':(enter_time-last_mouse_enter)}});
     _userInteractionQueue.push({'object':_obj,'animation':{'type':'hover'}});
-    _addInteractionAnimationLayerForObject(enter_animation['animations'])
+    _addInteractionAnimationLayerForObject(jQuery.extend(true,[],enter_animation['animations']))
     last_mouse_enter=enter_time;
 }
 function _clearObjectAnimationsFromQueues(_obj){ //We may need to pass objects to sleep etc. functions to be able to remove them here
