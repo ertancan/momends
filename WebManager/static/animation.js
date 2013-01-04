@@ -227,6 +227,7 @@ function handleClick(_obj){
     var click_animation = _node['animation']['click_animation'];
     for (var i = 0; i<click_animation['animations'].length;i++){
         click_animation['animations'][i]['anim'] = _parse_string_to_dict(click_animation['animations'][i]['anim']);
+        click_animation['animations'][i]['pre'] = _parse_string_to_dict(click_animation['animations'][i]['pre']);
         click_animation['animations'][i]['object'] = _obj;
     }
     if(click_animation['stop_current_animation']){
@@ -244,6 +245,7 @@ function handleMouseEnter(_obj){
     var enter_animation = _node['animation']['hover_animation'];
     for (var i = 0; i<enter_animation['animations'].length;i++){
         enter_animation['animations'][i]['anim'] = _parse_string_to_dict(enter_animation['animations'][i]['anim']);
+        enter_animation['animations'][i]['pre'] = _parse_string_to_dict(enter_animation['animations'][i]['pre']);
         enter_animation['animations'][i]['object'] = _obj;
     }
     if(enter_animation['stop_current_animation']){
