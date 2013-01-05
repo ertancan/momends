@@ -2,12 +2,18 @@ var animationQueue; // Keeps layers of animation data
 var finishedAnimationQueue; //Keeps finished animations
 var queueOnAction; // Boolean array indicates the given layer is active or not (e.g. queueOnAction[0] will be true if layer 0 started and working now)
 var currentAnimation; //Keeps the animations which are being processed right now
-var _layerWaitQueue; //
-var _layerBreakPointWaitQueue;
-var _userInteractionQueue;
-MUSIC_ANIMATION_INTERVAL = 200;
-var last_user_click = 0;
-var last_mouse_enter = 0;
+var _layerWaitQueue; //Each array in this queue keeps the ids of other layers waiting for the current animation on the queue
+//If _layerWaitQueue[0] has 1 and 2 in it, layers 1 and 2 will be started when the current animation in layer 0 finishes
+var _layerBreakPointWaitQueue; //Same principle as _layerWaitQueue but this waits for an animation which has type 'breakpoint' to trigger otherlayers
+var _userInteractionQueue; //Keeps the action performed by user during play.
+MUSIC_ANIMATION_INTERVAL = 200; //Defines number of milliseconds between music fade animations. (e.g. if you perform fade animation with duration=1000ms
+// the animation will be performed in 5 steps. (Can be changed according to smoothness of the animation
+var last_user_interaction = 0; //last time the user clicks on an item or mouse enters into the object boundaries.
+
+/**
+ * Instantiates global variables according to number of levels needed.
+ * @param _level number of animations layers
+ */
 function __generateQueues(_level){
     animationQueue = new Array();
     finishedAnimationQueue = new Array();
@@ -25,10 +31,18 @@ function __generateQueues(_level){
         _layerBreakPointWaitQueue.push(new Array());
     }
 }
+/**
+ * Starts the given queue; flags it as on action and triggers the next animation on the queue
+ * @param _level which level is going to start
+ */
 function startQueue(_level){
     queueOnAction[_level]=true;
     nextAnimation(_level);
 }
+/**
+ * Starts all animation queues
+ * !!Clears the user interaction timers, do not use unless you are starting a new animation!!
+ */
 function startAllQueues(){
     for (var i=0;i<animationQueue.length;i++){
         startQueue(i);
@@ -36,10 +50,18 @@ function startAllQueues(){
     last_user_click = new Date().getTime();
     last_mouse_enter = new Date().getTime();
 }
+/**
+ * Clears the current animation queue and replaces it with the given one
+ * @param _queue Layer of animations to be performed
+ */
 function setAnimationQueue(_queue){
     __generateQueues(_queue.length);
     animationQueue = jQuery.extend(true,[],_queue);
 }
+/**
+ * Creates an additional animation queue level for user interaction animations like click or hover.
+ * @param animations Click or hover animations of an object
+ */
 function _addInteractionAnimationLayerForObject(animations){
     animationQueue.push(animations);
     finishedAnimationQueue.push(new Array());
@@ -48,6 +70,14 @@ function _addInteractionAnimationLayerForObject(animations){
     console.dir(animations);
     startQueue(animationQueue.length-1);
 }
+/**
+ * Insert given node to the given layer of the queue.
+ * !!If the level is on action and it is waiting empty, the animation will be performed immediately, so if you are adding
+ * items to the queue one by one, it is most likely that it will be called like waitPrev option is false, so add elements
+ * together in an array.
+ * @param _level which the animations will be added
+ * @param _node an animation object or an array containing animation objects.
+ */
 function addToQueue(_level,_node){
     var wasEmpty=false;
     if(animationQueue[_level].length===0){
@@ -64,6 +94,32 @@ function addToQueue(_level,_node){
         nextAnimation(_level);
     }
 }
+/**
+ * Handles a single node's animations
+ * @param _node Whether the node itself or an object containing the node in 'animation' key
+ * @param _level which level does the node belong to. (In order to trigger next animation)
+ *
+ * main keys in the animation dictionary;
+ *  object:(jQuery object) to perform operations on
+ *  [duration]:(int) duration of the animations (in ms)
+ *  [triggerNext]:(bool) whether the next operation should be called after
+ *  [name]:(string) name to print on the console if needed
+ *  type:(string) type of the animation
+ *      animation; Animates the given object
+ *          uses duration parameter
+ *          [pre]:(dictionary) css parameters which should be applied before animation
+ *          [anim]:(dictionary) css parameters which are going to be animated during animation
+ *      sleep: Blocks the queue for some amount of time
+ *          uses duration parameter
+ *      show/hide: Shows and hides the given object
+ *      block/unblock: blocks and unblocks the given queue (unblock cannot work on its own queue)
+ *          target:(int) targeted layer
+ *      wait: Force the current queue to wait until the current operation on the watched queue ends or breakpoint occurs
+ *          [breakpoint]:(bool) if given true, current layer will wait until a breakpoint occurs in the target layer
+ *          target:(int) targeted layer
+ *      breakpoint: Triggers the other layers which were waiting for current layer for a breakpoint
+ *      click/hover: Performs click and hover animations on the object
+ */
 function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.g., screenWidth, screenHeight
     var _animation = _node;
     if('animation' in _node){
@@ -183,6 +239,11 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
         nextAnimation(_level);
     }
 }
+
+/**
+ * Triggers the next animation in the queue
+ * @param _level level of the queue
+ */
 function nextAnimation(_level){
     if(currentAnimation.length!==animationQueue.length){
         console.log('INCONSISTENCY!!!');
@@ -220,7 +281,10 @@ function _musicFade(_obj,isFadeIn,step){
         },MUSIC_ANIMATION_INTERVAL);
     }
 }
-
+/**
+ * Gets the click animation of the clicked object, creates a new animation layer for it and plays
+ * @param _obj clicked object
+ */
 function handleClick(_obj){
     var click_time = new Date().getTime();
     var _node = _findObjectNode(_obj);
@@ -240,12 +304,18 @@ function handleClick(_obj){
         _obj.unbind('click');
         _obj.unbind('mouseenter');
     }
-    _userInteractionQueue.push({'animation':{'type':'sleep','duration':(click_time-last_user_click)}});
+
+    //Add performed operations to the user interaction queue to be able to imitate it later
+    _userInteractionQueue.push({'animation':{'type':'sleep','duration':(click_time-last_user_interaction)}});
     _userInteractionQueue.push({'object':_obj,'animation':{'type':'click'}});
     _addInteractionAnimationLayerForObject(jQuery.extend(true,[],click_animation['animations']))
-    last_user_click=click_time;
+    last_user_interaction=click_time;
 }
 
+/**
+ * Gets the hover animation of the clicked object, creates a new animation layer for it and plays
+ * @param _obj clicked object
+ */
 function handleMouseEnter(_obj){
     var enter_time = new Date().getTime();
     var _node = _findObjectNode(_obj);
@@ -265,11 +335,20 @@ function handleMouseEnter(_obj){
         _obj.unbind('click');
         _obj.unbind('mouseenter');
     }
-    _userInteractionQueue.push({'animation':{'type':'sleep','duration':(enter_time-last_mouse_enter)}});
+
+    //Add performed operations to the user interaction queue to be able to imitate it later
+    _userInteractionQueue.push({'animation':{'type':'sleep','duration':(enter_time-last_user_interaction)}});
     _userInteractionQueue.push({'object':_obj,'animation':{'type':'hover'}});
     _addInteractionAnimationLayerForObject(jQuery.extend(true,[],enter_animation['animations']))
-    last_mouse_enter=enter_time;
+    last_user_interaction=enter_time;
 }
+
+/**
+ * Clears all! upcoming animations of the given objects from ever queue
+ * Call before adding the interaction animations to the animation queue, since this will remove new animations from queue, too
+ * @param _obj
+ * @private
+ */
 function _clearObjectAnimationsFromQueues(_obj){ //We may need to pass objects to sleep etc. functions to be able to remove them here
     for(var i=0;i<animationQueue.length;i++){
         for(var j=0;j<animationQueue[i].length;j++){
@@ -283,6 +362,12 @@ function _clearObjectAnimationsFromQueues(_obj){ //We may need to pass objects t
     }
 }
 
+/**
+ * Finds the clicked object in the momend_data
+ * @param _obj dom object
+ * @return {*} node from momend_data
+ * @private
+ */
 function _findObjectNode(_obj){
     for(var i=0;i<momend_data['animation_layers'].length;i++){
         for(var j=0;j<momend_data['animation_layers'][i].length;j++){
