@@ -8,6 +8,7 @@ import facebook
 import pytz
 import urllib2
 from django.conf import settings
+from LogManagers.Log import Log
 
 class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker): #TODO not collecting location!
     def collect_photo(self, user, since, until):
@@ -39,10 +40,10 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
                 #TODO error handling (goktan)
                 _raw.data = self._fetch_photo(_raw.original_path, str(_raw))
-                print _raw
+                Log.debug(_raw)
             else:
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
-                print _raw.original_id + ' found in DB'
+                Log.debug(_raw.original_id + ' found in DB')
             _return_data.append(_raw)
 
         return _return_data
@@ -58,21 +59,24 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
 
         _return_data= []
         for obj in result['data']:
-            _raw = RawData()
-            _raw.owner = user
-            _raw.type=RawData.DATA_TYPE['Status']
-            _raw.provider = provider
-            _raw.data = obj['message']
-            if 'likes' in obj:
-                _raw.like_count = len(obj['likes'])
-            if 'sharedposts' in obj:
-                _raw.share_count = len(obj['sharedposts'])
-            if 'comments' in obj:
-                _raw.comment_count = len(obj['comments'])
-            _raw.create_date = datetime.datetime.strptime(obj['updated_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
-            _raw.original_id = obj['id']
-            _return_data.append(_raw)
-
+            if not RawData.objects.filter(original_id=obj['id']).filter(provider=provider).exists():
+                _raw = RawData()
+                _raw.owner = user
+                _raw.type=RawData.DATA_TYPE['Status']
+                _raw.provider = provider
+                _raw.data = obj['message']
+                if 'likes' in obj:
+                    _raw.like_count = len(obj['likes'])
+                if 'sharedposts' in obj:
+                    _raw.share_count = len(obj['sharedposts'])
+                if 'comments' in obj:
+                    _raw.comment_count = len(obj['comments'])
+                _raw.create_date = datetime.datetime.strptime(obj['updated_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
+                _raw.original_id = obj['id']
+                _return_data.append(_raw)
+        else:
+            _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
+            Log.debug( _raw.original_id + ' found in DB')
         return _return_data
 
 
@@ -85,24 +89,28 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
 
         _return_data= []
         for obj in result['data']:
-            _raw = RawData()
-            _raw.owner = user
-            _raw.type = RawData.DATA_TYPE['Checkin']
-            _raw.provider = provider
-            _raw.data = obj['place']['name']
-            if 'likes' in obj:
-                _raw.like_count = len(obj['likes'])
-            if 'comments' in obj:
-                _raw.comment_count = len(obj['comments'])
-            _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
-            _raw.original_id = obj['id']
-            _return_data.append(_raw)
-
+            if not RawData.objects.filter(original_id=obj['id']).filter(provider=provider).exists():
+                _raw = RawData()
+                _raw.owner = user
+                _raw.type = RawData.DATA_TYPE['Checkin']
+                _raw.provider = provider
+                _raw.data = obj['place']['name']
+                if 'likes' in obj:
+                    _raw.like_count = len(obj['likes'])
+                if 'comments' in obj:
+                    _raw.comment_count = len(obj['comments'])
+                _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
+                _raw.original_id = obj['id']
+                _return_data.append(_raw)
+            else:
+                _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
+                Log.debug( _raw.original_id + ' found in DB')
         return _return_data
 
     def _get_access_token(self, user):
         #TODO obtain access token and return
         _obj = FacebookProviderModule.objects.get(owner=user)
+
         return _obj.token
 
     def _fetch_photo(self, url, name):

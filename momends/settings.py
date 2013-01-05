@@ -134,28 +134,50 @@ INSTALLED_APPS = (
 # more details on how to customize your logging configuration.
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
     },
+
     'handlers': {
+        'null': {
+            'level': 'DEBUG',
+            'class': 'django.utils.log.NullHandler',
+            },
+        'console':{
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
         'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
+            'level': 'CRITICAL',
+            'class': 'django.utils.log.AdminEmailHandler',
+        },
+        'loggly': {
+            'level': 'DEBUG',
+            'class': 'hoover.LogglyHttpHandler',
+            'token': '8fa80082-6364-49be-bd01-9e60c53f7277',
         }
+
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
+        'momends': {
+            'handlers': ['console', 'loggly'],
             'propagate': True,
+            'level': 'DEBUG',
         },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'CRITICAL',
+            'propagate': False,
+        }
     }
 }
-
 ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scripts/'
 COLLECTED_FILE_PATH = 'userdata/collected/'
 ENHANCED_FILE_PATH = 'userdata/enhanced/'

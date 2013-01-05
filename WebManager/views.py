@@ -20,7 +20,7 @@ class HomePageFormView(FormView):
         start_date = form.cleaned_data['start_date']
         finish_date = form.cleaned_data['finish_date']
         privacy = form.cleaned_data['privacy_type']
-        ert = User.objects.get(username='ertan')
+        ert = User.objects.get(username='goktan')
         dm = DataManager(ert)
         momend_id = dm.create_momend(name=momend_name, since=start_date,
             until=finish_date, duration=30, privacy=privacy)
