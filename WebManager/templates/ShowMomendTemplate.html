@@ -3,30 +3,32 @@
 {% load url from future %}
 
 {% block include %}
-<link href="{{ STATIC_URL }}momend_style.css" rel="stylesheet" type="text/css" />
-<script src="{{ STATIC_URL }}animation.js"></script>
-<script src="{{ STATIC_URL }}momend.js"></script>
+    <link href="{{ STATIC_URL }}momend_style.css" rel="stylesheet" type="text/css" />
+    <script src="{{ STATIC_URL }}jquery.jplayer.min.js"></script>
+    <script src="{{ STATIC_URL }}animation.js"></script>
+    <script src="{{ STATIC_URL }}momend.js"></script>
 {% endblock include %}
 {% block content %}
-<body onload="init()">
+    <body onload="init()">
 
     <div class="scene"></div>
+    <div class="music"></div>
 
 {% endblock content %}
 
 {% block scripts %}
 
 
-<script type="text/javascript">
-    function fetch_momend_data(){
-        $.getJSON( '{% url 'momends:get-momend' params.id %}', function(data) {
-            momend_data = data;
-            momend_arrived();
-        });
-    }
-    function init(){
-        fetch_momend_data()
-    }
-</script>
+    <script type="text/javascript">
+        function fetch_momend_data(){
+            $.getJSON( '{% url 'momends:get-momend' params.id %}', function(data) {
+                momend_data = data;
+                momend_arrived();
+            });
+        }
+        function init(){
+            fetch_momend_data()
+        }
+    </script>
 {% endblock scripts %}
 

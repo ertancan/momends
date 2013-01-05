@@ -70,19 +70,23 @@ function create_objects_from_data(){
                         id:'music'+i+''+j,
                         class:'jp-jplayer'
                     }).appendTo('.music');
-                    $('#music'+i+''+j).jPlayer({
+                    var music_obj = $('#music'+i+''+j);
+                    music_obj[0]['filepath'] = filepath;
+                    music_obj.jPlayer({
                         ready: function (event){
+                            console.dir(event.delegateTarget);
                             $(this).jPlayer("setMedia",{
-                                mp3:filepath
+                                mp3:event.delegateTarget['filepath']
                             });
+                            _music_loaded($(this));
                         },
                         swfPath: 'static',
                         supplied: 'mp3',
                         wmode: 'window',
-                        volume: 0.01,
+                        volume: 0.1,
                         loop: true
                     });
-                    created_objects[node['final_data_path']] = $('#music'+i+''+j);
+                    created_objects[node['final_data_path']] = music_obj;
                 case '{{THEME_MUSIC}}':
                 case '{{USER_MUSIC}}':
                     node['animation']['object'] = created_objects[node['final_data_path']];
