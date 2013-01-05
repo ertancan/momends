@@ -3,17 +3,23 @@ import hoover
 import logging
 
 class Log(object):
-    handler = hoover.LogglyHttpHandler(token='ef2e6682-a591-4eef-a81c-34c91854c314')
     log = logging.getLogger('momends')
-    log.addHandler(handler)
 
     @staticmethod
-    def info(message):
-        Log.log.info(message)
+    def fatal(message):
+        Log.log.fatal(message)
+
+    @staticmethod
+    def warn(message):
+        Log.log.warn(message)
 
     @staticmethod
     def error(message):
         Log.log.error(message)
+
+    @staticmethod
+    def info(message):
+        Log.log.info(message)
 
     @staticmethod
     def debug(message):
