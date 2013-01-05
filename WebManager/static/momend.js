@@ -48,12 +48,13 @@ function create_objects_from_data(){
                         class: 'photo_image',
                         src: filepath
                     }).appendTo(created_div);
-                    if(node['click_animation'] !== null){
+                    if(typeof node['animation']['click_animation'] !== 'undefined'){
                         created_div.click(function(){
                             handleClick($(this));
                         });
                     }
-                    if(node['hover_animation'] !== null){
+                    if(typeof node['animation']['hover_animation'] !== 'undefined'){
+                        console.log(node['animation']['hover_animation'])
                         created_div.mouseenter(function(){
                             handleMouseEnter($(this));
                         });

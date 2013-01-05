@@ -262,8 +262,12 @@ function nextAnimation(_level){
     }
     _node=animationQueue[_level].shift();
     _handleNode(_node,_level);
-    if(animationQueue[_level].length!==0 && animationQueue[_level][0]['animation']['waitPrev']===false){
-        nextAnimation(_level);
+    try{
+        if(animationQueue[_level].length!==0 && animationQueue[_level][0]['animation']['waitPrev']===false){
+            nextAnimation(_level);
+        }
+    }catch(error){
+        console.dir(animationQueue[_level][0]);
     }
 }
 
