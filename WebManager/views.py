@@ -9,6 +9,7 @@ from django.views.generic.base import TemplateView
 from WebManager.forms import CreateMomendForm
 from DataManager.DataManager import DataManager
 from DataManager.models import Momend
+from Outputs.AnimationManager.models import AnimationPlay
 
 
 
@@ -20,7 +21,7 @@ class HomePageFormView(FormView):
         start_date = form.cleaned_data['start_date']
         finish_date = form.cleaned_data['finish_date']
         privacy = form.cleaned_data['privacy_type']
-        ert = User.objects.get(username='goktan')
+        ert = User.objects.get(username='ertan')
         dm = DataManager(ert)
         momend_id = dm.create_momend(name=momend_name, since=start_date,
             until=finish_date, duration=30, privacy=privacy)
@@ -32,6 +33,21 @@ class FrontPageView(TemplateView):
 
 class ShowMomendView(TemplateView):
     template_name = 'ShowMomendTemplate.html'
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(ShowMomendView, self).get_context_data(**kwargs)
+
+        play_obj = AnimationPlay()
+        play_obj.momend_id = context['params']['id']
+        if 'HTTP_REFERER' in self.request.META:
+            play_obj.redirect_url = self.request.META['HTTP_REFERER']
+        else:
+            play_obj.redirect_url = 'Direct'
+        if self.request.user:
+            play_obj.user = User.objects.get(pk=self.request.user.id)
+        play_obj.save()
+
+        return context
 
 class GetMomendView(DetailView):
     model = Momend
