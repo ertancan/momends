@@ -1,7 +1,8 @@
 from DataManager.models import BaseDataManagerModel
 from django.db import models
+from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
-
+from DataManager.models import AnimationLayer
 class CoreAnimationData(BaseDataManagerModel):
     class Meta:
         verbose_name_plural = 'CoreAnimationData'
@@ -16,7 +17,8 @@ class CoreAnimationData(BaseDataManagerModel):
         '{{USER_MUSIC}}', '{{NEXT_USER_MUSIC}}'
     ]
     group = models.ForeignKey('AnimationGroup')
-    used_object_type = models.CharField(max_length=255,null=True,blank=True) #What kind of object? i.e., USER_PHOTO,THEME_BG
+    used_object_type = models.CharField(max_length=255, null=True, blank=True) #What kind of object? i.e., USER_PHOTO,THEME_BG
+    used_object_id = models.CharField('Id of the object, if known' ,max_length=255, null=True, blank=True)
     #Consistent with javascript interpreter
     name = models.CharField(max_length=255, null=True, blank=True) #Optional, descriptive, human readable name
     type = models.CharField(max_length=50) #Type of the animation
@@ -35,11 +37,13 @@ class CoreAnimationData(BaseDataManagerModel):
         return str(self.group)+'-'+str(self.used_object_type)
 
     def encode(self):
-        enc = model_to_dict(self,exclude=['group','click_animation','hover_animation'])
+        enc = model_to_dict(self,exclude=['group','click_animation','hover_animation','used_object_id'])
         if self.click_animation:
             enc['click_animation'] = self.click_animation.encode()
         if self.hover_animation:
             enc['hover_animation'] = self.hover_animation.encode()
+        if self.used_object_id:
+            enc['object'] = self.used_object_id
         return enc
 
 class ImageEnhancement(BaseDataManagerModel):
@@ -155,3 +159,10 @@ class UserInteractionAnimationGroup(BaseDataManagerModel):
         resp = model_to_dict(self,exclude='animations')
         resp['animations'] = self.animations.encode()
         return resp
+
+class AnimationPlay(BaseDataManagerModel):
+    date = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User)
+    redirect_url = models.CharField(max_length=500)
+
+    interaction = models.ForeignKey(AnimationLayer, null=True, blank= True)
