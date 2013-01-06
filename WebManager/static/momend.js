@@ -11,15 +11,15 @@ function create_objects_from_data(){
         for(var j = 0;j < momend_data['animation_layers'][i].length;j++){
             var node = momend_data['animation_layers'][i][j];
             var _anim = node['animation']['anim'];
-            if(_anim.length > 0){
+            if(_anim && _anim.length > 0){
                 node['animation']['anim'] = _parse_string_to_dict(_anim);
             }
             var _pre = node['animation']['pre'];
-            if(_pre.length > 0){
+            if(_pre && _pre.length > 0){
                 node['animation']['pre'] = _parse_string_to_dict(_pre);
             }
             var filepath = node['final_data_path'];
-            if(filepath != null && filepath.indexOf('http') != 0){
+            if(filepath && filepath.indexOf('http') != 0){
                 filepath = STATIC_URL + filepath;
             }
             switch(node['animation']['used_object_type']){
@@ -96,6 +96,13 @@ function create_objects_from_data(){
     }
 }
 
+/**
+ * By default we keep animations in string format in db, however they can be parsed into json, this method gets those strings
+ * and returns js dictionaries so that player can play them.
+ * @param _str string like "left:200px,top:300px"
+ * @return {*} dictionary {"left":"200px","top":"300px"}
+ * @private
+ */
 function _parse_string_to_dict(_str){
     if(typeof _str !== 'string'){
         return _str;

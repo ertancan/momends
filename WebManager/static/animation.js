@@ -412,11 +412,30 @@ function _convertLayerToJSON(_layer){
 function _sendUserInteractionToServer(){
     var json = _convertLayerToJSON(_userInteractionQueue);
     var momend_id = momend_data['id'];
-    $.post('/momends/save_interaction/',function(resp){
-        console.log('Sent!');
+    $.ajax({
+        type: 'POST',
+        url: '/momends/save_interaction/',
+        data: {
+            'queue':json
+        },
+        success: function(msg){
+            console.log('Sent: '+msg);
+        }
     });
 }
 
+function replayWithUserInteraction(){
+    var new_queue = jQuery.extend(true,[],finishedAnimationQueue);
+    new_queue.push(_userInteractionQueue);
+    setAnimationQueue(new_queue);
+    startAllQueues();
+}
+
+/**
+ * Music load callback to keep if we can start playing music tracks when play-music animation arrives
+ * @param _loaded_obj which track loaded
+ * @private
+ */
 function _music_loaded(_loaded_obj){
     console.log('music loaded.');
     ready_music_count++;
