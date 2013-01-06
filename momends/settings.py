@@ -111,18 +111,19 @@ ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scri
 COLLECTED_FILE_PATH = 'userdata/collected/'
 ENHANCED_FILE_PATH = 'userdata/enhanced/'
 
-LOGIN_URL = '/login/'
-LOGIN_ERROR_URL = '/login-error/'
+LOGIN_URL = '/momends/login/'
+LOGIN_ERROR_URL = '/momends/login-error/'
 LOGIN_REDIRECT_URL = '/momends/home/'
 
 #Settings for social-auth
-TWITTER_CONSUMER_KEY = '5DOIZsrFVxeL6L6dpsSBKg'
-TWITTER_CONSUMER_SECRET = 't9xLkL2e4MdxWWbS5WlbH9z16BYNipTnKHQv0q7JHic'
+#TWITTER_CONSUMER_KEY = '5DOIZsrFVxeL6L6dpsSBKg'          This is prod  FIND TEST IT IN LOCAL SETTINGS
+#TWITTER_CONSUMER_SECRET = 't9xLkL2e4MdxWWbS5WlbH9z16BYNipTnKHQv0q7JHic' this is prod FIND TEST IT IN LOCAL SETTINGS
 
 FACEBOOK_APP_ID = '125999474230740'
 FACEBOOK_API_SECRET = 'f68f2d67e320efc5e3790ae17004db7b'
 
 AUTHENTICATION_BACKENDS = (
+    'social_auth.backends.twitter.TwitterBackend',
     'social_auth.backends.facebook.FacebookBackend',
     'django.contrib.auth.backends.ModelBackend',
     )
@@ -132,7 +133,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'social_auth.context_processors.social_auth_by_type_backends',
     )
 
-SOCIAL_AUTH_ENABLED_BACKENDS = ('facebook',)
+SOCIAL_AUTH_ENABLED_BACKENDS = ('facebook','twitter',)
 SOCIAL_AUTH_DEFAULT_USERNAME = 'new_social_auth_user'
+SOCIAL_AUTH_SESSION_EXPIRATION = False
 #SOCIAL_AUTH_COMPLETE_URL_NAME  = 'momends:home-screen'
 #SOCIAL_AUTH_ASSOCIATE_URL_NAME = 'momends:home-screen'
