@@ -1,7 +1,16 @@
 {% extends "MainSite.html" %}
 
-{% block content %}
+{% block heading %}
+    <a href="{% url socialauth_begin 'facebook' %}">Login with Facebook</a>
+    <a href="{% url socialauth_begin 'twitter' %}">Login with Twitter</a>
+    <a href="{% url momends:logout %}">Logout</a>
+    {{ user.username }}
+    {{ user.first_name }}
+    {{ user.last_name }}
 
+{% endblock heading %}
+
+{% block content %}
 
 <form action="" method="post">{% csrf_token %}
     {{ form.as_p }}
@@ -9,3 +18,6 @@
 </form>
 
 {% endblock content %}
+
+
+
