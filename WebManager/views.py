@@ -11,6 +11,7 @@ from WebManager.forms import CreateMomendForm
 from DataManager.DataManager import DataManager
 from DataManager.models import Momend
 from Outputs.AnimationManager.models import AnimationPlayStat,UserInteraction
+from django.shortcuts import redirect
 
 
 class HomePageFormView(FormView):
@@ -25,13 +26,10 @@ class HomePageFormView(FormView):
         dm = DataManager(_user)
         momend_id = dm.create_momend(name=momend_name, since=start_date,
             until=finish_date, duration=30, privacy=privacy)
-        self.success_url = reverse('momends:show-momend', args=(momend_id,))
+        status = dm.get_last_status()
+        #TODO get status back to view
+        self.success_url = reverse('momends:show-momend', args = (momend_id,) )
         return super(HomePageFormView,self).form_valid(form)
-
-""" Remove when safe
-class FrontPageView(TemplateView):
-    template_name = 'FrontPageTemplate.html'
-"""
 
 class ShowMomendView(TemplateView):
     template_name = 'ShowMomendTemplate.html'

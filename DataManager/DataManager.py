@@ -6,10 +6,16 @@ from ExternalProviders.BaseProviderWorker import BasePhotoProviderWorker,BaseSta
 from Outputs.AnimationManager.AnimationManagerWorker import AnimationManagerWorker
 from models import Momend
 from social_auth.db.django_models import UserSocialAuth
+from LogManagers.Log import Log
 
 class DataManager:
     def __init__(self, user):
         self.user = user
+
+    status = dict()
+
+    def get_last_status(self):
+        return self.status
 
     def create_momend(self, name, since, until, duration, #TODO check if dates has timezone information = tzinfo
                       privacy=Momend.PRIVACY_CHOICES['Private'], inc_photo=True, inc_status=True, inc_checkin=True,
@@ -29,11 +35,25 @@ class DataManager:
                 worker = self._instantiate_provider_worker(_provider)
                 if inc_photo and issubclass(worker.__class__,BasePhotoProviderWorker):
                     _raw_data = _raw_data + worker.collect_photo(self.user, since, until)
+                    if not _raw_data:
+                        self.status[str(_provider)+'_photo'] = 'Error'
+                    else:
+                        self.status[str(_provider)+'_photo'] = 'Success'
                 if inc_status and issubclass(worker.__class__,BaseStatusProviderWorker):
                     _raw_data = _raw_data + worker.collect_status(self.user, since, until)
+                    if not _raw_data:
+                        self.status[str(_provider)+'_status'] = 'Error'
+                    else:
+                        self.status[str(_provider)+'_status'] = 'Success'
                 if inc_checkin and issubclass(worker.__class__,BaseLocationProviderWorker):
                     _raw_data = _raw_data + worker.collect_checkin(self.user, since, until)
+                    if not _raw_data:
+                        self.status[str(_provider)+'_checkin'] = 'Error'
+                    else:
+                        self.status[str(_provider)+'_checkin'] = 'Success'
         #all incoming data shall be saved here instead of collection place
+        Log.debug("status:")
+        Log.debug(self.status)
         for _obj in _raw_data:
             _obj.save()
 

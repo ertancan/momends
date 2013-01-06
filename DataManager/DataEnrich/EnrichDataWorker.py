@@ -1,6 +1,8 @@
 __author__ = 'goktan'
 import random
 from Outputs.AnimationManager.models import CoreAnimationData
+from LogManagers.Log import Log
+
 class EnrichDataWorker: #TODO keep this as base class and introduce different workers
 
     def __init__(self, user):
@@ -20,7 +22,7 @@ class EnrichDataWorker: #TODO keep this as base class and introduce different wo
     def _sort_by_priority(self,enriched_data):
         sorted_data = []
         for type_arr in enriched_data:
-            print type_arr
+            Log.debug(type_arr)
             sorted_data.append(sorted(type_arr, key=lambda obj: obj.priority, reverse=True))
         return sorted_data
 

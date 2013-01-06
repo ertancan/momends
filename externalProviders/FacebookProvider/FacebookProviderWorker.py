@@ -10,6 +10,7 @@ from django.conf import settings
 from LogManagers.Log import Log
 from social_auth.db.django_models import UserSocialAuth
 
+
 class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker): #TODO not collecting location!
     def collect_photo(self, user, since, until):
         access_token=self._get_access_token(user)
@@ -17,8 +18,13 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
 
         provider = self.getProvider()
 
-        result=api.get_connections('me', 'photos', limit=200, since=str(since), until=str(until),
-            fields = 'likes.limit(500),comments.limit(500),source,name,sharedposts,images')
+        try:
+            result=api.get_connections('me', 'photos', limit=200, since=str(since), until=str(until),
+                fields = 'likes.limit(500),comments.limit(500),source,name,sharedposts,images')
+        except:
+            return None
+
+
         _return_data= []
         for obj in result['data']:
 
@@ -53,9 +59,11 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         api = facebook.GraphAPI(access_token)
 
         provider = self.getProvider()
-
-        result=api.get_connections('me', 'statuses', limit=200, since=str(since), until=str(until),
-            fields='id,message,likes.limit(500),comments.limit(500),sharedposts,updated_time')
+        try:
+            result=api.get_connections('me', 'statuses', limit=200, since=str(since), until=str(until),
+                fields='id,message,likes.limit(500),comments.limit(500),sharedposts,updated_time')
+        except:
+            return None
 
         _return_data= []
         for obj in result['data']:
@@ -83,8 +91,12 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
     def collect_checkin(self, user, since, until):
         access_token=self._get_access_token(user)
         api = facebook.GraphAPI(access_token)
-        result=api.get_connections('me', 'checkins', limit=200, since=str(since), until=str(until),
-            fields='id,place,likes.limit(500),comments.limit(500),created_time') #TODO hardcoded limits will go to config file
+        try:
+            result=api.get_connections('me', 'checkins', limit=200, since=str(since), until=str(until),
+                fields='id,place,likes.limit(500),comments.limit(500),created_time') #TODO hardcoded limits will go to config file
+        except:
+            return None
+
         provider = self.getProvider()
 
         _return_data= []

@@ -10,14 +10,15 @@ from views import ShowMomendView
 from views import GetMomendView
 from views import SaveInteractionView
 from django.contrib.auth.decorators import login_required
+from registration.backends.default.urls import *
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = patterns('',
-
-    #momends web manager urls
     url(r'^logout/$','django.contrib.auth.views.logout_then_login', name='logout'),
     url(r'^login/$', 'django.contrib.auth.views.login', {'template_name': 'FrontPageTemplate.html'}, name='login'),
-
+    #registration
+    (r'^accounts/', include('registration.backends.default.urls')),
+    #momends web manager urls
     url(r'^$', RedirectView.as_view(url=reverse_lazy('momends:login')), name='front-page'),
     url(r'^home/$', login_required(HomePageFormView.as_view()), name='home-screen'),
     url(r'^show/(?P<id>\d+)/$', login_required(ShowMomendView.as_view()), name='show-momend'),

@@ -1,9 +1,12 @@
 {% extends "MainSite.html" %}
+{% load url from future %}
 
 {% block heading %}
-    <a href="{% url socialauth_begin 'facebook' %}">Login with Facebook</a>
-    <a href="{% url socialauth_begin 'twitter' %}">Login with Twitter</a>
-    <a href="{% url momends:logout %}">Logout</a>
+    <a href="{% url 'socialauth_begin' facebook %}">Add Facebook</a>
+    <a href="{% url 'socialauth_begin' twitter %}">Add Twitter</a>
+    <a href="{% url 'socialauth_disconnect' facebook %}">Remove Facebook</a>
+    <a href="{% url 'socialauth_disconnect' twitter %}">Remove Twitter</a>
+    <a href="{% url 'momends:logout' %}">Logout</a>
     {{ user.username }}
     {{ user.first_name }}
     {{ user.last_name }}

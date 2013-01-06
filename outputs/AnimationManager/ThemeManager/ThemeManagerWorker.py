@@ -2,6 +2,7 @@ __author__ = 'ertan'
 from Outputs.AnimationManager.models import ThemeData,ImageEnhancementGroup,Theme
 from Outputs.AnimationManager.ImageEnhancementUtility.ImageEnhancementUtilityWorker import ImageEnhancementUtility
 from Outputs.AnimationManager.ThemeManager.ThemeDataManager import ThemeDataManager
+from LogManagers.Log import Log
 class ThemeManagerWorker:
 
     def __init__(self,theme):
@@ -27,9 +28,9 @@ class ThemeManagerWorker:
             index = keywords.index(used_type)
             obj_type = index/3
             request_type = index % 3 # 0 getPrevious, 1 getNext, 2 getRand
-            print 'object type:'+str(obj_type)+' request type:'+str(request_type)
+            Log.debug('object type:'+str(obj_type)+' request type:'+str(request_type))
             if request_type == 0:
-                print 'getting previous'
+                Log.debug('getting previous')
                 theme_data = self.data_manager.getPreviousData(obj_type)
             elif request_type == 1:
                 theme_data = self.data_manager.getNextData(obj_type)
@@ -60,7 +61,7 @@ class ThemeManagerWorker:
 
         raw_filename= outdata.raw.data
         if raw_filename in self.enhancement_applied_objects: #Don't apply enhancement on the same object twice
-            print 'Image already enhanced'
+            Log.debug('Image already enhanced')
             outdata.final_data_path = self.enhancement_applied_objects[raw_filename]
             outdata.save()
             return outdata

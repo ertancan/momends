@@ -3,6 +3,7 @@ Hoover==0.5.3
 PyYAML==3.10
 distribute==0.6.27
 dj-database-url==0.2.1
+django-registration==0.8
 django-social-auth==0.7.16
 facebook-sdk==0.4.0
 httplib2==0.7.7

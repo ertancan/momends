@@ -104,6 +104,7 @@ INSTALLED_APPS = (
     'Outputs.VideoManager',
     'WebManager',
     'social_auth',
+    'registration',
 )
 
 #Settings for directories
@@ -151,6 +152,22 @@ SOCIAL_AUTH_PIPELINE = (
 SOCIAL_AUTH_ENABLED_BACKENDS = ('facebook','twitter',)
 SOCIAL_AUTH_DEFAULT_USERNAME = 'new_social_auth_user'
 SOCIAL_AUTH_SESSION_EXPIRATION = False
-SOCIAL_AUTH_ASSOCIATE_BY_MAIL = True
 #SOCIAL_AUTH_COMPLETE_URL_NAME  = 'momends:home-screen'
 #SOCIAL_AUTH_ASSOCIATE_URL_NAME = 'momends:home-screen'
+
+#registration framework
+ACCOUNT_ACTIVATION_DAYS = 7
+
+
+EMAIL_HOST = 'smtp.momends.com'
+EMAIL_HOST_USER = 'info@momends.com'
+EMAIL_HOST_PASSWORD = 'chalabye1!'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+SERVER_EMAIL = 'info@momends.com'
+DEFAULT_FROM_EMAIL = 'info@momends.com'
+
+DATABASE_OPTIONS = {
+    'use_unicode': True,
+    'charset': 'utf8'
+}

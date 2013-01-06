@@ -2,13 +2,15 @@ __author__ = 'goktan'
 
 import abc
 from DataManager.models import Provider
+from social_auth.db.django_models import UserSocialAuth
+from LogManagers.Log import Log
 
 class BaseProviderWorker(object):
     def auth(self):
         pass
 
     def getProvider(self):
-        print self.__class__.__name__
+        Log.debug( self.__class__.__name__)
         return Provider.objects.get(worker_name=self.__class__.__name__)
 
 class BasePhotoProviderWorker(BaseProviderWorker):

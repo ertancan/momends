@@ -5,6 +5,7 @@ from ExternalProviders.BaseProviderWorker import BaseStatusProviderWorker
 from DataManager.models import RawData
 from django.conf import settings
 from social_auth.db.django_models import UserSocialAuth
+from LogManagers.Log import Log
 
 class TwitterProviderWorker(BaseStatusProviderWorker):
     def collect_status(self, user, since, until):
@@ -33,10 +34,10 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
                         _raw.original_id = tweet.id_str
                         _raw.data = tweet.text
                         _raw.save()
-                        print _raw
+                        Log.debug(_raw)
                     else:
                         _raw = RawData.objects.filter(original_id=tweet.id_str).get(provider=provider)
-                        print _raw.original_id + ' found in DB'
+                        Log.debug( _raw.original_id + ' found in DB')
                     _return_data.append(_raw)
                 elif tweet.created_at.replace(tzinfo=pytz.UTC)<since:
                     return _return_data

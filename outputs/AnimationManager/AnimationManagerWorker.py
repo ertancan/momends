@@ -6,6 +6,7 @@ from Outputs.BaseOutputWorker import BaseOutputWorker
 from DataManager.models import Momend,RawData
 from Outputs.AnimationManager.models import Theme,CoreAnimationData
 from Outputs.AnimationManager.ThemeManager.ThemeManagerWorker import ThemeManagerWorker
+from LogManagers.Log import Log
 
 class DataCountException(Exception):
     PHOTO_TYPE = 0
@@ -40,7 +41,7 @@ class AnimationManagerWorker(BaseOutputWorker):
         try:
             self._validate_data_count(enriched_data, used_bg_count, used_photo_count, used_status_count, used_checkin_count)
         except DataCountException, e:
-            print(e.message)
+            Log.error(e.message)
             return False
 
         filled_scenario = self._fill_user_data(prepared_scenario['objects'], enriched_data)
