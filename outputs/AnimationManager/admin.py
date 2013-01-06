@@ -25,15 +25,19 @@ class UserInteractionAnimationGroupAdmin(admin.ModelAdmin):
 class CoreAnimationDataAdmin(admin.ModelAdmin):
     list_display = ['group', 'used_object_type', 'name', 'type', 'duration', 'click_animation', 'hover_animation']
 
-class AnimationPlayAdmin(admin.ModelAdmin):
-    list_display = ['momend', 'date', 'user', 'redirect_url', 'interaction']
+class AnimationPlayStatAdmin(admin.ModelAdmin):
+    list_display = ['momend', 'date', 'user', 'redirect_url']
 
-admin.site.register(AnimationGroup,AnimationGroupAdmin)
-admin.site.register(Theme,ThemeAdmin)
-admin.site.register(ThemeData,ThemeDataAdmin)
-admin.site.register(ImageEnhancement,ImageEnhancementAdmin)
-admin.site.register(ImageEnhancementGroup,ImageEnhancementGroupAdmin)
-admin.site.register(Scenario,ScenarioAdmin)
-admin.site.register(UserInteractionAnimationGroup,UserInteractionAnimationGroupAdmin)
+class UserInteractionAdmin(admin.ModelAdmin):
+    list_display = ['momend','date','interaction']
+
+admin.site.register(AnimationGroup, AnimationGroupAdmin)
+admin.site.register(Theme, ThemeAdmin)
+admin.site.register(ThemeData, ThemeDataAdmin)
+admin.site.register(ImageEnhancement, ImageEnhancementAdmin)
+admin.site.register(ImageEnhancementGroup, ImageEnhancementGroupAdmin)
+admin.site.register(Scenario, ScenarioAdmin)
+admin.site.register(UserInteractionAnimationGroup, UserInteractionAnimationGroupAdmin)
 admin.site.register(CoreAnimationData, CoreAnimationDataAdmin)
-admin.site.register(AnimationPlay, AnimationPlayAdmin)
+admin.site.register(AnimationPlayStat, AnimationPlayStatAdmin)
+admin.site.register(UserInteraction, UserInteractionAdmin)

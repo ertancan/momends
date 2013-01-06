@@ -30,7 +30,7 @@ class Momend(BaseDataManagerModel):
     def encode(self):
         enc = model_to_dict(self)
         layers = []
-        for layer in AnimationLayer.objects.filter(momend=self):
+        for layer in AnimationLayer.objects.filter(momend=self, is_interaction=False):
             layers.append(layer.encode())
         enc['animation_layers'] = layers
         return enc
@@ -40,11 +40,10 @@ class Momend(BaseDataManagerModel):
 
 class AnimationLayer(BaseDataManagerModel):
     momend = models.ForeignKey(Momend)
-    layer = models.IntegerField() #Like layer0, layer1 etc.
+    layer = models.IntegerField(null=True) #Like layer0, layer1 etc.
     description = models.CharField(max_length=255)
+    is_interaction = models.BooleanField(default=False)
 
-    class Meta:
-        unique_together = ('momend', 'layer')
 
     def __unicode__(self):
         return str(self.momend)+' : '+str(self.layer)+'-'+str(self.description)

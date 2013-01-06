@@ -409,26 +409,22 @@ function _convertLayerToJSON(_layer){
     return JSON.stringify(layerCopy);
 }
 
-function _sendUserInteractionToServer(){
+function _sendUserInteractionToServer(url){
     var json = _convertLayerToJSON(_userInteractionQueue);
+    var token = $('[name="csrfmiddlewaretoken"]')[0].value;
     var momend_id = momend_data['id'];
     $.ajax({
         type: 'POST',
-        url: '/momends/save_interaction/',
+        url: url,
+        beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', token);},
         data: {
-            'queue':json
+            'queue':json,
+            'id':momend_id
         },
         success: function(msg){
             console.log('Sent: '+msg);
         }
     });
-}
-
-function replayWithUserInteraction(){
-    var new_queue = jQuery.extend(true,[],finishedAnimationQueue);
-    new_queue.push(_userInteractionQueue);
-    setAnimationQueue(new_queue);
-    startAllQueues();
 }
 
 /**

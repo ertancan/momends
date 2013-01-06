@@ -13,6 +13,7 @@
 
     <div class="scene"></div>
     <div class="music"></div>
+    {% csrf_token %}
 
 {% endblock content %}
 
@@ -25,6 +26,9 @@
                 momend_data = data;
                 momend_arrived();
             });
+        }
+        function send_interaction_data(){
+            _sendUserInteractionToServer('{% url 'momends:save-interaction' params.id %}')
         }
         function init(){
             fetch_momend_data()

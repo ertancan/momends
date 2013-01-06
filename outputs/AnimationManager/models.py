@@ -1,8 +1,11 @@
 from DataManager.models import BaseDataManagerModel
+from DataManager.models import Momend, OutData
 from django.db import models
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
 from DataManager.models import AnimationLayer
+from django.utils import simplejson
+from datetime import datetime
 class CoreAnimationData(BaseDataManagerModel):
     class Meta:
         verbose_name_plural = 'CoreAnimationData'
@@ -115,7 +118,7 @@ class Scenario(BaseDataManagerModel):
 class AnimationGroup(BaseDataManagerModel):
     name = models.CharField(max_length=255)
 
-    scenario = models.ForeignKey(Scenario)
+    scenario = models.ForeignKey(Scenario, null=True)
 
     duration = models.IntegerField()
 
@@ -160,13 +163,29 @@ class UserInteractionAnimationGroup(BaseDataManagerModel):
         resp['animations'] = self.animations.encode()
         return resp
 
-class AnimationPlay(BaseDataManagerModel):
+class AnimationPlayStat(BaseDataManagerModel):
     momend = models.ForeignKey('Momend')
     date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, null=True, blank=True)
     redirect_url = models.CharField(max_length=500)
 
-    interaction = models.ForeignKey(AnimationLayer, null=True, blank= True)
-
     def __unicode__(self):
         return str(self.momend) + ':'+ str(self.user)+'='+str(self.date)
+
+class UserInteraction(BaseDataManagerModel):
+    momend = models.ForeignKey('Momend')
+    date = models.DateTimeField(auto_now_add=True)
+    interaction = models.TextField()
+
+    def __unicode__(self):
+        return str(self.momend)+':'+str(self.date)+'='+str(self.interaction)
+
+    def encode(self):
+        momend_data = self.momend.encode()
+        momend_data['animation_layers'].append(simplejson.loads(self.interaction))
+        momend_data['interaction_date'] = self.date
+        return momend_data
+
+    def toJSON(self):
+        return simplejson.dumps(self.encode(), default=lambda obj: obj.isoformat() if isinstance(obj, datetime) else None)
+

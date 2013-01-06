@@ -6,12 +6,11 @@ from django.views.generic.edit import FormView
 from django.views.generic.detail import DetailView
 from django.views.generic.base import TemplateView
 from django.views.generic.base import View
-
+from django.http import HttpResponse
 from WebManager.forms import CreateMomendForm
 from DataManager.DataManager import DataManager
 from DataManager.models import Momend
-from Outputs.AnimationManager.models import AnimationPlay
-
+from Outputs.AnimationManager.models import AnimationPlayStat,UserInteraction
 
 
 class HomePageFormView(FormView):
@@ -22,8 +21,8 @@ class HomePageFormView(FormView):
         start_date = form.cleaned_data['start_date']
         finish_date = form.cleaned_data['finish_date']
         privacy = form.cleaned_data['privacy_type']
-        ert = User.objects.get(username=self.request.user)
-        dm = DataManager(ert)
+        _user = User.objects.get(username=self.request.user)
+        dm = DataManager(_user)
         momend_id = dm.create_momend(name=momend_name, since=start_date,
             until=finish_date, duration=30, privacy=privacy)
         self.success_url = reverse('momends:show-momend', args=(momend_id,))
@@ -40,15 +39,15 @@ class ShowMomendView(TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super(ShowMomendView, self).get_context_data(**kwargs)
 
-        play_obj = AnimationPlay()
-        play_obj.momend_id = context['params']['id']
+        play_stat = AnimationPlayStat()
+        play_stat.momend_id = context['params']['id']
         if 'HTTP_REFERER' in self.request.META:
-            play_obj.redirect_url = self.request.META['HTTP_REFERER']
+            play_stat.redirect_url = self.request.META['HTTP_REFERER']
         else:
-            play_obj.redirect_url = 'Direct'
+            play_stat.redirect_url = 'Direct'
         if self.request.user:
-            play_obj.user = User.objects.get(pk=self.request.user.id)
-        play_obj.save()
+            play_stat.user = User.objects.get(pk=self.request.user.id)
+        play_stat.save()
 
         return context
 
@@ -58,7 +57,15 @@ class GetMomendView(DetailView):
     template_name = 'GetMomendTemplate.html'
 
 class SaveInteractionView(View):
-    def post(self, request, *args, **kwargs):
-        pass
+    def post(self, request, *args, **kwargs): #TODO user check may be?
+
+        queue = request.POST['queue']
+        momend_id = request.POST['id']
+        interaction = UserInteraction()
+        interaction.momend_id = momend_id
+        interaction.interaction = queue
+        interaction.save()
+
+        return HttpResponse('true',status=200)
 
 
