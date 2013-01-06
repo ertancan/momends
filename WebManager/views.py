@@ -33,10 +33,6 @@ class FrontPageView(TemplateView):
 class ShowMomendView(TemplateView):
     template_name = 'ShowMomendTemplate.html'
 
-    def render_to_response(self, context, **response_kwargs):
-
-        return super(ShowMomendView, self).render_to_response(response_kwargs)
-
 class GetMomendView(DetailView):
     model = Momend
     context_object_name = 'momend'
