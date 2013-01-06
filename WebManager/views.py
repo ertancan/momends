@@ -29,8 +29,10 @@ class HomePageFormView(FormView):
         self.success_url = reverse('momends:show-momend', args=(momend_id,))
         return super(HomePageFormView,self).form_valid(form)
 
+""" Remove when safe
 class FrontPageView(TemplateView):
     template_name = 'FrontPageTemplate.html'
+"""
 
 class ShowMomendView(TemplateView):
     template_name = 'ShowMomendTemplate.html'

@@ -56,11 +56,13 @@ class AnimationLayer(BaseDataManagerModel):
         return enc
 
 class Provider(BaseDataManagerModel):
+    #any possible name for provider should match to the name of UserSocialAuth provider names
     name = models.CharField(max_length = 50)
     package_name = models.CharField(max_length = 255)
     module_name = models.CharField(max_length = 255)
     worker_name = models.CharField(max_length = 255)
 
+    #this is used at DataManager::collect_user_data, reconsider changing
     def __unicode__(self):
         return str(self.name)
 

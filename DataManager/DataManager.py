@@ -5,6 +5,7 @@ from DataEnrich.EnrichDataWorker import EnrichDataWorker
 from ExternalProviders.BaseProviderWorker import BasePhotoProviderWorker,BaseStatusProviderWorker,BaseLocationProviderWorker
 from Outputs.AnimationManager.AnimationManagerWorker import AnimationManagerWorker
 from models import Momend
+from social_auth.db.django_models import UserSocialAuth
 
 class DataManager:
     def __init__(self, user):
@@ -23,9 +24,9 @@ class DataManager:
 
     def collect_user_data(self, since, until, inc_photo, inc_status, inc_checkin):
         _raw_data = []
-        for obj in Provider.objects.all():
-            if getattr(self.user, obj.module_name.lower()+'_set').count()>0:
-                worker = self._instantiate_provider_worker(obj)
+        for _provider in Provider.objects.all():
+            if UserSocialAuth.objects.filter(provider=str(_provider).lower()).filter(user=self.user).count()>0:
+                worker = self._instantiate_provider_worker(_provider)
                 if inc_photo and issubclass(worker.__class__,BasePhotoProviderWorker):
                     _raw_data = _raw_data + worker.collect_photo(self.user, since, until)
                 if inc_status and issubclass(worker.__class__,BaseStatusProviderWorker):
@@ -33,8 +34,8 @@ class DataManager:
                 if inc_checkin and issubclass(worker.__class__,BaseLocationProviderWorker):
                     _raw_data = _raw_data + worker.collect_checkin(self.user, since, until)
         #all incoming data shall be saved here instead of collection place
-        for obj in _raw_data:
-            obj.save()
+        for _obj in _raw_data:
+            _obj.save()
 
         return _raw_data
 

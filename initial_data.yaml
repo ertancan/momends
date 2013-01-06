@@ -3,7 +3,6 @@
   fields:
     name: Facebook
     package_name: FacebookProvider
-    module_name: FacebookProviderModule
     worker_name: FacebookProviderWorker
 
 - model: DataManager.Provider
@@ -11,7 +10,6 @@
   fields:
     name: Twitter
     package_name: TwitterProvider
-    module_name: TwitterProviderModule
     worker_name: TwitterProviderWorker
 
 - model: DataManager.ImageEnhancement
