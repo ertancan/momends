@@ -1,7 +1,6 @@
 __author__ = 'goktan'
 
 from ExternalProviders.BaseProviderWorker import BaseLocationProviderWorker,BasePhotoProviderWorker,BaseStatusProviderWorker
-from models import FacebookProviderModule
 from DataManager.models import RawData
 import datetime
 import facebook
@@ -9,6 +8,7 @@ import pytz
 import urllib2
 from django.conf import settings
 from LogManagers.Log import Log
+from social_auth.db.django_models import UserSocialAuth
 
 class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker): #TODO not collecting location!
     def collect_photo(self, user, since, until):
@@ -108,10 +108,8 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         return _return_data
 
     def _get_access_token(self, user):
-        #TODO obtain access token and return
-        _obj = FacebookProviderModule.objects.get(owner=user)
-
-        return _obj.token
+        _instance = UserSocialAuth.objects.filter(provider='facebook').get(user=user)
+        return  _instance.tokens['access_token']
 
     def _fetch_photo(self, url, name):
         _file_path = settings.COLLECTED_FILE_PATH + name +'.jpg'

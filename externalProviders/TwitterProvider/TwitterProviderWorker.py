@@ -2,9 +2,9 @@ __author__ = 'ertan'
 import tweepy
 import pytz
 from ExternalProviders.BaseProviderWorker import BaseStatusProviderWorker
-from models import TwitterProviderModule
 from DataManager.models import RawData
 from django.conf import settings
+from social_auth.db.django_models import UserSocialAuth
 
 class TwitterProviderWorker(BaseStatusProviderWorker):
     def collect_status(self, user, since, until):
@@ -24,7 +24,6 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
                 return _return_data
             for tweet in result:
                 if since<tweet.created_at.replace(tzinfo=pytz.UTC)<until:
-
                     if not RawData.objects.filter(original_id=tweet.id_str).filter(provider=provider).exists():
                         _raw = RawData(share_count=tweet.retweet_count)
                         _raw.owner = user
@@ -43,6 +42,6 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
                     return _return_data
         return _return_data
     def _get_access_token_and_secret(self, user):
-        #TODO may need to obtain token
-        _obj = TwitterProviderModule.objects.get(owner=user)
-        return _obj.token,_obj.user_secret
+        UserSocialAuth.objects.filter()
+        _instance = UserSocialAuth.objects.filter(provider='twitter').get(user=user)
+        return  _instance.tokens['oauth_token'], _instance.tokens['oauth_token_secret']
