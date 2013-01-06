@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from django.views.generic.edit import FormView
 from django.views.generic.detail import DetailView
 from django.views.generic.base import TemplateView
+from django.views.generic.base import View
 
 from WebManager.forms import CreateMomendForm
 from DataManager.DataManager import DataManager
@@ -21,7 +22,7 @@ class HomePageFormView(FormView):
         start_date = form.cleaned_data['start_date']
         finish_date = form.cleaned_data['finish_date']
         privacy = form.cleaned_data['privacy_type']
-        ert = User.objects.get(username='ertan')
+        ert = User.objects.get(username=self.request.user)
         dm = DataManager(ert)
         momend_id = dm.create_momend(name=momend_name, since=start_date,
             until=finish_date, duration=30, privacy=privacy)
@@ -53,4 +54,9 @@ class GetMomendView(DetailView):
     model = Momend
     context_object_name = 'momend'
     template_name = 'GetMomendTemplate.html'
+
+class SaveInteractionView(View):
+    def post(self, request, *args, **kwargs):
+        pass
+
 

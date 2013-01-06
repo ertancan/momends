@@ -1,7 +1,23 @@
 {% extends "MainSite.html" %}
 
+{% load url from future %}
+
+
 {% block content %}
-    <a href="{% url socialauth_begin 'facebook' %}">Login with Facebook</a>
-    <a href="{% url socialauth_begin 'twitter' %}">Login with Twitter</a>
+    <a href="{% url 'socialauth_begin' 'facebook' %}">Login with Facebook</a>
+    <a href="{% url 'socialauth_begin' 'twitter' %}">Login with Twitter</a>
+
+    <form name="login_form" action="{% url 'momends:login' %}" method="post">{% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <label for="id_username" >Username</label>
+        {{ form.username }}
+        <label for="id_password" >Password</label>
+        {{ form.password }}
+
+        <input type="hidden" name="next" value="{{ next }}" />
+        <input name="login" type="submit" value="Login" id="login-form-submit"/>
+
+    </form>
 
 {% endblock content %}
