@@ -9,6 +9,7 @@ from views import HomePageFormView
 from views import ShowMomendView
 from views import GetMomendView
 from views import FrontPageView
+from views import SaveInteractionView
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
