@@ -161,8 +161,12 @@ class UserInteractionAnimationGroup(BaseDataManagerModel):
         return resp
 
 class AnimationPlay(BaseDataManagerModel):
+    momend = models.ForeignKey('Momend')
     date = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, null=True, blank=True)
     redirect_url = models.CharField(max_length=500)
 
     interaction = models.ForeignKey(AnimationLayer, null=True, blank= True)
+
+    def __unicode__(self):
+        return str(self.momend) + ':'+ str(self.user)+'='+str(self.date)
