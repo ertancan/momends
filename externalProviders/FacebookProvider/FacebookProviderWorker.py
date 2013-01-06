@@ -74,9 +74,9 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 _raw.create_date = datetime.datetime.strptime(obj['updated_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
                 _raw.original_id = obj['id']
                 _return_data.append(_raw)
-        else:
-            _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
-            Log.debug( _raw.original_id + ' found in DB')
+            else:
+                _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
+                Log.debug( _raw.original_id + ' found in DB')
         return _return_data
 
 

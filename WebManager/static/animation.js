@@ -2,12 +2,20 @@ var animationQueue; // Keeps layers of animation data
 var finishedAnimationQueue; //Keeps finished animations
 var queueOnAction; // Boolean array indicates the given layer is active or not (e.g. queueOnAction[0] will be true if layer 0 started and working now)
 var currentAnimation; //Keeps the animations which are being processed right now
-var _layerWaitQueue; //
-var _layerBreakPointWaitQueue;
-var _userInteractionQueue;
-MUSIC_ANIMATION_INTERVAL = 200;
-var last_user_click = 0;
-var last_mouse_enter = 0;
+var _layerWaitQueue; //Each array in this queue keeps the ids of other layers waiting for the current animation on the queue
+//If _layerWaitQueue[0] has 1 and 2 in it, layers 1 and 2 will be started when the current animation in layer 0 finishes
+var _layerBreakPointWaitQueue; //Same principle as _layerWaitQueue but this waits for an animation which has type 'breakpoint' to trigger otherlayers
+var _userInteractionQueue; //Keeps the action performed by user during play.
+MUSIC_ANIMATION_INTERVAL = 100; //Defines number of milliseconds between music fade animations. (e.g. if you perform fade animation with duration=1000ms
+// the animation will be performed in 5 steps. (Can be changed according to smoothness of the animation
+var last_user_interaction = 0; //last time the user clicks on an item or mouse enters into the object boundaries.
+var ready_music_count = 0; //How many of the remaining music are ready for playing.
+var node_waiting_to_play; //If the handle_node tried to play a music but it wasn't ready
+var music_layer; //Which layer belongs to music player
+/**
+ * Instantiates global variables according to number of levels needed.
+ * @param _level number of animations layers
+ */
 function __generateQueues(_level){
     animationQueue = new Array();
     finishedAnimationQueue = new Array();
@@ -25,21 +33,36 @@ function __generateQueues(_level){
         _layerBreakPointWaitQueue.push(new Array());
     }
 }
+/**
+ * Starts the given queue; flags it as on action and triggers the next animation on the queue
+ * @param _level which level is going to start
+ */
 function startQueue(_level){
     queueOnAction[_level]=true;
     nextAnimation(_level);
 }
+/**
+ * Starts all animation queues
+ * !!Clears the user interaction timers, do not use unless you are starting a new animation!!
+ */
 function startAllQueues(){
     for (var i=0;i<animationQueue.length;i++){
         startQueue(i);
     }
-    last_user_click = new Date().getTime();
-    last_mouse_enter = new Date().getTime();
+    last_user_interaction = new Date().getTime();
 }
+/**
+ * Clears the current animation queue and replaces it with the given one
+ * @param _queue Layer of animations to be performed
+ */
 function setAnimationQueue(_queue){
     __generateQueues(_queue.length);
     animationQueue = jQuery.extend(true,[],_queue);
 }
+/**
+ * Creates an additional animation queue level for user interaction animations like click or hover.
+ * @param animations Click or hover animations of an object
+ */
 function _addInteractionAnimationLayerForObject(animations){
     animationQueue.push(animations);
     finishedAnimationQueue.push(new Array());
@@ -48,6 +71,14 @@ function _addInteractionAnimationLayerForObject(animations){
     console.dir(animations);
     startQueue(animationQueue.length-1);
 }
+/**
+ * Insert given node to the given layer of the queue.
+ * !!If the level is on action and it is waiting empty, the animation will be performed immediately, so if you are adding
+ * items to the queue one by one, it is most likely that it will be called like waitPrev option is false, so add elements
+ * together in an array.
+ * @param _level which the animations will be added
+ * @param _node an animation object or an array containing animation objects.
+ */
 function addToQueue(_level,_node){
     var wasEmpty=false;
     if(animationQueue[_level].length===0){
@@ -64,6 +95,32 @@ function addToQueue(_level,_node){
         nextAnimation(_level);
     }
 }
+/**
+ * Handles a single node's animations
+ * @param _node Whether the node itself or an object containing the node in 'animation' key
+ * @param _level which level does the node belong to. (In order to trigger next animation)
+ *
+ * main keys in the animation dictionary;
+ *  object:(jQuery object) to perform operations on
+ *  [duration]:(int) duration of the animations (in ms)
+ *  [triggerNext]:(bool) whether the next operation should be called after
+ *  [name]:(string) name to print on the console if needed
+ *  type:(string) type of the animation
+ *      animation; Animates the given object
+ *          uses duration parameter
+ *          [pre]:(dictionary) css parameters which should be applied before animation
+ *          [anim]:(dictionary) css parameters which are going to be animated during animation
+ *      sleep: Blocks the queue for some amount of time
+ *          uses duration parameter
+ *      show/hide: Shows and hides the given object
+ *      block/unblock: blocks and unblocks the given queue (unblock cannot work on its own queue)
+ *          target:(int) targeted layer
+ *      wait: Force the current queue to wait until the current operation on the watched queue ends or breakpoint occurs
+ *          [breakpoint]:(bool) if given true, current layer will wait until a breakpoint occurs in the target layer
+ *          target:(int) targeted layer
+ *      breakpoint: Triggers the other layers which were waiting for current layer for a breakpoint
+ *      click/hover: Performs click and hover animations on the object
+ */
 function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.g., screenWidth, screenHeight
     var _animation = _node;
     if('animation' in _node){
@@ -89,6 +146,9 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
     var _type=_animation['type'];
     if('object' in _animation){
         var _obj=_animation['object'];
+        if(typeof _obj === 'string'){
+            _obj = $(_obj);
+        }
     }
     var _duration=1;
     if('duration' in _animation){
@@ -158,7 +218,16 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
 
     //Music animations below
     else if(_type === 'music-play'){
-        _obj.jPlayer("play");
+        music_layer = _level;
+        if(ready_music_count>0){
+            _obj.jPlayer("play");
+            node_waiting_to_play=null;
+            ready_music_count--;
+        }else{
+            console.log('Music not ready yet, waiting');
+            node_waiting_to_play=_node;
+            return;
+        }
     }else if(_type === 'music-pause'){
         _obj.jPlayer("pause");
     }else if(_type ==='music-stop'){
@@ -175,7 +244,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
         _musicFade(_obj,true,(1-currentVol)/(_duration/MUSIC_ANIMATION_INTERVAL));
     }else if(_type === 'music-fadeout'){
         var currentVol = _obj.jPlayer("option","volume");
-        _musicFade(_obj,false,(1-currentVol)/(_duration/MUSIC_ANIMATION_INTERVAL));
+        _musicFade(_obj,false,1/(_duration/MUSIC_ANIMATION_INTERVAL));
     }
 
     //Trigger next animation if needed
@@ -183,6 +252,11 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
         nextAnimation(_level);
     }
 }
+
+/**
+ * Triggers the next animation in the queue
+ * @param _level level of the queue
+ */
 function nextAnimation(_level){
     if(currentAnimation.length!==animationQueue.length){
         console.log('INCONSISTENCY!!!');
@@ -201,8 +275,12 @@ function nextAnimation(_level){
     }
     _node=animationQueue[_level].shift();
     _handleNode(_node,_level);
-    if(animationQueue[_level].length!==0 && animationQueue[_level][0]['animation']['waitPrev']===false){
-        nextAnimation(_level);
+    try{
+        if(animationQueue[_level].length!==0 && animationQueue[_level][0]['animation']['waitPrev']===false){
+            nextAnimation(_level);
+        }
+    }catch(error){
+        console.dir(animationQueue[_level][0]);
     }
 }
 
@@ -213,14 +291,18 @@ function _musicFade(_obj,isFadeIn,step){
     }else{
         var targetVol = currentVol - step;
     }
+    console.log('fade:'+currentVol+'target:'+targetVol+'  step::'+step);
     _obj.jPlayer("volume",targetVol);
-    if(targetVol - step > 0 || targetVol + step <1){
+    if((isFadeIn && targetVol + step  <=1 ) || (!isFadeIn && targetVol - step >=0)){
         setTimeout(function(){
             _musicFade(_obj,isFadeIn,step);
         },MUSIC_ANIMATION_INTERVAL);
     }
 }
-
+/**
+ * Gets the click animation of the clicked object, creates a new animation layer for it and plays
+ * @param _obj clicked object
+ */
 function handleClick(_obj){
     var click_time = new Date().getTime();
     var _node = _findObjectNode(_obj);
@@ -240,12 +322,18 @@ function handleClick(_obj){
         _obj.unbind('click');
         _obj.unbind('mouseenter');
     }
-    _userInteractionQueue.push({'animation':{'type':'sleep','duration':(click_time-last_user_click)}});
-    _userInteractionQueue.push({'object':_obj,'animation':{'type':'click'}});
+
+    //Add performed operations to the user interaction queue to be able to imitate it later
+    _userInteractionQueue.push({'animation':{'type':'sleep','duration':(click_time-last_user_interaction)}});
+    _userInteractionQueue.push({'animation':{'type':'click','object':_obj}});
     _addInteractionAnimationLayerForObject(jQuery.extend(true,[],click_animation['animations']))
-    last_user_click=click_time;
+    last_user_interaction=click_time;
 }
 
+/**
+ * Gets the hover animation of the clicked object, creates a new animation layer for it and plays
+ * @param _obj clicked object
+ */
 function handleMouseEnter(_obj){
     var enter_time = new Date().getTime();
     var _node = _findObjectNode(_obj);
@@ -265,11 +353,20 @@ function handleMouseEnter(_obj){
         _obj.unbind('click');
         _obj.unbind('mouseenter');
     }
-    _userInteractionQueue.push({'animation':{'type':'sleep','duration':(enter_time-last_mouse_enter)}});
-    _userInteractionQueue.push({'object':_obj,'animation':{'type':'hover'}});
+
+    //Add performed operations to the user interaction queue to be able to imitate it later
+    _userInteractionQueue.push({'animation':{'type':'sleep','duration':(enter_time-last_user_interaction)}});
+    _userInteractionQueue.push({'animation':{'type':'hover','object':_obj}});
     _addInteractionAnimationLayerForObject(jQuery.extend(true,[],enter_animation['animations']))
-    last_mouse_enter=enter_time;
+    last_user_interaction=enter_time;
 }
+
+/**
+ * Clears all! upcoming animations of the given objects from ever queue
+ * Call before adding the interaction animations to the animation queue, since this will remove new animations from queue, too
+ * @param _obj
+ * @private
+ */
 function _clearObjectAnimationsFromQueues(_obj){ //We may need to pass objects to sleep etc. functions to be able to remove them here
     for(var i=0;i<animationQueue.length;i++){
         for(var j=0;j<animationQueue[i].length;j++){
@@ -283,6 +380,12 @@ function _clearObjectAnimationsFromQueues(_obj){ //We may need to pass objects t
     }
 }
 
+/**
+ * Finds the clicked object in the momend_data
+ * @param _obj dom object
+ * @return {*} node from momend_data
+ * @private
+ */
 function _findObjectNode(_obj){
     for(var i=0;i<momend_data['animation_layers'].length;i++){
         for(var j=0;j<momend_data['animation_layers'][i].length;j++){
@@ -293,5 +396,31 @@ function _findObjectNode(_obj){
                 return momend_data['animation_layers'][i][j];
             }
         }
+    }
+}
+
+function _convertLayerToJSON(_layer){
+    var layerCopy = jQuery.extend(true,[],_layer);
+    for (var i=0; i<layerCopy.length;i++){
+        if('object' in layerCopy[i]['animation']){
+            layerCopy[i]['animation']['object'] = '#'+layerCopy[i]['animation']['object'][0].id;
+        }
+    }
+    return JSON.stringify(layerCopy);
+}
+
+function _sendUserInteractionToServer(){
+    var json = _convertLayerToJSON(_userInteractionQueue);
+    var momend_id = momend_data['id'];
+    $.post('/momends/save_interaction/',function(resp){
+        console.log('Sent!');
+    });
+}
+
+function _music_loaded(_loaded_obj){
+    console.log('music loaded.');
+    ready_music_count++;
+    if(node_waiting_to_play){
+        _handleNode(node_waiting_to_play,music_layer);
     }
 }

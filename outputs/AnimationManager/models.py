@@ -12,8 +12,8 @@ class CoreAnimationData(BaseDataManagerModel):
         '{{USER_PHOTO}}', '{{NEXT_USER_PHOTO}}',
         '{{USER_STATUS}}', '{{NEXT_USER_STATUS}}',
         '{{USER_CHECKIN}}', '{{NEXT_USER_CHECKIN}}',
-        '{{USER_BACKGROUND}}', '{{NEXT_USER_BACKGROUND}}'
-                               '{{USER_MUSIC}}', '{{NEXT_USER_MUSIC}}'
+        '{{USER_BACKGROUND}}', '{{NEXT_USER_BACKGROUND}}',
+        '{{USER_MUSIC}}', '{{NEXT_USER_MUSIC}}'
     ]
     group = models.ForeignKey('AnimationGroup')
     used_object_type = models.CharField(max_length=255,null=True,blank=True) #What kind of object? i.e., USER_PHOTO,THEME_BG

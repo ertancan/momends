@@ -48,12 +48,13 @@ function create_objects_from_data(){
                         class: 'photo_image',
                         src: filepath
                     }).appendTo(created_div);
-                    if(node['click_animation'] !== null){
+                    if(typeof node['animation']['click_animation'] !== 'undefined'){
                         created_div.click(function(){
                             handleClick($(this));
                         });
                     }
-                    if(node['hover_animation'] !== null){
+                    if(typeof node['animation']['hover_animation'] !== 'undefined'){
+                        console.log(node['animation']['hover_animation'])
                         created_div.mouseenter(function(){
                             handleMouseEnter($(this));
                         });
@@ -69,19 +70,23 @@ function create_objects_from_data(){
                         id:'music'+i+''+j,
                         class:'jp-jplayer'
                     }).appendTo('.music');
-                    $('#music'+i+''+j).jPlayer({
+                    var music_obj = $('#music'+i+''+j);
+                    music_obj[0]['filepath'] = filepath;
+                    music_obj.jPlayer({
                         ready: function (event){
+                            console.dir(event.delegateTarget);
                             $(this).jPlayer("setMedia",{
-                                mp3:filepath
+                                mp3:event.delegateTarget['filepath']
                             });
+                            _music_loaded($(this));
                         },
                         swfPath: 'static',
                         supplied: 'mp3',
                         wmode: 'window',
-                        volume: 0.01,
+                        volume: 0.1,
                         loop: true
                     });
-                    created_objects[node['final_data_path']] = $('#music'+i+''+j);
+                    created_objects[node['final_data_path']] = music_obj;
                 case '{{THEME_MUSIC}}':
                 case '{{USER_MUSIC}}':
                     node['animation']['object'] = created_objects[node['final_data_path']];
