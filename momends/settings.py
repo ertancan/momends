@@ -1,24 +1,12 @@
 # Django settings for momends project.
 
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
+from local_settings import *
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
 
 MANAGERS = ADMINS
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'db.sqlite', # Or path to database file if using sqlite3.
-        'USER': '',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
-    }
-}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -62,15 +50,6 @@ STATIC_ROOT = ''
 # Example: "http://media.lawrence.com/static/"
 STATIC_URL = '/momends/static/'
 
-# Additional locations of static files
-STATICFILES_DIRS = (
-    # Put strings here, like "/home/html/static" or "C:/www/django/static".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
-    #TODO(goktan) on production, check following line
-    #("userdata", "/path/to/userdata"),
-)
-
 # List of finder classes that know how to find static files in
 # various locations.
 #TODO(goktan): check http://django-storages.readthedocs.org/en/latest/backends/amazon-S3.html for s3
@@ -105,7 +84,6 @@ ROOT_URLCONF = 'momends.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'momends.wsgi.application'
 
-TEMPLATE_DIRS = ('/Users/goktan/DEPO/Dropbox/workspace/momends/WebManager/templates',) #TODO(goktan): relative path?
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -125,61 +103,36 @@ INSTALLED_APPS = (
     'Outputs.AnimationManager',
     'Outputs.VideoManager',
     'WebManager',
+    'social_auth',
 )
 
-# A sample logging configuration. The only tangible logging
-# performed by this configuration is to send an email to
-# the site admins on every HTTP 500 error when DEBUG=False.
-# See http://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': True,
-    'formatters': {
-        'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
-        },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
-        },
-    },
-
-    'handlers': {
-        'null': {
-            'level': 'DEBUG',
-            'class': 'django.utils.log.NullHandler',
-            },
-        'console':{
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
-        },
-        'mail_admins': {
-            'level': 'CRITICAL',
-            'class': 'django.utils.log.AdminEmailHandler',
-        },
-        'loggly': {
-            'level': 'DEBUG',
-            'class': 'hoover.LogglyHttpHandler',
-            'token': '8fa80082-6364-49be-bd01-9e60c53f7277',
-        }
-
-    },
-    'loggers': {
-        'momends': {
-            'handlers': ['console', 'loggly'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
-        'django.request': {
-            'handlers': ['console'],
-            'level': 'CRITICAL',
-            'propagate': False,
-        }
-    }
-}
+#Settings for directories
 ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scripts/'
 COLLECTED_FILE_PATH = 'userdata/collected/'
 ENHANCED_FILE_PATH = 'userdata/enhanced/'
+
+LOGIN_URL = '/login/'
+LOGIN_ERROR_URL = '/login-error/'
+LOGIN_REDIRECT_URL = '/momends/home/'
+
+#Settings for social-auth
 TWITTER_CONSUMER_KEY = 'Od8344pHmAcVr4S2Zq0Nw'
 TWITTER_CONSUMER_SECRET = 'NO0b66jiMCroLZNZtAFOi0TzvE7M4pH1vBvCzrCRQ'
+
+FACEBOOK_APP_ID = '125999474230740'
+FACEBOOK_API_SECRET = 'f68f2d67e320efc5e3790ae17004db7b'
+
+AUTHENTICATION_BACKENDS = (
+    'social_auth.backends.facebook.FacebookBackend',
+    'django.contrib.auth.backends.ModelBackend',
+    )
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'social_auth.context_processors.social_auth_by_type_backends',
+    )
+
+SOCIAL_AUTH_ENABLED_BACKENDS = ('facebook',)
+SOCIAL_AUTH_DEFAULT_USERNAME = 'new_social_auth_user'
+#SOCIAL_AUTH_COMPLETE_URL_NAME  = 'momends:home-screen'
+#SOCIAL_AUTH_ASSOCIATE_URL_NAME = 'momends:home-screen'
