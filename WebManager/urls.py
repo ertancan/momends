@@ -16,7 +16,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 urlpatterns = patterns('',
 
     #momends web manager urls
-    url(r'^$', RedirectView.as_view(url=reverse_lazy('login')), name='front-page'),
+    url(r'^$', RedirectView.as_view(url=reverse_lazy('auth_login')), name='front-page'),
     url(r'^home/$', login_required(HomePageFormView.as_view()), name='home-screen'),
     url(r'^show/(?P<id>\d+)/$', login_required(ShowMomendView.as_view()), name='show-momend'),
     url(r'^get/(?P<pk>\d+)/$', login_required(GetMomendView.as_view()), name='get-momend'),
