@@ -5,9 +5,10 @@
 
 {% block content %}
     <a href="{% url 'socialauth_begin' 'facebook' %}">Login with Facebook</a>
-    <a href="{% url 'socialauth_begin' 'twitter' %}">Login with Twitter</a>
+    <a href="{% url 'registration_register' %}">Register</a>
+    <a href="{% url 'auth_password_reset' %}">Forgot Password</a>
 
-    <form name="login_form" action="{% url 'momends:login' %}" method="post">{% csrf_token %}
+    <form name="login_form" action="{% url 'auth_login' %}" method="post">{% csrf_token %}
         {{ form.non_field_errors }}
 
         <label for="id_username" >Username</label>

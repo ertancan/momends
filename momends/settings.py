@@ -1,6 +1,12 @@
 # Django settings for momends project.
 
+from os.path import abspath, dirname, basename, join
+from distutils.sysconfig import get_python_lib
 from local_settings import *
+
+ROOT_PATH = abspath(dirname(__file__))
+PROJECT_NAME = basename(ROOT_PATH)
+PYTHON_LIB_DIR = get_python_lib()
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -62,6 +68,13 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'vsev71s2!p6$p^*oo3w%az3ram6@4dadmjpri@)19$*gacvvnz'
 
+
+TEMPLATE_DIRS = (
+    (ROOT_PATH + '/WebManager/templates'),
+    (PYTHON_LIB_DIR + '/captcha/templates'),
+    )
+
+
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -112,8 +125,8 @@ ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scri
 COLLECTED_FILE_PATH = 'userdata/collected/'
 ENHANCED_FILE_PATH = 'userdata/enhanced/'
 
-LOGIN_URL = '/momends/login/'
-LOGIN_ERROR_URL = '/momends/login-error/'
+LOGIN_URL = '/accounts/login/'
+LOGIN_ERROR_URL = '/accounts/login-error/'
 LOGIN_REDIRECT_URL = '/momends/home/'
 
 #Settings for social-auth
@@ -152,11 +165,17 @@ SOCIAL_AUTH_PIPELINE = (
 SOCIAL_AUTH_ENABLED_BACKENDS = ('facebook','twitter',)
 SOCIAL_AUTH_DEFAULT_USERNAME = 'new_social_auth_user'
 SOCIAL_AUTH_SESSION_EXPIRATION = False
-#SOCIAL_AUTH_COMPLETE_URL_NAME  = 'momends:home-screen'
-#SOCIAL_AUTH_ASSOCIATE_URL_NAME = 'momends:home-screen'
+#SOCIAL_AUTH_COMPLETE_URL_NAME  = home-screen'
+#SOCIAL_AUTH_ASSOCIATE_URL_NAME = 'home-screen'
 
 #registration framework
 ACCOUNT_ACTIVATION_DAYS = 7
+
+#captcha framework
+#https://www.google.com/recaptcha/admin/site?siteid=316357769
+RECAPTCHA_PUBLIC_KEY = '6LeJPNsSAAAAAJHE_1NPmULdq6B6IYLhZFc4GmYZ'
+RECAPTCHA_PRIVATE_KEY = '6LeJPNsSAAAAAB-nhFCSR4D8t9rgSQbB0dMk9115'
+#RECAPTCHA_USE_SSL = True
 
 
 EMAIL_HOST = 'smtp.momends.com'
