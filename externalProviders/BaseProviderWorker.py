@@ -18,9 +18,6 @@ class BasePhotoProviderWorker(BaseProviderWorker):
     @abc.abstractmethod
     def collect_photo(self, user, since, until):
         pass
-    @abc.abstractmethod
-    def _fetch_photo(self, id, name):
-        pass
 
 class BaseStatusProviderWorker(BaseProviderWorker):
     __metaclass__ = abc.ABCMeta

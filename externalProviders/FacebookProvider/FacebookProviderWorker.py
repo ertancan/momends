@@ -1,14 +1,15 @@
 __author__ = 'goktan'
 
-from ExternalProviders.BaseProviderWorker import BaseLocationProviderWorker,BasePhotoProviderWorker,BaseStatusProviderWorker
+from ExternalProviders.BaseProviderWorker import BaseLocationProviderWorker
+from ExternalProviders.BaseProviderWorker import BasePhotoProviderWorker
+from ExternalProviders.BaseProviderWorker import BaseStatusProviderWorker
 from DataManager.models import RawData
 import datetime
 import facebook
 import pytz
-import urllib2
-from django.conf import settings
 from LogManagers.Log import Log
 from social_auth.db.django_models import UserSocialAuth
+from DataManager.DataManagerUtil import DataManagerUtil
 
 
 class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker): #TODO not collecting location!
@@ -45,7 +46,12 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                     _raw.comment_count = len(obj['comments'])
                 _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
                 #TODO error handling (goktan)
-                _raw.data = self._fetch_photo(_raw.original_path, str(_raw))
+                try:
+                    _dot_index = _raw.original_path.rindex('.')
+                    _ext_part = _raw.original_path[_dot_index:]
+                except ValueError:
+                    _ext_part = '.jpg'
+                _raw.data = DataManagerUtil.download_file(_raw.original_path, str(_raw)+_ext_part)
                 Log.debug(_raw)
             else:
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
@@ -123,10 +129,3 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         _instance = UserSocialAuth.objects.filter(provider='facebook').get(user=user)
         return  _instance.tokens['access_token']
 
-    def _fetch_photo(self, url, name):
-        _file_path = settings.COLLECTED_FILE_PATH + name +'.jpg'
-        _url = urllib2.urlopen(url)
-        with open(_file_path, "wb") as _local_file:
-            _local_file.write(_url.read())
-        _local_file.close()
-        return _file_path

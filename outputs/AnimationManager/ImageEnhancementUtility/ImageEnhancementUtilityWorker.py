@@ -14,9 +14,13 @@ class ImageEnhancementUtility(object):
             enhancement_objects.append(ImageEnhancement.objects.get(pk=int(enh_id)))
 
         current_filename = filename
-        dot_index = filename.rindex('.')
-        name_part = filename[:dot_index]
-        ext_part = filename[dot_index:]
+        try:
+            dot_index = filename.rindex('.')
+            name_part = filename[:dot_index]
+            ext_part = filename[dot_index:]
+        except ValueError:
+            name_part = filename
+            ext_part = ''  #there is no extension, unlikely but possible
 
         if settings.COLLECTED_FILE_PATH in name_part:
             name_part = name_part[len(settings.COLLECTED_FILE_PATH):]
