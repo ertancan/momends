@@ -3,7 +3,6 @@ __author__ = 'goktan'
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.views.generic.edit import FormView
-from django.views.generic.detail import DetailView
 from django.views.generic.base import TemplateView
 from django.views.generic.base import View
 from django.http import HttpResponse
@@ -11,7 +10,6 @@ from WebManager.forms import CreateMomendForm
 from DataManager.DataManager import DataManager
 from DataManager.models import Momend
 from Outputs.AnimationManager.models import AnimationPlayStat,UserInteraction
-from django.shortcuts import redirect
 
 
 class HomePageFormView(FormView):
@@ -49,14 +47,21 @@ class ShowMomendView(TemplateView):
 
         return context
 
-class GetMomendView(DetailView):
-    model = Momend
+class GetMomendView(TemplateView):
     context_object_name = 'momend'
     template_name = 'GetMomendTemplate.html'
+    def get_context_data(self, **kwargs):
+        context = super(GetMomendView, self).get_context_data(**kwargs)
+        obj = Momend.objects.get(pk = kwargs['id'])
+        if obj.privacy == Momend.PRIVACY_CHOICES['Private']:
+            if obj.owner != self.request.user:
+                context['momend'] = '{"error":"not authorised"}'
+                return context
+        context['momend'] = obj.toJSON()
+        return context
 
 class SaveInteractionView(View):
     def post(self, request, *args, **kwargs): #TODO user check may be?
-
         queue = request.POST['queue']
         momend_id = request.POST['id']
         interaction = UserInteraction()
