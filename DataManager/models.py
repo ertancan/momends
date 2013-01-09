@@ -50,7 +50,7 @@ class AnimationLayer(BaseDataManagerModel):
 
     def encode(self):
         enc = []
-        for out in OutData.objects.filter(owner_layer=self):
+        for out in self.outdata_set.all():
             enc.append(out.encode())
         return enc
 
@@ -102,38 +102,6 @@ class RawData(BaseDataManagerModel):
         return str(self.owner) + '_' + str(self.provider) + '_' + str(self.original_id)
 
 
-class OutData(BaseDataManagerModel):
-    class Meta:
-        verbose_name_plural = 'OutData'
-        verbose_name = 'OutData'
-    owner_layer = models.ForeignKey(AnimationLayer)
-    raw = models.ForeignKey(RawData,null=True, blank=True) #If created by enriching or enhancing a raw data
-
-    #Enriched Data
-    priority = models.IntegerField(default=0)
-    selection_criteria = models.TextField(null=True, blank=True) #TODO foreign key may be
-
-    #Enhanced Data
-    theme = models.ForeignKey('Theme', null=True, blank=True)
-
-    #Keeps the latest path or reference to the object
-    final_data_path = models.TextField(null=True, blank=True)
-
-    #Animation Data
-    animation = models.ForeignKey('CoreAnimationData', null=True, blank= True)
-
-    def __unicode__(self):
-        return str(self.owner_layer)+':'+str(self.theme)+'='+str(self.animation)
-
-    def encode(self):
-        enc = model_to_dict(self,fields=['priority','selection_criteria','final_data_path'])
-        enc['theme'] = self.theme.encode()
-        enc['animation'] = self.animation.encode()
-        return enc
-
-    def give_momend_name(self):
-        return self.owner_layer.momend
-    give_momend_name.short_description = 'Momend'
 
 
 

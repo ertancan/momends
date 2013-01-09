@@ -1,7 +1,7 @@
 __author__ = 'ertan'
 from Outputs.AnimationManager.models import ThemeData
-import random
 from LogManagers.Log import Log
+import random
 
 class ThemeDataManager(object):
     def __init__(self,theme):
@@ -23,22 +23,22 @@ class ThemeDataManager(object):
         return result
 
     def getPreviousData(self,type):
-        Log.debug(self.random_indexes)
         if self.random_indexes[type] != -1:
             return self.theme_data[type][self.random_indexes[type]]
 
         if self.current_indexes[type] == -1:
             self.current_indexes[type] = 0
-        Log.debug('getting the previous one with index:'+str(self.current_indexes[type]))
         return self.theme_data[type][self.current_indexes[type]]
 
     def getNextData(self,type):
         self.random_indexes[type] = -1 #Clear previous random index
+        if len(self.theme_data[type]) == 0:
+            Log.error('No theme data for type:'+str(type))
+            return None
+        self.current_indexes[type] += 1
         if self.current_indexes[type] == len(self.theme_data[type]):
             self.current_indexes[type] = 0 #For circular theme data
-        else:
-            self.current_indexes[type] += 1
-
+        Log.debug('Current index is: '+str(self.current_indexes[type])+' for '+str(type))
         return self.theme_data[type][self.current_indexes[type]]
 
     def getRandData(self,type):

@@ -1,5 +1,6 @@
 __author__ = 'ertan'
-from DataManager.models import AnimationLayer,OutData
+from DataManager.models import AnimationLayer
+from Outputs.AnimationManager.models import OutData
 from Outputs.AnimationManager.models import AnimationGroup,Scenario,CoreAnimationData
 class ScenarioManagerWorker(object):
     def prepare_scenario(self, momend, duration, theme, scenario=None, selection='basic', max_photo=0, max_bg=0, max_status=0, max_checkin=0):

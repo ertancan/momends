@@ -1,11 +1,57 @@
 from DataManager.models import BaseDataManagerModel
-from DataManager.models import Momend, OutData
 from django.db import models
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
-from DataManager.models import AnimationLayer
+from DataManager.models import RawData,Momend
 from django.utils import simplejson
 from datetime import datetime
+
+class OutData(BaseDataManagerModel):
+    class Meta:
+        verbose_name_plural = 'OutData'
+        verbose_name = 'OutData'
+        app_label = 'DataManager'
+    owner_layer = models.ForeignKey('AnimationLayer')
+    raw = models.ForeignKey(RawData,null=True, blank=True) #If created by enriching or enhancing a raw data
+
+    #Enriched Data
+    priority = models.IntegerField(default=0)
+    selection_criteria = models.TextField(null=True, blank=True) #TODO foreign key may be
+
+    #Enhanced Data
+    theme = models.ForeignKey('Theme', null=True, blank=True)
+
+    #Keeps the latest path or reference to the object
+    final_data_path = models.TextField(null=True, blank=True)
+    parameters = models.TextField(null=True, blank=True)
+
+    #Animation Data
+    animation = models.ForeignKey('CoreAnimationData', null=True, blank= True)
+
+    def __unicode__(self):
+        return str(self.owner_layer)+':'+str(self.theme)+'='+str(self.animation)
+
+    def encode(self):
+        enc = model_to_dict(self,fields=['priority','selection_criteria','final_data_path','parameters'])
+        enc['theme'] = self.theme.encode()
+        enc['animation'] = self.animation.encode()
+        if self.raw and (self.raw.type == RawData.DATA_TYPE['Status']):
+            enc['data'] = self.raw.data
+        post_enhancements = self.appliedpostenhancement_set
+        if post_enhancements.count() > 0:
+            posts = []
+            for enh in post_enhancements.all():
+                posts.append(enh.encode())
+
+            enc['post_enhancements'] = posts
+
+        return enc
+
+    def give_momend_name(self):
+        return self.owner_layer.momend
+    give_momend_name.short_description = 'Momend'
+
+
 class CoreAnimationData(BaseDataManagerModel):
     class Meta:
         verbose_name_plural = 'CoreAnimationData'
@@ -59,18 +105,46 @@ class ImageEnhancement(BaseDataManagerModel):
     def __unicode__(self):
         return self.name
 
-class ImageEnhancementGroup(BaseDataManagerModel):
+class PostEnhancement(BaseDataManagerModel):
     name = models.CharField(max_length=255)
-    image_enhancement_functions = models.CommaSeparatedIntegerField(max_length=255, null=True, blank=True)
+    filepath = models.CharField(max_length=500, null= True, blank= True)
+    used_object_type = models.CharField(max_length=255, null=True, blank=True) #What kind of object? i.e., USER_PHOTO,THEME_BG
+    parameters = models.CharField(max_length=255, null=True, blank=True)
+
+    type = models.CharField(max_length=255)
 
     def __unicode__(self):
-        return self.name+':'+str(self.image_enhancement_functions)
+        return self.name+':'+str(self.type)
+
+class AppliedPostEnhancement(BaseDataManagerModel):
+    outdata = models.ForeignKey(OutData)
+
+    filepath = models.CharField(max_length=255)
+    type = models.CharField(max_length=255)
+    parameters = models.CharField(max_length=255)
+
+    def __unicode__(self):
+        return str(self.type)+':'+self.filepath
+
+    def encode(self):
+        return model_to_dict(self,exclude='outdata')
+
+
+class EnhancementGroup(BaseDataManagerModel):
+    name = models.CharField(max_length=255)
+    enhancement_functions = models.CommaSeparatedIntegerField(max_length=255, null=True, blank=True)
+
+    post_enhancement = models.BooleanField(default = False)
+    applicable_to = models.IntegerField(choices=[[RawData.DATA_TYPE[key],key] for key in RawData.DATA_TYPE.keys()])
+
+    def __unicode__(self):
+        return self.name+':'+str(self.enhancement_functions)
 
 
 class Theme(BaseDataManagerModel):
     name = models.CharField(max_length=255)
 
-    image_enhancement_groups = models.ManyToManyField(ImageEnhancementGroup)
+    enhancement_groups = models.ManyToManyField(EnhancementGroup)
 
     def __unicode__(self):
         return str(self.name)
@@ -101,6 +175,7 @@ class ThemeData(BaseDataManagerModel):
                                  ]
     type = models.IntegerField(choices=[[THEME_DATA_TYPE[key],key] for key in THEME_DATA_TYPE.keys()])
     data_path = models.CharField(max_length=255)
+    parameters = models.TextField(null=True, blank=True)
 
     #TODO Different resolutions may be?
 
