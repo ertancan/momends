@@ -165,6 +165,7 @@ class ThemeData(BaseDataManagerModel):
         'StubPhoto': 2,
         'Font': 3,
         'Music': 4,
+        'Status-Background' : 5,
         }
     THEME_DATA_TYPE_KEYWORDS = [ #Every data type has 3 keywords, 1st latest data, 2nd next data, 3rd random #!!DO NOT BREAK THE ORDER
                                  '{{THEME_BG}}','{{NEXT_THEME_BG}}','{{RAND_THEME_BG}}', #!!3 is necessary for all types even though you won't use it
@@ -172,6 +173,7 @@ class ThemeData(BaseDataManagerModel):
                                  '{{THEME_STUB}}','{{NEXT_THEME_STUB}}', '{{RAND_THEME_STUB}}',
                                  '{{THEME_FONT}}','{{NEXT_THEME_FONT}}', '{{RAND_THEME_FONT}}',
                                  '{{THEME_MUSIC}}','{{NEXT_THEME_MUSIC}}', '{{RAND_THEME_MUSIC}}',
+                                 '{{THEME_STATUS_BG}}', '{{NEXT_THEME_STATUS_BG}}', '{{RAND_THEME_STATUS_BG}}',
                                  ]
     type = models.IntegerField(choices=[[THEME_DATA_TYPE[key],key] for key in THEME_DATA_TYPE.keys()])
     data_path = models.CharField(max_length=255)

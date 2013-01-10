@@ -140,21 +140,24 @@ function create_objects_from_data(){
 }
 function _apply_post_enhancements(created_obj, enhancements){
     for(var i=0; i<enhancements.length; i++){
-        var enh = enhancements[0];
+        var enh = enhancements[i];
         var path = enh['filepath'];
         if(path && path.indexOf('http') != 0){
             path = STATIC_URL + path;
         }
+        console.log(enh['type']);
         if(enh['type'] === 'apply_font'){
-            console.log('appending font');
-            jQuery('<link/>',{
+            jQuery('<link/>',{ //Include stylesheet to the html TODO:don't include twice maybe
                 rel:'stylesheet',
                 href:path,
                 type:'text/css',
                 charset:'utf-8'
             }).appendTo('head');
 
-            created_obj.css('font',enh['parameters']);
+            created_obj.css('font',enh['parameters']); //Then apply it to div
+        }else if(enh['type'] === 'apply_bg'){
+            created_obj.css('background-image','url("'+path+'")');
+            created_obj.css(_parse_string_to_dict(enh['parameters']));
         }
     }
 }

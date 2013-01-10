@@ -2,6 +2,7 @@ __author__ = 'ertan'
 from Outputs.AnimationManager.models import ThemeData,AppliedPostEnhancement,PostEnhancement
 from DataManager.models import RawData
 from Outputs.AnimationManager.ImageEnhancementUtility.ImageEnhancementUtilityWorker import ImageEnhancementUtility
+from Outputs.AnimationManager.models import CoreAnimationData
 from Outputs.AnimationManager.ThemeManager.ThemeDataManager import ThemeDataManager
 from LogManagers.Log import Log
 class ThemeManagerWorker:
@@ -81,9 +82,18 @@ class ThemeManagerWorker:
         return outdata
 
     def _set_post_enhancements(self,outdata):
+        """
+        Selects a random post enhancement for the given data, creates a new entry in AppliedPostEnhancements table.
+        !! Parameters of 'PostEnhancement' object overrides parameters of 'ThemeData' !!
+        :param outdata: OutData object that will receive post enhancement
+        :return: same outdata object
+        """
         if not outdata.raw:
             return outdata
-
+        used_obj = outdata.animation.used_object_type
+        index = CoreAnimationData.USER_DATA_TYPE.index(used_obj)
+        if index % 2 == 0: #Post enhancement already applied, since it is not NEXT_OBJECT
+            return outdata
         rand_enhancement = self.theme.enhancement_groups.filter(post_enhancement=True).filter(applicable_to=outdata.raw.type).order_by('?')
         if len(rand_enhancement) == 0:
             return outdata
