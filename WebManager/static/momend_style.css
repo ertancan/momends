@@ -19,7 +19,12 @@ body{
     overflow:hidden;
     position:relative;
 }
-
+.error{
+    position: absolute;
+    display: inline;
+    padding-left: 35%;
+    top:10px;
+}
 figure, figcaption{ /*add any other html5 elements you use*/
     display:block;
 }

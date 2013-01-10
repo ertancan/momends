@@ -1,6 +1,5 @@
 var momend_data;
 var created_objects;
-
 String.prototype.hashCode = function(){
     var hash = 0;
     if (this.length == 0) return hash;
@@ -13,9 +12,25 @@ String.prototype.hashCode = function(){
 };
 
 function momend_arrived(){
+    _calculate_dimensions(); //Since they may be needed while creating objects
+    if(!momend_data || momend_data.length == 0){
+        load_failed();
+        return;
+    }
     create_objects_from_data();
     setAnimationQueue(momend_data['animation_layers']);
     startAllQueues();
+    $(window).resize(function(){
+        _calculate_dimensions();
+    });
+}
+
+function load_failed(){
+    jQuery('<h1/>',{
+        text : 'Momend could not be found!',
+        class : 'error',
+        id : 'error'
+    }).appendTo('body');
 }
 function create_objects_from_data(){
     created_objects = {};
@@ -166,10 +181,11 @@ function _apply_post_enhancements(created_obj, enhancements){
  * By default we keep animations in string format in db, however they can be parsed into json, this method gets those strings
  * and returns js dictionaries so that player can play them.
  * @param _str string like "left:200px,top:300px"
+ * @param replaceKeywords replace keywords like {{SCREEN_WIDTH}} etc if true
  * @return {*} dictionary {"left":"200px","top":"300px"}
  * @private
  */
-function _parse_string_to_dict(_str){
+function _parse_string_to_dict(_str,replaceKeywords){
     if(typeof _str !== 'string'){
         return _str;
     }
@@ -177,7 +193,11 @@ function _parse_string_to_dict(_str){
     var parts = _str.split(',');
     for(var i= 0; i<parts.length;i++){
         var css_parts = parts[i].split(':');
-        resp[css_parts[0]] = css_parts[1];
+        if(replaceKeywords && keywordLookupTable.hasAttribute(css_parts[1])){
+            resp[css_parts[0]] = keywordLookupTable[css_parts[1]];
+        }else{
+            resp[css_parts[0]] = css_parts[1];
+        }
     }
     return resp;
 }

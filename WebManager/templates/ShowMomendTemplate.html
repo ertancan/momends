@@ -25,7 +25,7 @@
             $.getJSON( '{% url 'momends:get-momend' params.id %}', function(data) {
                 momend_data = data;
                 momend_arrived();
-            });
+            }).error(function(){load_failed();});
         }
         function send_interaction_data(){
             _sendUserInteractionToServer('{% url 'momends:save-interaction' params.id %}')

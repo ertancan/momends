@@ -12,6 +12,8 @@ var last_user_interaction = 0; //last time the user clicks on an item or mouse e
 var ready_music_count = 0; //How many of the remaining music are ready for playing.
 var node_waiting_to_play; //If the handle_node tried to play a music but it wasn't ready
 var music_layer; //Which layer belongs to music player
+var keywordLookupTable; //Keeps the latest values of keyword related values like {{SCREEN_WIDTH}}
+
 /**
  * Instantiates global variables according to number of levels needed.
  * @param _level number of animations layers
@@ -161,12 +163,18 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
                 if(typeof _animation['pre'][key] === 'function'){
                     _animation['pre'][key]=_animation['pre'][key]();
                 }
+                if(_animation['pre'][key] in keywordLookupTable){
+                    _animation['pre'][key]=keywordLookupTable[_animation['pre'][key]];
+                }
             }
             _obj.css(_animation['pre']);
         }
         for(var key in _animation['anim']){
             if(typeof _animation['anim'][key] === 'function'){
                 _animation['anim'][key]=_animation['anim'][key]();
+            }
+            if(_animation['anim'][key] in keywordLookupTable){
+                _animation['anim'][key]=keywordLookupTable[_animation['anim'][key]];
             }
         }
         _obj.animate(_animation['anim'],{duration:_duration,queue:false,complete:function(){
@@ -436,5 +444,13 @@ function _music_loaded(_loaded_obj){
     ready_music_count++;
     if(node_waiting_to_play){
         _handleNode(node_waiting_to_play,music_layer);
+    }
+}
+
+function _calculate_dimensions(){
+    var screen = $('.scene');
+    keywordLookupTable = {
+        '{{SCREEN_WIDTH}}' : screen.outerWidth(),
+        '{{SCREEN_HEIGHT}}' : screen.outerHeight()
     }
 }
