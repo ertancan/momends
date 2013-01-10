@@ -121,7 +121,7 @@ class AppliedPostEnhancement(BaseDataManagerModel):
 
     filepath = models.CharField(max_length=255)
     type = models.CharField(max_length=255)
-    parameters = models.CharField(max_length=255)
+    parameters = models.CharField(max_length=255) #This parameters overrides ThemeData parameters!
 
     def __unicode__(self):
         return str(self.type)+':'+self.filepath

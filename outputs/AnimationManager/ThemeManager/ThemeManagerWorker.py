@@ -98,14 +98,17 @@ class ThemeManagerWorker:
             next_enh = PostEnhancement.objects.get(pk=func)
             applied_enh = AppliedPostEnhancement()
             applied_enh.outdata = outdata
-            applied_enh.parameters = next_enh.parameters
             applied_enh.type = next_enh.type
-
+            enh_parameter = next_enh.parameters
             if next_enh.filepath:
                 applied_enh.filepath = next_enh.filepath
             elif next_enh.used_object_type:
                 theme_data = self._get_theme_data_for_keyword(next_enh.used_object_type)
                 applied_enh.filepath = theme_data.data_path
+                if not enh_parameter or len(enh_parameter) == 0:
+                    enh_parameter = theme_data.parameters
+
+            applied_enh.parameters = enh_parameter
             applied_enh.save()
 
         return outdata

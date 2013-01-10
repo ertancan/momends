@@ -291,7 +291,6 @@ function _musicFade(_obj,isFadeIn,step){
     }else{
         var targetVol = currentVol - step;
     }
-    console.log('fade:'+currentVol+'target:'+targetVol+'  step::'+step);
     _obj.jPlayer("volume",targetVol);
     if((isFadeIn && targetVol + step  <=1 ) || (!isFadeIn && targetVol - step >=0)){
         setTimeout(function(){

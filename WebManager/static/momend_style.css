@@ -1,87 +1,98 @@
 @charset "UTF-8";
 html{
-height:100%;
-width:100%;
+    height:100%;
+    width:100%;
+    font-size:100%;
 }
 
 body{
-height:100%;
-width:100%;
-margin:0px;
+    height:100%;
+    width:100%;
+    margin:0px;
+    font-size:100%;
 }
 
 .scene{
-margin:0 auto;
-width:100%;
-height:100%;
-overflow:hidden;
-position:relative;
+    margin:0 auto;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    position:relative;
 }
 
 figure, figcaption{ /*add any other html5 elements you use*/
-display:block;
+    display:block;
 }
 
 .photo {
-display:none;
-position:absolute;
-padding: 6px 8px 10px 8px; /*size of the frame*/
+    display:none;
+    position:absolute;
+    padding: 6px 8px 10px 8px; /*size of the frame*/
+}
+.status {
+    display:none;
+    position:absolute;
+}
+
+.status-text{
+    position:relative;
+    padding:10px;
 }
 
 .tweet{
-position:absolute;
-width:500px;
-height:80px;
-border-radius:5px;
--moz-border-radius:5px;
--webkit-border-radius:5px;
-background-color: #00a0d1;
-background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#00a0d1), to(#008db8)); /* Webkit */
-background-image: -moz-linear-gradient(#00a0d1, #008db8); /* FF3.6 */
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00a0d1', endColorstr='#008db8'); /* IE6,IE7 */
--ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#00a0d1', endColorstr='#008db8')"; /* IE8 */
-border: 1px solid #999;
+    position:absolute;
+    width:500px;
+    height:80px;
+    border-radius:5px;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    background-color: #00a0d1;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#00a0d1), to(#008db8)); /* Webkit */
+    background-image: -moz-linear-gradient(#00a0d1, #008db8); /* FF3.6 */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00a0d1', endColorstr='#008db8'); /* IE6,IE7 */
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#00a0d1', endColorstr='#008db8')"; /* IE8 */
+    border: 1px solid #999;
 }
 
 .tweet-text{
-position:absolute;
-padding:10px;
-color:#FFF;
-font-size:20px;
-font-family:"Helvetica Neue", Helvetica, Arial, sans-serif
-text-shadow: 2px 2px 2px #c9c9c9;
-filter: dropshadow(color=#c9c9c9, offx=2, offy=2);
-line-height: 28px;
+    position:absolute;
+    padding:10px;
+    color:#FFF;
+    font-size:20px;
+    font-family:"Helvetica Neue", Helvetica, Arial, sans-serif
+    text-shadow: 2px 2px 2px #c9c9c9;
+    filter: dropshadow(color=#c9c9c9, offx=2, offy=2);
+    line-height: 28px;
 }
 
 .twitter-icon{
-position:absolute;
-top:15px;
-left:437px;
-width:50px;
-height:50px;
+    position:absolute;
+    top:15px;
+    left:437px;
+    width:50px;
+    height:50px;
 }
 
 .scene-background{
-position:absolute;
-display:none;
-width:100%;
-height:100%;
+    position:absolute;
+    display:none;
+    width:100%;
+    height:100%;
 }
 
 .background-image{
-width:100%;
-height:100%;
+    width:100%;
+    height:100%;
 }
 
 .video-container{
-position:absolute;
+    position:absolute;
 }
 
 .photo_image{
-position:relative;
-width:100%;
-height:100%;
-margin:3px;
-margin-left:0px;
+    position:relative;
+    width:100%;
+    height:100%;
+    margin:3px;
+    margin-left:0px;
 }

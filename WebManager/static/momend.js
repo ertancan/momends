@@ -1,5 +1,17 @@
 var momend_data;
 var created_objects;
+
+String.prototype.hashCode = function(){
+    var hash = 0;
+    if (this.length == 0) return hash;
+    for (i = 0; i < this.length; i++) {
+        char = this.charCodeAt(i);
+        hash = ((hash<<5)-hash)+char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+};
+
 function momend_arrived(){
     create_objects_from_data();
     setAnimationQueue(momend_data['animation_layers']);
@@ -54,7 +66,6 @@ function create_objects_from_data(){
                         });
                     }
                     if(typeof node['animation']['hover_animation'] !== 'undefined'){
-                        console.log(node['animation']['hover_animation'])
                         created_div.mouseenter(function(){
                             handleMouseEnter($(this));
                         });
@@ -63,6 +74,38 @@ function create_objects_from_data(){
                 case '{{USER_PHOTO}}':
                     node['animation']['object'] = created_objects[node['final_data_path']];
                     break;
+
+                case '{{NEXT_USER_STATUS}}':
+                case '{{RANDOM_USER_STATUS}}':
+                    jQuery('<div/>',{
+                        id: 'status'+i+''+j,
+                        class: 'status'
+                    }).appendTo('.scene');
+                    var created_div = $('#status'+i+''+j);
+                    jQuery('<p/>',{
+                        class: 'status-text',
+                        text:node['data']
+                    }).appendTo(created_div);
+                    if(typeof node['animation']['click_animation'] !== 'undefined'){
+                        created_div.click(function(){
+                            handleClick($(this));
+                        });
+                    }
+                    if(typeof node['animation']['hover_animation'] !== 'undefined'){
+                        created_div.mouseenter(function(){
+                            handleMouseEnter($(this));
+                        });
+                    }
+                    if(node['post_enhancements']){
+                        _apply_post_enhancements(created_div,node['post_enhancements']);
+                    }
+                    created_objects[node['data'].hashCode()] = created_div;
+
+                case '{{USER_STATUS}}':
+                    node['animation']['object'] = created_objects[node['data'].hashCode()];
+                    break;
+
+
                 case '{{NEXT_THEME_MUSIC}}':
                 case '{{RAND_THEME_MUSIC}}':
                 case '{{NEXT_USER_MUSIC}}':
@@ -92,6 +135,26 @@ function create_objects_from_data(){
                     node['animation']['object'] = created_objects[node['final_data_path']];
                     break;
             }
+        }
+    }
+}
+function _apply_post_enhancements(created_obj, enhancements){
+    for(var i=0; i<enhancements.length; i++){
+        var enh = enhancements[0];
+        var path = enh['filepath'];
+        if(path && path.indexOf('http') != 0){
+            path = STATIC_URL + path;
+        }
+        if(enh['type'] === 'apply_font'){
+            console.log('appending font');
+            jQuery('<link/>',{
+                rel:'stylesheet',
+                href:path,
+                type:'text/css',
+                charset:'utf-8'
+            }).appendTo('head');
+
+            created_obj.css('font',enh['parameters']);
         }
     }
 }
