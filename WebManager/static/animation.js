@@ -166,6 +166,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
                 if(_animation['pre'][key] in keywordLookupTable){
                     _animation['pre'][key]=keywordLookupTable[_animation['pre'][key]];
                 }
+                _animation['pre'][key] = _replace_object_keywords(_animation['pre'][key],_obj);
             }
             _obj.css(_animation['pre']);
         }
@@ -176,6 +177,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
             if(_animation['anim'][key] in keywordLookupTable){
                 _animation['anim'][key]=keywordLookupTable[_animation['anim'][key]];
             }
+            _animation['anim'][key] = _replace_object_keywords(_animation['anim'][key],_obj);
         }
         _obj.animate(_animation['anim'],{duration:_duration,queue:false,complete:function(){
             if(triggerNext){
@@ -453,4 +455,10 @@ function _calculate_dimensions(){
         '{{SCREEN_WIDTH}}' : screen.outerWidth(),
         '{{SCREEN_HEIGHT}}' : screen.outerHeight()
     }
+}
+
+function _replace_object_keywords(_str, _obj){
+    var _child = _obj.children()[0];
+    return _str.replace('{{OBJECT_WIDTH}}',_child.width).
+        replace('{{OBJECT_HEIGHT}}',_child.height);
 }
