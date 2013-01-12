@@ -108,7 +108,7 @@ class ScenarioManagerWorker(object):
         for i in range(0,len(layers)): #For every layer of data
             result.append([])
             for group in group_layers[i]: #For every AnimationGroup in layers
-                group_objects = CoreAnimationData.objects.filter(group=group)
+                group_objects = CoreAnimationData.objects.filter(group=group).order_by('order_in_group')
                 for obj in group_objects: #For every CoreAnimation in each AnimationGroup
                     outData = OutData()
                     outData.owner_layer = layers[i]

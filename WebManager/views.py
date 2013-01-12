@@ -10,6 +10,7 @@ from WebManager.forms import CreateMomendForm
 from DataManager.DataManager import DataManager
 from DataManager.models import Momend
 from Outputs.AnimationManager.models import AnimationPlayStat,UserInteraction
+from Outputs.AnimationManager.models import Theme
 
 
 class HomePageFormView(FormView):
@@ -23,7 +24,7 @@ class HomePageFormView(FormView):
         _user = User.objects.get(username=self.request.user)
         dm = DataManager(_user)
         momend_id = dm.create_momend(name=momend_name, since=start_date,
-            until=finish_date, duration=30, privacy=privacy)
+            until=finish_date, duration=30, privacy=privacy, theme=Theme.objects.get(pk=form.cleaned_data['momend_theme']))
         status = dm.get_last_status()
         #TODO get status back to view
         self.success_url = reverse('momends:show-momend', args = (momend_id,) )

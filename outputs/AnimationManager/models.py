@@ -65,13 +65,36 @@ class CoreAnimationData(BaseDataManagerModel):
         '{{USER_BACKGROUND}}', '{{NEXT_USER_BACKGROUND}}',
         '{{USER_MUSIC}}', '{{NEXT_USER_MUSIC}}'
     ]
+    ANIMATION_TYPE = [
+        'animation',
+        'sleep',
+        'show',
+        'hide',
+        'block',
+        'unblock',
+        'wait',
+        'breakpoint',
+        'click',
+        'hover',
+        'music-play',
+        'music-pause',
+        'music-stop',
+        'music-volume',
+        'music-fadein',
+        'music-fadeout',
+    ]
+
+
+    _choices = [[i,ANIMATION_TYPE[i]] for i in range(0,len(ANIMATION_TYPE))]
+
     group = models.ForeignKey('AnimationGroup')
+    order_in_group = models.IntegerField(default=0)
+
     used_object_type = models.CharField(max_length=255, null=True, blank=True) #What kind of object? i.e., USER_PHOTO,THEME_BG
-    used_object_id = models.CharField('Id of the object, if known' ,max_length=255, null=True, blank=True)
     #Consistent with javascript interpreter
     name = models.CharField(max_length=255, null=True, blank=True) #Optional, descriptive, human readable name
-    type = models.CharField(max_length=50) #Type of the animation
-    duration = models.IntegerField(default=0) #Duration of certain types
+    type = models.IntegerField(choices=_choices) #Type of the animation
+    duration = models.IntegerField(verbose_name = 'Duration (ms)', default=0) #Duration of certain types
     pre = models.TextField(null=True, blank=True) #Precondition of the object to perform the animation
     anim = models.TextField(null=True, blank=True) #Steps to be performed if the type is 'animation'
     target = models.IntegerField(null=True, blank=True) #Animation layer to affect if inter-layer type like wait,block,unblock etc.
@@ -86,13 +109,12 @@ class CoreAnimationData(BaseDataManagerModel):
         return str(self.group)+'-'+str(self.used_object_type)
 
     def encode(self):
-        enc = model_to_dict(self,exclude=['group','click_animation','hover_animation','used_object_id'])
+        enc = model_to_dict(self,exclude=['group','click_animation','hover_animation','used_object_id','order_in_group','type'])
+        enc['type'] = CoreAnimationData.ANIMATION_TYPE[self.type]
         if self.click_animation:
             enc['click_animation'] = self.click_animation.encode()
         if self.hover_animation:
             enc['hover_animation'] = self.hover_animation.encode()
-        if self.used_object_id:
-            enc['object'] = self.used_object_id
         return enc
 
 class ImageEnhancement(BaseDataManagerModel):
