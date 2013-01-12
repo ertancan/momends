@@ -22,8 +22,8 @@ class EnrichDataWorker: #TODO keep this as base class and introduce different wo
     def _sort_by_priority(self,enriched_data):
         sorted_data = []
         for type_arr in enriched_data:
-            Log.debug(type_arr)
             sorted_data.append(sorted(type_arr, key=lambda obj: obj.priority, reverse=True))
+        Log.debug('Sorted data:'+str(sorted_data))
         return sorted_data
 
 class TemporaryEnrichedObjectHolder(object):
@@ -31,3 +31,9 @@ class TemporaryEnrichedObjectHolder(object):
         self.raw = raw
         self.criteria = criteria
         self.priority = priority
+
+    def __str__(self):
+        return str(self.raw)+'='+self.criteria+':'+str(self.priority)
+
+    def __repr__(self):
+        return self.__str__()
