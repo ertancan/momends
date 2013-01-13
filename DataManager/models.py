@@ -13,6 +13,8 @@ class Momend(BaseDataManagerModel):
     owner = models.ForeignKey(User)
     create_date = models.DateTimeField(auto_now_add=True)
     name = models.CharField(null=False, blank=False, max_length=255)
+    thumbnail = models.CharField(max_length=2000, null=True, blank=True)
+
 
     momend_start_date = models.DateTimeField()
     momend_end_date = models.DateTimeField()
@@ -73,10 +75,11 @@ class RawData(BaseDataManagerModel):
 
     owner = models.ForeignKey(User)
 
-    original_path = models.CharField(max_length=500) #original path of data if it exists
+    original_path = models.CharField(max_length=2000) #original path of data if it exists
     original_id = models.CharField(max_length=255, db_index=True) #original id of data represents the source id
     data = models.TextField() #main data to use in momend
     title = models.CharField(max_length=255)
+    thumbnail = models.CharField(max_length=2000, null=True, blank=True)
 
     DATA_TYPE= {'Photo': 0,
                 'Status': 1,

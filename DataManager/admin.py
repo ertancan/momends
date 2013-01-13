@@ -3,11 +3,11 @@ from django.contrib import admin
 from models import *
 
 class MomendAdmin(admin.ModelAdmin):
-    list_display = ('owner', 'name', 'create_date',)
+    list_display = ('owner', 'name', 'thumbnail','create_date')
 
 
 class RawDataAdmin(admin.ModelAdmin):
-    list_display = ('owner', 'type', 'provider', 'original_path',
+    list_display = ('owner', 'type', 'provider', 'original_path', 'thumbnail',
                     'original_id', 'fetch_date', 'data', 'title')
 
 class ProviderAdmin(admin.ModelAdmin):

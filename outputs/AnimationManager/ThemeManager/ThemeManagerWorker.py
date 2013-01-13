@@ -25,12 +25,19 @@ class ThemeManagerWorker:
 
 
     def _fill_theme_data(self, outdata):
-        used_type = outdata.animation.used_object_type
-        theme_data = self._get_theme_data_for_keyword(used_type)
-        if theme_data:
-            outdata.final_data_path = theme_data.data_path
-            outdata.parameters = theme_data.parameters
+        _used_theme_data = outdata.animation.used_theme_data
+        if _used_theme_data:
+            outdata.final_data_path = _used_theme_data.data_path
+            outdata.parameters = _used_theme_data.parameters
             outdata.selection_criteria = 'Theme Asset'
+            return outdata
+        used_type = outdata.animation.used_object_type
+        if used_type:
+            theme_data = self._get_theme_data_for_keyword(used_type)
+            if theme_data:
+                outdata.final_data_path = theme_data.data_path
+                outdata.parameters = theme_data.parameters
+                outdata.selection_criteria = 'Theme Asset'
         return  outdata
 
     def _get_theme_data_for_keyword(self,keyword):
