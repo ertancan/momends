@@ -10,7 +10,8 @@
 {% endblock include %}
 {% block content %}
     <body onload="init()">
-
+    <button onclick="resume()" id="play-toggle">Play</button>
+    <button onclick="pause()" id="pause-toggle">Pause</button>
     <div class="scene"></div>
     <div class="music"></div>
     {% csrf_token %}

@@ -1,7 +1,8 @@
 var animationQueue; // Keeps layers of animation data
-var finishedAnimationQueue; //Keeps finished animations
 var queueOnAction; // Boolean array indicates the given layer is active or not (e.g. queueOnAction[0] will be true if layer 0 started and working now)
 var currentAnimation; //Keeps the animations which are being processed right now
+var finishedAnimationQueue; //Keeps finished animation nodes in finishing order
+var pauseQueue; //Keeps the remaining animations that will be performed when un-paused
 var _layerWaitQueue; //Each array in this queue keeps the ids of other layers waiting for the current animation on the queue
 //If _layerWaitQueue[0] has 1 and 2 in it, layers 1 and 2 will be started when the current animation in layer 0 finishes
 var _layerBreakPointWaitQueue; //Same principle as _layerWaitQueue but this waits for an animation which has type 'breakpoint' to trigger otherlayers
@@ -9,6 +10,7 @@ var _userInteractionQueue; //Keeps the action performed by user during play.
 MUSIC_ANIMATION_INTERVAL = 100; //Defines number of milliseconds between music fade animations. (e.g. if you perform fade animation with duration=1000ms
 // the animation will be performed in 5 steps. (Can be changed according to smoothness of the animation
 var last_user_interaction = 0; //last time the user clicks on an item or mouse enters into the object boundaries.
+var pause_time = 0; // Time that the user presses pause button, to calculate time between user interactions
 var ready_music_count = 0; //How many of the remaining music are ready for playing.
 var node_waiting_to_play; //If the handle_node tried to play a music but it wasn't ready
 var music_layer; //Which layer belongs to music player
@@ -20,17 +22,17 @@ var keywordLookupTable; //Keeps the latest values of keyword related values like
  */
 function __generateQueues(_level){
     animationQueue = new Array();
-    finishedAnimationQueue = new Array();
     queueOnAction = new Array();
     currentAnimation = new Array();
+    finishedAnimationQueue = new Array();
     _layerWaitQueue = new Array();
     _layerBreakPointWaitQueue = new Array();
     _userInteractionQueue = new Array();
     for(var i=0;i<_level;i++){
         animationQueue.push(new Array());
-        finishedAnimationQueue.push(new Array());
         queueOnAction.push(false);
-        currentAnimation.push(undefined);
+        currentAnimation.push(new Array());
+        finishedAnimationQueue.push(new Array())
         _layerWaitQueue.push(new Array());
         _layerBreakPointWaitQueue.push(new Array());
     }
@@ -53,6 +55,12 @@ function startAllQueues(){
     }
     last_user_interaction = new Date().getTime();
 }
+
+function stopAllQueues(){
+    for(var i = 0; i<queueOnAction.length; i++){
+        queueOnAction[i] = false;
+    }
+}
 /**
  * Clears the current animation queue and replaces it with the given one
  * @param _queue Layer of animations to be performed
@@ -60,6 +68,11 @@ function startAllQueues(){
 function setAnimationQueue(_queue){
     __generateQueues(_queue.length);
     animationQueue = jQuery.extend(true,[],_queue);
+    for(var i = 0; i<animationQueue.length; i++){
+        for(var j = 0; j<animationQueue[i].length;j++){
+            animationQueue[i][j]['id'] = i+'-'+j;
+        }
+    }
 }
 /**
  * Creates an additional animation queue level for user interaction animations like click or hover.
@@ -67,9 +80,8 @@ function setAnimationQueue(_queue){
  */
 function _addInteractionAnimationLayerForObject(animations){
     animationQueue.push(animations);
-    finishedAnimationQueue.push(new Array());
     queueOnAction.push(false);
-    currentAnimation.push(undefined);
+    currentAnimation.push(new Array());
     console.dir(animations);
     startQueue(animationQueue.length-1);
 }
@@ -88,9 +100,11 @@ function addToQueue(_level,_node){
     }
     if(_node.constructor === Array){ //If adding an array of items
         for(var i=0;i<_node.length;i++){
+            _node[i]['id'] = _level+'-'+animationQueue[_level].length;
             animationQueue[_level].push(_node[i]);
         }
     }else{ //Adding just one item
+        _node['id'] = _level+'-'+animationQueue[_level].length;
         animationQueue[_level].push(_node);
     }
     if(wasEmpty && queueOnAction[_level]){
@@ -128,16 +142,18 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
     if('animation' in _node){
         _animation = _node['animation']
     }
-
-    currentAnimation[_level]=_node;
-    finishedAnimationQueue[_level].push(_node); //TODO put it after finishing! it can be interrupted
+    _node['startTime'] = new Date().getTime();
     if(typeof _animation['name'] !=='undefined'){
         console.log('starting:'+_animation['name']);
     }else{
         console.log('starting:'+_animation['type']);
     }
     if(_animation['type']==='sleep'){
-        setTimeout(function(){nextAnimation(_level)},_animation['duration']);
+        currentAnimation[_level].push(_node);
+        _animation['sleepTimer'] = setTimeout(function(){
+            _remove_node_from_current_queue(_level,_node);
+            nextAnimation(_level);
+        },_animation['duration']);
         return;
     }
     var triggerNext=true;
@@ -155,9 +171,11 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
     var _duration=1;
     if('duration' in _animation){
         _duration=_animation['duration'];
+        console.log('animation duration: '+_duration);
     }
 
     if(_type==='animation'){
+        currentAnimation[_level].push(_node);
         if('pre' in _animation){
             for(var key in _animation['pre']){
                 if(typeof _animation['pre'][key] === 'function'){
@@ -180,6 +198,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
             _animation['anim'][key] = _replace_object_keywords(_animation['anim'][key],_obj);
         }
         _obj.animate(_animation['anim'],{duration:_duration,queue:false,complete:function(){
+            _remove_node_from_current_queue(_level,_node);
             if(triggerNext){
                 nextAnimation(_level);
             }
@@ -283,7 +302,7 @@ function nextAnimation(_level){
             startQueue(waiting);
         }
     }
-    _node=animationQueue[_level].shift();
+    var _node=animationQueue[_level].shift();
     _handleNode(_node,_level);
     try{
         if(animationQueue[_level].length!==0 && animationQueue[_level][0]['animation']['waitPrev']===false){
@@ -291,6 +310,66 @@ function nextAnimation(_level){
         }
     }catch(error){
         console.dir(animationQueue[_level][0]);
+    }
+}
+
+function pause(){
+    console.log('Pause');
+    pause_time = new Date().getTime();
+    stopAllQueues();
+    pauseQueue = new Array();
+    for(var i = 0; i< currentAnimation.length; i++){
+        pauseQueue.push(new Array());
+        for(var j = 0; j<currentAnimation[i].length; j++){
+            var node = currentAnimation[i][j];
+            if('animation' in node){
+                node = node['animation'];
+            }
+            node = $.extend(node, {}, true);
+
+            var passed = pause_time - currentAnimation[i][j]['startTime'];
+            var remaining = node['duration'] - passed;
+            node['duration'] = remaining;
+
+            if('object' in node){
+                var _obj=node['object'];
+                if(typeof _obj === 'string'){
+                    _obj = $(_obj);
+                }
+            }
+            if(node['type']==='animation'){
+                _obj.stop();
+                pauseQueue[i].push(node);
+            }
+            if(node['type']==='sleep'){
+                clearTimeout(node['sleepTimer']);
+                pauseQueue[i].push(node);
+            }
+        }
+    }
+    currentAnimation = new Array();
+    for(var i = 0; i < animationQueue.length; i++){
+        currentAnimation.push(new Array());
+    }
+}
+
+function resume(){
+    for (var k = 0; k < queueOnAction.length; k++){ //Not calling startAllQueues not to trigger first animations before remainders of previous
+        queueOnAction[k] = true;
+    }
+    for(var i = 0; i< pauseQueue.length; i++){
+        for(var j = 0; j < pauseQueue[i].length; j++){
+            var node = pauseQueue[i][j];
+            if('animation' in node){
+                node = node['animation'];
+            }
+            if('pre' in node){
+                node['pre'] = {}; //Clear pre-conditions, since they have already applied
+            }
+            console.log('sending this to handle');
+            console.dir(node);
+            _handleNode(node,i);
+        }
     }
 }
 
@@ -461,4 +540,17 @@ function _replace_object_keywords(_str, _obj){
     var _child = _obj.children()[0];
     return _str.replace('{{OBJECT_WIDTH}}',_child.width).
         replace('{{OBJECT_HEIGHT}}',_child.height);
+}
+
+/**
+ * Searches the given layer's current animation queue and removes the node if found and adds node to finished animation queue
+ * @param _level animation queue layer
+ * @param _node to search
+ * @private
+ */
+function _remove_node_from_current_queue(_level,_node){
+    currentAnimation[_level] = $.grep(currentAnimation[_level], function(obj){
+        return obj['id'] !== _node['id'];
+    });
+    finishedAnimationQueue[_level].push(_node);
 }
