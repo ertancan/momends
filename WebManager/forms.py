@@ -20,3 +20,7 @@ class CreateMomendForm(forms.Form):
     for theme in Theme.objects.all():
         THEME_CHOICES[theme.name] = theme.pk
     momend_theme = forms.ChoiceField(choices=[[THEME_CHOICES[key],key] for key in THEME_CHOICES.keys()] )
+
+class SettingsForm(forms.Form):
+    """for further usage"""
+    pass

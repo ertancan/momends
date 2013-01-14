@@ -30,22 +30,7 @@
 {% endblock heading %}
 
 {% block content %}
-    {% if user.is_authenticated %}
-        <form action="" method="post">{% csrf_token %}
-            {{ form.as_p }}
-            <input type="submit" value="Get it now!" />
-        </form>
-    {% endif %}
 
-<h1>User Momends</h1>
-    {% for momend in user_top_momends %}
-        {{ momend.name }}
-    {% endfor %}
-
-<h1>Public Momends</h1>
-    {% for momend in public_top_momends %}
-        {{ momend.name }}
-    {% endfor %}
 
 {% endblock content %}
 

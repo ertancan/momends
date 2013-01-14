@@ -12,7 +12,7 @@ class DataManager:
     def __init__(self, user):
         self.user = user
 
-    status = dict()
+    status = dict() #keep the latest status of raw data collection
 
     def get_last_status(self):
         return self.status
@@ -66,9 +66,7 @@ class DataManager:
     def enrich_user_data(self, raw_data, method=None):
         if not method:
             method = 'date'
-
-        enrich_worker = EnrichDataWorker(self.user)
-        enriched_data = enrich_worker.enrich_data(raw_data) #TODO use method parameter
+        enriched_data = EnrichDataWorker.enrich_user_raw_data(raw_data) #TODO use method parameter
         return enriched_data
 
 

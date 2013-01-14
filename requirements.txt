@@ -3,6 +3,7 @@ Hoover==0.5.3
 PyYAML==3.10
 distribute==0.6.27
 dj-database-url==0.2.1
+django-debug-toolbar==0.9.4
 django-recaptcha==0.0.5
 django-registration==0.8
 django-social-auth==0.7.16
