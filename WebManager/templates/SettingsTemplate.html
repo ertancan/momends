@@ -1,0 +1,24 @@
+{% extends "MainSite.html" %}
+{% load url from future %}
+
+{% block heading %}
+    <a href="{% url 'socialauth_begin' 'facebook' %}">Add Facebook</a>
+    <a href="{% url 'socialauth_begin' 'twitter' %}">Add Twitter</a>
+    <a href="{% url 'socialauth_disconnect' 'facebook' %}">Remove Facebook</a>
+    <a href="{% url 'socialauth_disconnect' 'twitter' %}">Remove Twitter</a>
+    <a href="{% url 'auth_password_change' %}">Password Change</a>
+    <a href="{% url 'momends:home-screen' %}">Go to home page</a>
+    <a href="{% url 'auth_logout' %}">Logout</a>
+    {{ user.username }}
+    {{ user.first_name }}
+    {{ user.last_name }}
+
+{% endblock heading %}
+
+{% block content %}
+<li>settings page</li>
+
+{% endblock content %}
+
+
+

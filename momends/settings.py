@@ -2,7 +2,7 @@
 
 from os.path import abspath, dirname, basename, join
 from distutils.sysconfig import get_python_lib
-from local_settings import *
+
 
 ROOT_PATH = abspath(dirname(__file__))
 PROJECT_NAME = basename(ROOT_PATH)
@@ -125,7 +125,7 @@ ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scri
 COLLECTED_FILE_PATH = 'userdata/collected/'
 ENHANCED_FILE_PATH = 'userdata/enhanced/'
 
-LOGIN_URL = '/accounts/login/'
+LOGIN_URL = '/momends/main/'
 LOGIN_ERROR_URL = '/accounts/login-error/'
 LOGIN_REDIRECT_URL = '/momends/home/'
 
@@ -190,3 +190,6 @@ DATABASE_OPTIONS = {
     'use_unicode': True,
     'charset': 'utf8'
 }
+
+
+from local_settings import *

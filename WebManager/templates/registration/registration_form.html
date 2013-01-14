@@ -3,7 +3,7 @@
 
 
 {% block content %}
-
+    <a href="{% url 'socialauth_begin' 'facebook' %}">Register with Facebook</a>
     <form action="" method="post">{% csrf_token %}
         {{ form.as_p }}
         {{ script }}

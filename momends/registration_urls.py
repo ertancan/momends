@@ -5,12 +5,13 @@
 __author__ = 'goktan'
 from django.conf.urls import patterns
 from django.conf.urls import url
-from django.conf.urls import include
 from django.views.generic.simple import direct_to_template
 from django.contrib.auth import views as auth_views
 from registration.views import activate
 from registration.views import register
+from django.core.urlresolvers import reverse_lazy
 from momends.forms import *
+
 
 urlpatterns = patterns('',
     url(r'^activate/complete/$',
@@ -49,8 +50,9 @@ urlpatterns += patterns('',
         {'template_name': 'registration/login.html'},
         name='auth_login'),
     url(r'^logout/$',
-        auth_views.logout_then_login,
-        name='auth_logout'),
+        auth_views.logout,
+        {'next_page': reverse_lazy('momends:home-screen')},
+        name='auth_logout', ),
     url(r'^password/change/$',
         auth_views.password_change,
         name='auth_password_change'),

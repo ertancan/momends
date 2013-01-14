@@ -1,0 +1,19 @@
+{% extends "MainSite.html" %}
+
+{% load url from future %}
+
+
+{% block content %}
+    {{ profile_user }}
+    {% for momend in  user_top_momends %}
+        {{ momend }}
+    {% empty %}
+        no momends for user
+    {% endfor %}
+
+{% endblock content %}
+
+{% block scripts %}
+
+{% endblock scripts %}
+
