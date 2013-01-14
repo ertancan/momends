@@ -33,27 +33,13 @@ class ThemeManagerWorker:
             return outdata
         used_type = outdata.animation.used_object_type
         if used_type:
-            theme_data = self._get_theme_data_for_keyword(used_type)
+            theme_data = self.data_manager.get_theme_data_for_keyword(used_type)
             if theme_data:
                 outdata.final_data_path = theme_data.data_path
                 outdata.parameters = theme_data.parameters
                 outdata.selection_criteria = 'Theme Asset'
         return  outdata
 
-    def _get_theme_data_for_keyword(self,keyword):
-        keywords = ThemeData.THEME_DATA_TYPE_KEYWORDS
-        if keyword in keywords:
-            index = keywords.index(keyword)
-            obj_type = index/3
-            request_type = index % 3 # 0 getPrevious, 1 getNext, 2 getRand
-            if request_type == 0:
-                theme_data = self.data_manager.getPreviousData(obj_type)
-            elif request_type == 1:
-                theme_data = self.data_manager.getNextData(obj_type)
-            else:
-                theme_data = self.data_manager.getRandData(obj_type)
-
-            return theme_data
 
     def _apply_image_enhancement(self, outdata, file_prefix):
         """
@@ -81,7 +67,7 @@ class ThemeManagerWorker:
             outdata.save()
             return outdata
 
-        last_filename = ImageEnhancementUtility.applyThemeEnhancementsOnImage(raw_filename,rand_enhancement.enhancement_functions,file_prefix)
+        last_filename = ImageEnhancementUtility.applyThemeEnhancementsOnImage(raw_filename, rand_enhancement.enhancement_functions, file_prefix, self.data_manager)
 
         outdata.final_data_path = last_filename #Update final data with enhanced one
         self.enhancement_applied_objects[raw_filename] = last_filename
@@ -120,7 +106,7 @@ class ThemeManagerWorker:
             if next_enh.filepath:
                 applied_enh.filepath = next_enh.filepath
             elif next_enh.used_object_type:
-                theme_data = self._get_theme_data_for_keyword(next_enh.used_object_type)
+                theme_data = self.data_manager.get_theme_data_for_keyword(next_enh.used_object_type)
                 applied_enh.filepath = theme_data.data_path
                 if not enh_parameter or len(enh_parameter) == 0:
                     enh_parameter = theme_data.parameters

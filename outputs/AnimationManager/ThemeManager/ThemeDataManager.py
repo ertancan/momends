@@ -24,7 +24,6 @@ class ThemeDataManager(object):
 
     def get_theme_data_for_keyword(self,keyword):
         keywords = ThemeData.THEME_DATA_TYPE_KEYWORDS
-        self._last_obj = None
         if keyword in keywords:
             index = keywords.index(keyword)
             obj_type = index/3
@@ -36,7 +35,8 @@ class ThemeDataManager(object):
             else:
                 theme_data = self.getRandData(obj_type)
             self._last_obj = theme_data
-        return self._last_obj
+            return self._last_obj
+        return None
 
     def getLastResult(self):
         """

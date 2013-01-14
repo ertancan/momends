@@ -15,6 +15,13 @@
 - model: DataManager.ImageEnhancement
   pk: 1
   fields:
+    name: Apply Frame
+    script_path: frame.sh
+    parameters: "{{RAND_THEME_FRAME}} {{THEME_DATA_PARAMETER}}"
+
+- model: DataManager.ImageEnhancement
+  pk: 2
+  fields:
     name: HighPass Filter
     script_path: gaussian.sh
     parameters: -k high -m 10

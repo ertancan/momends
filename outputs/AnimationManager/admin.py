@@ -14,7 +14,7 @@ class ThemeDataAdmin(admin.ModelAdmin):
     list_display = ['theme', 'type', 'data_path']
 
 class ImageEnhancementAdmin(admin.ModelAdmin):
-    list_display = ['name', 'script_path', 'parameters', 'example_path']
+    list_display = ['id', 'name', 'script_path', 'parameters', 'example_path']
 
 class EnhancementGroupAdmin(admin.ModelAdmin):
     list_display = ['name', 'enhancement_functions', 'post_enhancement', 'applicable_to']
@@ -26,7 +26,7 @@ class UserInteractionAnimationGroupAdmin(admin.ModelAdmin):
     list_display = ['name', 'stop_current_animation', 'clear_further_animations', 'disable_further_interaction', 'animations']
 
 class CoreAnimationDataAdmin(admin.ModelAdmin):
-    list_display = ['group', 'order_in_group','used_object_type', 'name', 'type', 'duration', 'click_animation', 'hover_animation']
+    list_display = ['group', 'order_in_group','used_object_type', 'used_theme_data', 'name', 'type', 'duration', 'click_animation', 'hover_animation']
     save_as = True
 
 class AnimationPlayStatAdmin(admin.ModelAdmin):

@@ -91,6 +91,7 @@ class CoreAnimationData(BaseDataManagerModel):
     order_in_group = models.IntegerField(default=0)
 
     used_object_type = models.CharField(max_length=255, null=True, blank=True) #What kind of object? i.e., USER_PHOTO,THEME_BG
+    used_theme_data = models.ForeignKey('ThemeData', null=True, blank=True)
     #Consistent with javascript interpreter
     name = models.CharField(max_length=255, null=True, blank=True) #Optional, descriptive, human readable name
     type = models.IntegerField(choices=_choices) #Type of the animation
@@ -197,6 +198,7 @@ class ThemeData(BaseDataManagerModel):
                                  '{{THEME_MUSIC}}','{{NEXT_THEME_MUSIC}}', '{{RAND_THEME_MUSIC}}',
                                  '{{THEME_STATUS_BG}}', '{{NEXT_THEME_STATUS_BG}}', '{{RAND_THEME_STATUS_BG}}',
                                  ]
+    THEME_DATA_PARAMETER_KEYWORD = '{{THEME_DATA_PARAMETER}}' # To be replaced while applying enhancements etc.
     type = models.IntegerField(choices=[[THEME_DATA_TYPE[key],key] for key in THEME_DATA_TYPE.keys()])
     data_path = models.CharField(max_length=255)
     parameters = models.TextField(null=True, blank=True)
