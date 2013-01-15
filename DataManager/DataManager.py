@@ -5,8 +5,10 @@ from DataEnrich.EnrichDataWorker import EnrichDataWorker
 from ExternalProviders.BaseProviderWorker import BasePhotoProviderWorker,BaseStatusProviderWorker,BaseLocationProviderWorker
 from Outputs.AnimationManager.AnimationManagerWorker import AnimationManagerWorker
 from models import Momend
+from models import RawData
 from social_auth.db.django_models import UserSocialAuth
 from LogManagers.Log import Log
+from DataManagerUtil import DataManagerUtil
 
 class DataManager:
     def __init__(self, user):
@@ -26,6 +28,8 @@ class DataManager:
         momend.save()
         animation_worker = AnimationManagerWorker(momend)
         animation_worker.generate_output(enriched_data, duration, theme, scenario)
+        momend = self._create_momend_thumbnail(momend)
+        momend.save()
         return momend.id
 
     def collect_user_data(self, since, until, inc_photo, inc_status, inc_checkin):
@@ -69,8 +73,24 @@ class DataManager:
         enriched_data = EnrichDataWorker.enrich_user_raw_data(raw_data) #TODO use method parameter
         return enriched_data
 
+    def _create_momend_thumbnail(self,momend):
+        """
+        Currently get a random used user photo of the momend and creates a thumbnail of its enhanced version
+        :param momend: models.Momend object
+        :return: same momend object with thumbnail field filled
+        """
+        out_data = momend.animationlayer_set.all()[1].outdata_set.order_by('?')
+        for data in out_data:
+            if data.raw.type == RawData.DATA_TYPE['Photo']:
+                momend.thumbnail = DataManagerUtil.create_photo_thumbnail(data.final_data_path,'momend_'+str(momend.pk)+'_thumb.jpg')
+                return momend
 
     def _instantiate_provider_worker(self, provider):
+        """
+        Instantiates the worker objects, which collects data etc., for given provider
+        :param provider: models.Provider object
+        :return:
+        """
         mod = importlib.import_module('ExternalProviders.'+provider.package_name+'.'+provider.worker_name,provider.worker_name)
         cl = getattr(mod,provider.worker_name)
         return cl()

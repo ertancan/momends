@@ -1,5 +1,6 @@
 var momend_data;
 var created_objects;
+var volume_slider;
 String.prototype.hashCode = function(){
     var hash = 0;
     if (this.length == 0) return hash;
@@ -23,6 +24,9 @@ function momend_arrived(){
     $(window).resize(function(){
         _calculate_dimensions();
     });
+    volume_slider = $('#volume-slider');
+    volume_slider.val(100);
+    volume_slider.change(function(){volumeSliderChanged(slider.val())});
 }
 
 function load_failed(){

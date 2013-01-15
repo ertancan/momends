@@ -2,19 +2,26 @@ var animationQueue; // Keeps layers of animation data
 var queueOnAction; // Boolean array indicates the given layer is active or not (e.g. queueOnAction[0] will be true if layer 0 started and working now)
 var currentAnimation; //Keeps the animations which are being processed right now
 var finishedAnimationQueue; //Keeps finished animation nodes in finishing order
-var pauseQueue; //Keeps the remaining animations that will be performed when un-paused
 var _layerWaitQueue; //Each array in this queue keeps the ids of other layers waiting for the current animation on the queue
 //If _layerWaitQueue[0] has 1 and 2 in it, layers 1 and 2 will be started when the current animation in layer 0 finishes
 var _layerBreakPointWaitQueue; //Same principle as _layerWaitQueue but this waits for an animation which has type 'breakpoint' to trigger otherlayers
 var _userInteractionQueue; //Keeps the action performed by user during play.
+var last_user_interaction = 0; //last time the user clicks on an item or mouse enters into the object boundaries.
+
 MUSIC_ANIMATION_INTERVAL = 100; //Defines number of milliseconds between music fade animations. (e.g. if you perform fade animation with duration=1000ms
 // the animation will be performed in 5 steps. (Can be changed according to smoothness of the animation
-var last_user_interaction = 0; //last time the user clicks on an item or mouse enters into the object boundaries.
-var pause_time = 0; // Time that the user presses pause button, to calculate time between user interactions
 var ready_music_count = 0; //How many of the remaining music are ready for playing.
 var node_waiting_to_play; //If the handle_node tried to play a music but it wasn't ready
 var music_layer; //Which layer belongs to music player
+var soundAnimationInProcess = false;
+var currentMusicObj = undefined;
+
+var pause_time = 0; // Time that the user presses pause button, to calculate time between user interactions
+var pauseQueue; //Keeps the remaining animations that will be performed when un-paused
+var isPlaying = false;
+
 var keywordLookupTable; //Keeps the latest values of keyword related values like {{SCREEN_WIDTH}}
+
 
 /**
  * Instantiates global variables according to number of levels needed.
@@ -54,6 +61,7 @@ function startAllQueues(){
         startQueue(i);
     }
     last_user_interaction = new Date().getTime();
+    isPlaying = true;
 }
 
 function stopAllQueues(){
@@ -248,6 +256,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
     //Music animations below
     else if(_type === 'music-play'){
         music_layer = _level;
+        currentMusicObj = _obj;
         if(ready_music_count>0){
             _obj.jPlayer("play");
             node_waiting_to_play=null;
@@ -265,14 +274,13 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
         var _target = _animation['target'];
         var vol = parseFloat(_target);
         if(!isNaN(vol)){
-            _obj.jPlayer("volume",vol);
+            _obj.jPlayer("volume",vol*(volume_slider.val()/100)); //proportional to the volume slider's current value
         }
     }
     else if(_type === 'music-fadein'){
         var currentVol = _obj.jPlayer("option","volume");
-        _musicFade(_obj,true,(1-currentVol)/(_duration/MUSIC_ANIMATION_INTERVAL));
+        _musicFade(_obj,true,((volume_slider.val()/100)-currentVol)/(_duration/MUSIC_ANIMATION_INTERVAL));
     }else if(_type === 'music-fadeout'){
-        var currentVol = _obj.jPlayer("option","volume");
         _musicFade(_obj,false,1/(_duration/MUSIC_ANIMATION_INTERVAL));
     }
 
@@ -351,6 +359,9 @@ function pause(){
     for(var i = 0; i < animationQueue.length; i++){
         currentAnimation.push(new Array());
     }
+    isPlaying = false;
+    _toggle_play_button(true);
+
 }
 
 function resume(){
@@ -371,6 +382,8 @@ function resume(){
             _handleNode(node,i);
         }
     }
+    isPlaying = true;
+    _toggle_play_button(false);
 }
 
 function _musicFade(_obj,isFadeIn,step){
@@ -385,6 +398,11 @@ function _musicFade(_obj,isFadeIn,step){
         setTimeout(function(){
             _musicFade(_obj,isFadeIn,step);
         },MUSIC_ANIMATION_INTERVAL);
+    }
+}
+function volumeSliderChanged(_val){
+    if(!soundAnimationInProcess){
+        currentMusicObj.jPlayer('volume',volume_slider.val()/100);
     }
 }
 /**
@@ -553,4 +571,18 @@ function _remove_node_from_current_queue(_level,_node){
         return obj['id'] !== _node['id'];
     });
     finishedAnimationQueue[_level].push(_node);
+}
+
+function _toggle_play_button(toPlay){
+    var icon = $('#toggle-icon');
+    var button = $('#play-toggle');
+
+    if(toPlay){
+        icon.attr('class','icon-play');
+        button.attr('onclick','resume()');
+
+    }else{
+        icon.attr('class','icon-pause');
+        button.attr('onclick','pause()');
+    }
 }

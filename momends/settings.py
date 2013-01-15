@@ -123,6 +123,7 @@ INSTALLED_APPS = (
 #Settings for directories
 ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scripts/'
 COLLECTED_FILE_PATH = 'userdata/collected/'
+THUMBNAIL_FILE_PATH = 'userdata/thumbnail/'
 ENHANCED_FILE_PATH = 'userdata/enhanced/'
 
 LOGIN_URL = '/momends/main/'

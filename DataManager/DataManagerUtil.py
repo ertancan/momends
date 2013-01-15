@@ -2,6 +2,8 @@ __author__ = 'goktan'
 
 import urllib2
 import abc
+import subprocess
+import os
 from django.conf import settings
 
 class DataManagerUtil:
@@ -16,3 +18,12 @@ class DataManagerUtil:
         _local_file.close()
         return _file_path
 
+    @staticmethod
+    def create_photo_thumbnail(_file, _output_name):
+        os.environ['PATH'] += ':/usr/local/bin' #TODO: remove this on prod For mac os
+
+        _file_path = settings.THUMBNAIL_FILE_PATH + _output_name
+        s=["convert", _file, '-resize', '100x100', _file_path]
+        print s
+        subprocess.Popen(s)
+        return _file_path

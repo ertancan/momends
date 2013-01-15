@@ -1,0 +1,20 @@
+.momend-player{
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+#play-toggle{
+    position: relative;
+    left: 2%;
+    width: 5%;
+}
+.slider-bg{
+    position: absolute;
+    top: 5px;
+    left: 8%;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: rgba(240,240,240,0.9);
+    border-radius: 15px;
+}

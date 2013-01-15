@@ -4,16 +4,21 @@
 
 {% block include %}
     <link href="{{ STATIC_URL }}momend_style.css" rel="stylesheet" type="text/css" />
+    <link href="{{ STATIC_URL }}player_style.css" rel="stylesheet" type="text/css" />
     <script src="{{ STATIC_URL }}jquery.jplayer.min.js"></script>
     <script src="{{ STATIC_URL }}animation.js"></script>
     <script src="{{ STATIC_URL }}momend.js"></script>
 {% endblock include %}
 {% block content %}
     <body onload="init()">
-    <button onclick="resume()" id="play-toggle">Play</button>
-    <button onclick="pause()" id="pause-toggle">Pause</button>
     <div class="scene"></div>
     <div class="music"></div>
+    <div class="momend-player">
+        <button onclick="pause()" id="play-toggle" class="btn"><i id="toggle-icon" class="icon-pause"></i></button>
+        <div class="slider-bg">
+            <input id="volume-slider" type="range" min="0" max="100" style="width: 100px">
+        </div>
+    </div>
     {% csrf_token %}
 
 {% endblock content %}

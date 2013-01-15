@@ -52,6 +52,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 except ValueError:
                     _ext_part = '.jpg'
                 _raw.data = DataManagerUtil.download_file(_raw.original_path, str(_raw)+_ext_part)
+                _raw.thumbnail = DataManagerUtil.create_photo_thumbnail(_raw.data,str(_raw)+'_thumb'+_ext_part)
                 Log.debug(_raw)
             else:
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
