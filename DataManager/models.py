@@ -40,6 +40,12 @@ class Momend(BaseDataManagerModel):
     def toJSON(self):
         return simplejson.dumps(self.encode(), default=lambda obj: obj.isoformat() if isinstance(obj, datetime) else None)
 
+class MomendScore(BaseDataManagerModel):
+    momend = models.OneToOneField(Momend)
+
+    provider_score = models.IntegerField(default=0)
+    #TODO view score etc.
+
 class AnimationLayer(BaseDataManagerModel):
     momend = models.ForeignKey(Momend)
     layer = models.IntegerField(null=True) #Like layer0, layer1 etc.

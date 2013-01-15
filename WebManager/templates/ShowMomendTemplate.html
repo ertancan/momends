@@ -11,12 +11,14 @@
 {% endblock include %}
 {% block content %}
     <body onload="init()">
-    <div class="scene"></div>
-    <div class="music"></div>
-    <div class="momend-player">
-        <button onclick="pause()" id="play-toggle" class="btn"><i id="toggle-icon" class="icon-pause"></i></button>
-        <div class="slider-bg">
-            <input id="volume-slider" type="range" min="0" max="100" style="width: 100px">
+    <div class="player" style="width: 640px;height: 480px">
+        <div class="scene" style="height: 97%"></div>
+        <div class="music"></div>
+        <div class="momend-player" style="height: 3%">
+            <button onclick="pause()" id="play-toggle" class="btn btn-mini"><i id="toggle-icon" class="icon-pause"></i></button>
+            <div class="slider-bg">
+                <input id="volume-slider" type="range" min="0" max="100" style="width: 100px">
+            </div>
         </div>
     </div>
     {% csrf_token %}

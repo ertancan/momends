@@ -4,8 +4,9 @@ import importlib
 from DataEnrich.EnrichDataWorker import EnrichDataWorker
 from ExternalProviders.BaseProviderWorker import BasePhotoProviderWorker,BaseStatusProviderWorker,BaseLocationProviderWorker
 from Outputs.AnimationManager.AnimationManagerWorker import AnimationManagerWorker
-from models import Momend
+from models import Momend, MomendScore
 from models import RawData
+from Outputs.AnimationManager.models import OutData
 from social_auth.db.django_models import UserSocialAuth
 from LogManagers.Log import Log
 from DataManagerUtil import DataManagerUtil
@@ -13,6 +14,7 @@ from DataManagerUtil import DataManagerUtil
 class DataManager:
     def __init__(self, user):
         self.user = user
+        self.momend = None
 
     status = dict() #keep the latest status of raw data collection
 
@@ -24,13 +26,16 @@ class DataManager:
                       enrichment_method=None, theme=None, scenario=None):
         raw_data = self.collect_user_data(since, until, inc_photo, inc_status, inc_checkin)
         enriched_data = self.enrich_user_data(raw_data, enrichment_method)
-        momend = Momend(owner=self.user, name=name, momend_start_date=since, momend_end_date=until, privacy=privacy)
-        momend.save()
-        animation_worker = AnimationManagerWorker(momend)
+        self.momend = Momend(owner=self.user, name=name, momend_start_date=since, momend_end_date=until, privacy=privacy)
+        self.momend.save()
+        animation_worker = AnimationManagerWorker(self.momend)
         animation_worker.generate_output(enriched_data, duration, theme, scenario)
-        momend = self._create_momend_thumbnail(momend)
-        momend.save()
-        return momend.id
+        self._create_momend_thumbnail()
+        self.momend.save()
+
+        score = MomendScore(momend = self.momend, provider_score = self._calculate_provider_score())
+        score.save()
+        return self.momend.id
 
     def collect_user_data(self, since, until, inc_photo, inc_status, inc_checkin):
         _raw_data = []
@@ -73,17 +78,16 @@ class DataManager:
         enriched_data = EnrichDataWorker.enrich_user_raw_data(raw_data) #TODO use method parameter
         return enriched_data
 
-    def _create_momend_thumbnail(self,momend):
+    def _create_momend_thumbnail(self):
         """
         Currently get a random used user photo of the momend and creates a thumbnail of its enhanced version
         :param momend: models.Momend object
         :return: same momend object with thumbnail field filled
         """
-        out_data = momend.animationlayer_set.all()[1].outdata_set.order_by('?')
+        out_data = self.momend.animationlayer_set.all()[1].outdata_set.order_by('?')
         for data in out_data:
             if data.raw.type == RawData.DATA_TYPE['Photo']:
-                momend.thumbnail = DataManagerUtil.create_photo_thumbnail(data.final_data_path,'momend_'+str(momend.pk)+'_thumb.jpg')
-                return momend
+                self.momend.thumbnail = DataManagerUtil.create_photo_thumbnail(data.final_data_path,'momend_'+str(self.momend.pk)+'_thumb.jpg')
 
     def _instantiate_provider_worker(self, provider):
         """
@@ -94,4 +98,15 @@ class DataManager:
         mod = importlib.import_module('ExternalProviders.'+provider.package_name+'.'+provider.worker_name,provider.worker_name)
         cl = getattr(mod,provider.worker_name)
         return cl()
+
+    def _calculate_provider_score(self):
+        main_layer = self.momend.animationlayer_set.all()[1]
+        used_objects = OutData.objects.filter(owner_layer = main_layer)
+        _score = 0
+        for _out_data in used_objects:
+            _score += _out_data.raw.share_count*5
+            _score += _out_data.raw.comment_count*2
+            _score += _out_data.raw.like_count
+
+        return _score
 
