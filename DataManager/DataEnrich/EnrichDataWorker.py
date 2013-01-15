@@ -26,6 +26,24 @@ class EnrichDataWorker: #TODO keep this as base class and introduce different wo
         return EnrichDataWorker._sort_by_priority(result)
 
     @staticmethod
+    def get_related_momends(momend, max_count, get_private=True):
+        """get list of top momends for a specific user
+        Args:
+            momend: momend to set reference for related momends
+            max_count: maximum momend number to return
+            get_private: if True, then include the private momends to the result
+
+        Returns:
+            an array of curated related momends
+        """
+        _obj = Momend.objects.filter(owner=momend.owner)
+        if not get_private:
+            _obj = _obj.filter(privacy=Momend.PRIVACY_CHOICES['Public'])
+        _obj = _obj.order_by('?').reverse()
+        return _obj if (_obj.count() < max_count) else _obj[_obj.count() - max_count:]
+
+
+    @staticmethod
     def _sort_by_priority(enriched_data):
         sorted_data = []
         for type_arr in enriched_data:

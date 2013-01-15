@@ -12,11 +12,15 @@ from WebManager.forms import CreateMomendForm
 from WebManager.forms import SettingsForm
 from DataManager.DataManager import DataManager
 from DataManager.models import Momend
-from Outputs.AnimationManager.models import AnimationPlayStat,UserInteraction
+from DataManager.models import RawData
+from Outputs.AnimationManager.models import UserInteraction
+from Outputs.AnimationManager.models import OutData
+from Outputs.AnimationManager.models import AnimationPlayStat
 from Outputs.AnimationManager.models import Theme
 from DataManager.DataEnrich.EnrichDataWorker import EnrichDataWorker
 from social_auth.db.django_models import UserSocialAuth
 from random import randint
+from django.core.exceptions import ObjectDoesNotExist
 
 class HomePageLoggedFormView(FormView):
     form_class = CreateMomendForm
@@ -38,7 +42,7 @@ class HomePageLoggedFormView(FormView):
             until=finish_date, duration=30, privacy=privacy, theme=Theme.objects.get(pk=form.cleaned_data['momend_theme']))
         status = dm.get_last_status()
         #TODO get status back to view
-        self.success_url = reverse('momends:show-momend', args = (momend_id,) )
+        self.success_url = reverse('momends:show-momend', args = ('m', momend_id,) )
         return super(HomePageLoggedFormView,self).form_valid(form)
 
 class HomePageNotLoggedView(TemplateView):
@@ -53,30 +57,68 @@ class HomePageNotLoggedView(TemplateView):
 class ShowMomendView(TemplateView):
     template_name = 'ShowMomendTemplate.html'
 
-    def get_context_data(self, *args, **kwargs):
-        context = super(ShowMomendView, self).get_context_data(**kwargs)
-
+    def dispatch(self, request, *args, **kwargs):
         play_stat = AnimationPlayStat()
-        play_stat.momend_id = context['params']['id']
-        if 'HTTP_REFERER' in self.request.META:
-            play_stat.redirect_url = self.request.META['HTTP_REFERER']
+        play_stat.momend_id = kwargs['id']
+        if 'HTTP_REFERER' in request.META:
+            play_stat.redirect_url = request.META['HTTP_REFERER']
         else:
             play_stat.redirect_url = 'Direct'
-        if self.request.user:
-            play_stat.user = User.objects.get(pk=self.request.user.id)
+        if request.user:
+            play_stat.user = User.objects.get(pk=request.user.id)
         play_stat.save()
+
+        return super(ShowMomendView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(ShowMomendView, self).get_context_data(**kwargs)
+        if kwargs['type'] == 'm':
+            _momend = Momend.objects.get(pk = kwargs['id'])
+        elif kwargs['type'] == 'i':
+            _momend = UserInteraction.objects.get(pk = kwargs['id']).momend
+        else:
+            context['error'] = 1
+            return context
+
+        context['error']  = '0'
+        context['momend'] = _momend
+        context['interactions'] = UserInteraction.objects.filter(momend = _momend)
+        context['related_momends'] = EnrichDataWorker.get_related_momends(momend=_momend, max_count=10, get_private=True)
+        _all_dis = OutData.objects.filter(owner_layer__momend=_momend).values('raw').distinct()
+        _out_data_data = []
+        _out_data_thumb = []
+        for _out_data in _all_dis:
+            if _out_data['raw']:
+                _obj = RawData.objects.get(pk=_out_data['raw'])
+                _out_data_data.append(_obj.data)
+                _out_data_thumb.append(_obj.thumbnail)
+        context['out_data_data'] = _out_data_data
+        context['out_data_thumb'] = _out_data_thumb
         return context
 
 class GetMomendView(TemplateView):
     template_name = 'GetMomendTemplate.html'
     def get_context_data(self, **kwargs):
         context = super(GetMomendView, self).get_context_data(**kwargs)
-        obj = Momend.objects.get(pk = kwargs['id'])
-        if obj.privacy == Momend.PRIVACY_CHOICES['Private']:
-            if obj.owner != self.request.user:
-                context['momend'] = '{"error":"not authorised"}'
-                return context
-        context['momend'] = obj.toJSON()
+        try:
+            if kwargs['type'] == 'm':
+                obj = Momend.objects.get(pk = kwargs['id'])
+                if obj.privacy == Momend.PRIVACY_CHOICES['Private']:
+                    if obj.owner != self.request.user:
+                        context['momend'] = '{"error":"not authorised"}'
+                        return context
+                context['momend'] = obj.toJSON()
+            elif kwargs['type'] =='i':
+                obj = UserInteraction.objects.get(pk = kwargs['id'])
+                if obj.momend.privacy == Momend.PRIVACY_CHOICES['Private']:
+                    if obj.momend.owner != self.request.user:
+                        context['momend'] = '{"error":"not authorised"}'
+                        return context
+                context['momend'] = obj.toJSON()
+            else:
+                context['momend'] = '{"error":"bad request"}'
+        except ObjectDoesNotExist:
+            context['momend'] = '{"error":"bad request"}'
         return context
 
 class SaveInteractionView(View):
