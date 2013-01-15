@@ -136,6 +136,7 @@ LOGIN_REDIRECT_URL = '/momends/home/'
 
 FACEBOOK_APP_ID = '125999474230740'
 FACEBOOK_API_SECRET = 'f68f2d67e320efc5e3790ae17004db7b'
+FACEBOOK_EXTENDED_PERMISSIONS = ['email', 'user_about_me', 'user_activities', 'user_location', 'user_photos', 'user_status']
 
 AUTHENTICATION_BACKENDS = (
     'social_auth.backends.twitter.TwitterBackend',

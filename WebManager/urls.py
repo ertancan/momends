@@ -23,8 +23,8 @@ urlpatterns = patterns('',
     url(r'^user/(?P<id>\d+)/$', login_required(UserProfileTemplateView.as_view()), name='user-screen'),
     url(r'^user/(?P<username>\w+)/$', login_required(UserProfileTemplateView.as_view()), name='user-screen'),
     url(r'^settings/$', login_required(SettingsFormView.as_view()), name='settings-screen'),
-    url(r'^show/(?P<id>\d+)/$', login_required(ShowMomendView.as_view()), name='show-momend'),
-    url(r'^get/(?P<id>\d+)/$', login_required(GetMomendView.as_view()), name='get-momend'),
+    url(r'^show/(?P<type>\w{1})/(?P<id>\d+)/$', login_required(ShowMomendView.as_view()), name='show-momend'),
+    url(r'^get/(?P<type>\w{1})/(?P<id>\d+)/$', login_required(GetMomendView.as_view()), name='get-momend'),
     url(r'^postplay/(?P<id>\d+)/$', login_required(SaveInteractionView.as_view()), name='save-interaction'),
 )
 urlpatterns += staticfiles_urlpatterns()

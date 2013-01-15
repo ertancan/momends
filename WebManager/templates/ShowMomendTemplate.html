@@ -30,7 +30,7 @@
 
     <script type="text/javascript">
         function fetch_momend_data(){
-            $.getJSON( '{% url 'momends:get-momend' params.id %}', function(data) {
+            $.getJSON( '{% url 'momends:get-momend' params.type params.id %}', function(data) {
                 momend_data = data;
                 momend_arrived();
             }).error(function(){load_failed();});
