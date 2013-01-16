@@ -30,14 +30,14 @@
   pk: 3
   fields:
     name: Lichtenstein Burn
-    script-path: lichtenstein.sh
+    script_path: lichtenstein.sh
     parameters: -d none -b 1
 
 - model:  DataManager.ImageEnhancement
   pk: 4
   fields:
     name: Lichtenstein Cartoon
-    script-path: lichtenstein.sh
+    script_path: lichtenstein.sh
     parameters: -d h6x6a
 
 
@@ -45,5 +45,26 @@
   pk: 5
   fields:
     name: BW Sketch
-    script-path: sketch.sh
+    script_path: sketch.sh
     parameters: -k desat -c 125 -g
+
+- model:  DataManager.ImageEnhancement
+  pk: 6
+  fields:
+    name: Color Sketch
+    script_path: sketch.sh
+    parameters: -k gray -c 125
+
+- model:  DataManager.ImageEnhancement
+  pk: 7
+  fields:
+    name: Rect Vignette
+    script_path: vignette2.sh
+    parameters: -a 25 -d 90 -s roundrectangle
+
+- model:  DataManager.ImageEnhancement
+  pk: 8
+  fields:
+    name: Enrich
+    script_path: enrich.sh
+    parameters:
