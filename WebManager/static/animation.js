@@ -194,6 +194,9 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
                 }
                 _animation['pre'][key] = _replace_object_keywords(_animation['pre'][key],_obj);
             }
+            console.log('applying pre');
+            console.dir(_obj);
+            console.dir(_animation['pre']);
             _obj.css(_animation['pre']);
         }
         for(var key in _animation['anim']){
@@ -555,6 +558,10 @@ function _calculate_dimensions(){
 }
 
 function _replace_object_keywords(_str, _obj){
+    if(typeof _str !='string'){
+        console.log('Replace parameters error!');
+        return null;
+    }
     var _child = _obj.children()[0];
     return _str.replace('{{OBJECT_WIDTH}}',_child.width).
         replace('{{OBJECT_HEIGHT}}',_child.height);

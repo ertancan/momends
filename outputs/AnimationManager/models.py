@@ -2,9 +2,12 @@ from DataManager.models import BaseDataManagerModel
 from django.db import models
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
-from DataManager.models import RawData,Momend
+from DataManager.models import RawData
 from django.utils import simplejson
 from datetime import datetime
+from django.conf import settings
+from django.db.models.signals import pre_save
+
 
 class OutData(BaseDataManagerModel):
     class Meta:
@@ -167,7 +170,7 @@ class EnhancementGroup(BaseDataManagerModel):
 class Theme(BaseDataManagerModel):
     name = models.CharField(max_length=255)
 
-    enhancement_groups = models.ManyToManyField(EnhancementGroup)
+    enhancement_groups = models.ManyToManyField(EnhancementGroup, null=True, blank=True)
 
     def __unicode__(self):
         return str(self.name)
@@ -290,3 +293,10 @@ class UserInteraction(BaseDataManagerModel):
     def toJSON(self):
         return simplejson.dumps(self.encode(), default=lambda obj: obj.isoformat() if isinstance(obj, datetime) else None)
 
+
+def check_theme_data_path_callback(sender,instance,using,**kwargs):
+    if not settings.THEME_DATA_PATH in instance.data_path and not '/' in instance.data_path:
+        types = {ThemeData.THEME_DATA_TYPE[key]:key for key in ThemeData.THEME_DATA_TYPE}
+        instance.data_path = settings.THEME_DATA_PATH + instance.theme.name + '/' + types[instance.type].lower()+ '/' + instance.data_path
+
+pre_save.connect(check_theme_data_path_callback, ThemeData)

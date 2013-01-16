@@ -53,28 +53,15 @@ function create_objects_from_data(){
             if(filepath && filepath.indexOf('http') != 0){
                 filepath = STATIC_URL + filepath;
             }
-            switch(node['animation']['used_object_type']){
-                case '{{NEXT_THEME_BG}}':
-                case '{{RANDOM_THEME_BG}}':
-                    jQuery('<div/>',{
-                        id: 'bg'+i+''+j,
-                        class: 'scene-background'
-                    }).appendTo('.scene');
-                    jQuery('<img/>',{
-                        class: 'background-image',
-                        src: filepath
-                    }).appendTo('#bg'+i+''+j);
-                    created_objects[node['final_data_path']] = $('#bg'+i+''+j);
-                case '{{THEME_BG}}':
+            if(node['animation']['used_theme_data'] != null){
+                if(created_objects[node['final_data_path']]){
                     node['animation']['object'] = created_objects[node['final_data_path']];
-                    break;
-                case '{{NEXT_USER_PHOTO}}':
-                case '{{RANDOM_USER_PHOTO}}':
+                }else{
                     jQuery('<div/>',{
-                        id: 'photo'+i+''+j,
+                        id: 'stub'+i+''+j,
                         class: 'photo'
                     }).appendTo('.scene');
-                    var created_div = $('#photo'+i+''+j);
+                    var created_div = $('#stub'+i+''+j);
                     jQuery('<img/>',{
                         class: 'photo_image',
                         src: filepath
@@ -90,69 +77,111 @@ function create_objects_from_data(){
                         });
                     }
                     created_objects[node['final_data_path']] = created_div;
-                case '{{USER_PHOTO}}':
                     node['animation']['object'] = created_objects[node['final_data_path']];
-                    break;
-
-                case '{{NEXT_USER_STATUS}}':
-                case '{{RANDOM_USER_STATUS}}':
-                    jQuery('<div/>',{
-                        id: 'status'+i+''+j,
-                        class: 'status'
-                    }).appendTo('.scene');
-                    var created_div = $('#status'+i+''+j);
-                    jQuery('<p/>',{
-                        class: 'status-text',
-                        text:node['data']
-                    }).appendTo(created_div);
-                    if(typeof node['animation']['click_animation'] !== 'undefined'){
-                        created_div.click(function(){
-                            handleClick($(this));
-                        });
-                    }
-                    if(typeof node['animation']['hover_animation'] !== 'undefined'){
-                        created_div.mouseenter(function(){
-                            handleMouseEnter($(this));
-                        });
-                    }
-                    if(node['post_enhancements']){
-                        _apply_post_enhancements(created_div,node['post_enhancements']);
-                    }
-                    created_objects[node['data'].hashCode()] = created_div;
-
-                case '{{USER_STATUS}}':
-                    node['animation']['object'] = created_objects[node['data'].hashCode()];
-                    break;
-
-
-                case '{{NEXT_THEME_MUSIC}}':
-                case '{{RAND_THEME_MUSIC}}':
-                case '{{NEXT_USER_MUSIC}}':
-                    jQuery('<div/>',{
-                        id:'music'+i+''+j,
-                        class:'jp-jplayer'
-                    }).appendTo('.music');
-                    var music_obj = $('#music'+i+''+j);
-                    music_obj[0]['filepath'] = filepath;
-                    music_obj.jPlayer({
-                        ready: function (event){
-                            console.dir(event.delegateTarget);
-                            $(this).jPlayer("setMedia",{
-                                mp3:event.delegateTarget['filepath']
+                }
+            }else{
+                switch(node['animation']['used_object_type']){
+                    case '{{NEXT_THEME_BG}}':
+                    case '{{RAND_THEME_BG}}':
+                        jQuery('<div/>',{
+                            id: 'bg'+i+''+j,
+                            class: 'scene-background'
+                        }).appendTo('.scene');
+                        jQuery('<img/>',{
+                            class: 'background-image',
+                            src: filepath
+                        }).appendTo('#bg'+i+''+j);
+                        created_objects[node['final_data_path']] = $('#bg'+i+''+j);
+                    case '{{THEME_BG}}':
+                        node['animation']['object'] = created_objects[node['final_data_path']];
+                        break;
+                    case '{{NEXT_USER_PHOTO}}':
+                    case '{{RAND_USER_PHOTO}}':
+                        jQuery('<div/>',{
+                            id: 'photo'+i+''+j,
+                            class: 'photo'
+                        }).appendTo('.scene');
+                        var created_div = $('#photo'+i+''+j);
+                        jQuery('<img/>',{
+                            class: 'photo_image',
+                            src: filepath
+                        }).appendTo(created_div);
+                        if(typeof node['animation']['click_animation'] !== 'undefined'){
+                            created_div.click(function(){
+                                handleClick($(this));
                             });
-                            _music_loaded($(this));
-                        },
-                        swfPath: 'static',
-                        supplied: 'mp3',
-                        wmode: 'window',
-                        volume: 0.1,
-                        loop: true
-                    });
-                    created_objects[node['final_data_path']] = music_obj;
-                case '{{THEME_MUSIC}}':
-                case '{{USER_MUSIC}}':
-                    node['animation']['object'] = created_objects[node['final_data_path']];
-                    break;
+                        }
+                        if(typeof node['animation']['hover_animation'] !== 'undefined'){
+                            created_div.mouseenter(function(){
+                                handleMouseEnter($(this));
+                            });
+                        }
+                        created_objects[node['final_data_path']] = created_div;
+                    case '{{USER_PHOTO}}':
+                        node['animation']['object'] = created_objects[node['final_data_path']];
+                        break;
+
+                    case '{{NEXT_USER_STATUS}}':
+                    case '{{RAND_USER_STATUS}}':
+                        jQuery('<div/>',{
+                            id: 'status'+i+''+j,
+                            class: 'status'
+                        }).appendTo('.scene');
+                        var created_div = $('#status'+i+''+j);
+                        jQuery('<p/>',{
+                            class: 'status-text',
+                            text:node['data']
+                        }).appendTo(created_div);
+                        if(typeof node['animation']['click_animation'] !== 'undefined'){
+                            created_div.click(function(){
+                                handleClick($(this));
+                            });
+                        }
+                        if(typeof node['animation']['hover_animation'] !== 'undefined'){
+                            created_div.mouseenter(function(){
+                                handleMouseEnter($(this));
+                            });
+                        }
+                        if(node['post_enhancements']){
+                            _apply_post_enhancements(created_div,node['post_enhancements']);
+                        }
+                        created_objects[node['data'].hashCode()] = created_div;
+
+                    case '{{USER_STATUS}}':
+                        node['animation']['object'] = created_objects[node['data'].hashCode()];
+                        break;
+
+
+                    case '{{NEXT_THEME_MUSIC}}':
+                    case '{{RAND_THEME_MUSIC}}':
+                    case '{{NEXT_USER_MUSIC}}':
+                        jQuery('<div/>',{
+                            id:'music'+i+''+j,
+                            class:'jp-jplayer'
+                        }).appendTo('.music');
+                        var music_obj = $('#music'+i+''+j);
+                        music_obj[0]['filepath'] = filepath;
+                        music_obj.jPlayer({
+                            ready: function (event){
+                                console.dir(event.delegateTarget);
+                                $(this).jPlayer("setMedia",{
+                                    mp3:event.delegateTarget['filepath']
+                                });
+                                _music_loaded($(this));
+                            },
+                            swfPath: 'static',
+                            supplied: 'mp3',
+                            wmode: 'window',
+                            volume: 0.1,
+                            loop: true
+                        });
+                        created_objects[node['final_data_path']] = music_obj;
+                    case '{{THEME_MUSIC}}':
+                    case '{{USER_MUSIC}}':
+                        node['animation']['object'] = created_objects[node['final_data_path']];
+                        break;
+                }
+
             }
         }
     }

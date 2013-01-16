@@ -125,6 +125,7 @@ ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scri
 COLLECTED_FILE_PATH = 'userdata/collected/'
 THUMBNAIL_FILE_PATH = 'userdata/thumbnail/'
 ENHANCED_FILE_PATH = 'userdata/enhanced/'
+THEME_DATA_PATH = 'themedata/'
 
 LOGIN_URL = '/momends/main/'
 LOGIN_ERROR_URL = '/accounts/login-error/'

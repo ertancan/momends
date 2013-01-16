@@ -10,7 +10,7 @@ from Outputs.AnimationManager.models import OutData
 from social_auth.db.django_models import UserSocialAuth
 from LogManagers.Log import Log
 from DataManagerUtil import DataManagerUtil
-
+from django.db.models import Q
 class DataManager:
     def __init__(self, user):
         self.user = user
@@ -84,10 +84,13 @@ class DataManager:
         :param momend: models.Momend object
         :return: same momend object with thumbnail field filled
         """
-        out_data = self.momend.animationlayer_set.all()[1].outdata_set.order_by('?')
-        for data in out_data:
-            if data.raw.type == RawData.DATA_TYPE['Photo']:
-                self.momend.thumbnail = DataManagerUtil.create_photo_thumbnail(data.final_data_path,'momend_'+str(self.momend.pk)+'_thumb.jpg')
+        try:
+            out_data = self.momend.animationlayer_set.all()[1].outdata_set.order_by('?')
+            for data in out_data:
+                if data.raw.type == RawData.DATA_TYPE['Photo']:
+                    self.momend.thumbnail = DataManagerUtil.create_photo_thumbnail(data.final_data_path,'momend_'+str(self.momend.pk)+'_thumb.jpg')
+        except:
+            Log.error("Couldn't create thumbnail!")
 
     def _instantiate_provider_worker(self, provider):
         """
@@ -101,7 +104,7 @@ class DataManager:
 
     def _calculate_provider_score(self):
         main_layer = self.momend.animationlayer_set.all()[1]
-        used_objects = OutData.objects.filter(owner_layer = main_layer)
+        used_objects = OutData.objects.filter(owner_layer = main_layer).filter(Q(raw__isnull = False))
         _score = 0
         for _out_data in used_objects:
             _score += _out_data.raw.share_count*5

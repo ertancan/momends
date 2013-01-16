@@ -7,6 +7,8 @@ from Outputs.AnimationManager.models import ThemeData
 class ImageEnhancementUtility(object):
     @staticmethod
     def applyThemeEnhancementsOnImage(filename, enhancement_str, file_prefix, theme_data_manager):
+        if len(enhancement_str) == 0:
+            return filename
 
         os.environ['PATH'] += ':/usr/local/bin' #TODO: remove this on prod For mac os
 

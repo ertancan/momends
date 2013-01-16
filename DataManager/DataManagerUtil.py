@@ -5,6 +5,7 @@ import abc
 import subprocess
 import os
 from django.conf import settings
+from LogManagers.Log import Log
 
 class DataManagerUtil:
     __metaclass__ = abc.ABCMeta
@@ -20,6 +21,9 @@ class DataManagerUtil:
 
     @staticmethod
     def create_photo_thumbnail(_file, _output_name):
+        if not _file:
+            Log.error('Error while creating thumbnail (No file given)')
+            return
         os.environ['PATH'] += ':/usr/local/bin' #TODO: remove this on prod For mac os
 
         _file_path = settings.THUMBNAIL_FILE_PATH + _output_name

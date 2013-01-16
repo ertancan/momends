@@ -25,3 +25,25 @@
     name: HighPass Filter
     script_path: gaussian.sh
     parameters: -k high -m 10
+
+- model:  DataManager.ImageEnhancement
+  pk: 3
+  fields:
+    name: Lichtenstein Burn
+    script-path: lichtenstein.sh
+    parameters: -d none -b 1
+
+- model:  DataManager.ImageEnhancement
+  pk: 4
+  fields:
+    name: Lichtenstein Cartoon
+    script-path: lichtenstein.sh
+    parameters: -d h6x6a
+
+
+- model:  DataManager.ImageEnhancement
+  pk: 5
+  fields:
+    name: BW Sketch
+    script-path: sketch.sh
+    parameters: -k desat -c 125 -g
