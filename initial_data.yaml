@@ -68,3 +68,32 @@
     name: Enrich
     script_path: enrich.sh
     parameters:
+
+- model:  DataManager.ImageEnhancement
+  pk: 9
+  fields:
+    name: Rainbow
+    script_path: halo.sh
+    parameters: -r 100 -w 60 -m 25 -c 100,100
+
+- model:  DataManager.ImageEnhancement
+  pk: 10
+  fields:
+    name: Purple
+    script_path: coloration.sh
+    parameters: -h 300 -s 50 -l 0
+
+- model:  DataManager.ImageEnhancement
+  pk: 11
+  fields:
+    name: Yellow
+    script_path: coloration.sh
+    parameters: -h 60 -s 75 -l 0
+
+- model:  DataManager.ImageEnhancement
+  pk: 12
+  fields:
+    name: Red
+    script_path: coloration.sh
+    parameters: -s 50 -l 0 -h 0
+

@@ -1,11 +1,11 @@
 var momend_data;
 var created_objects;
 var volume_slider;
-String.prototype.hashCode = function(){
+function hashCode(str){
     var hash = 0;
-    if (this.length == 0) return hash;
-    for (i = 0; i < this.length; i++) {
-        var _char = this.charCodeAt(i);
+    if (str.length == 0) return hash;
+    for (i = 0; i < str.length; i++) {
+        var _char = str.charCodeAt(i);
         hash = ((hash<<5)-hash)+_char;
         hash = hash & hash; // Convert to 32bit integer
     }
@@ -14,19 +14,13 @@ String.prototype.hashCode = function(){
 
 function momend_arrived(){
     _calculate_dimensions(); //Since they may be needed while creating objects
-    if(!momend_data || momend_data.length == 0){
+    if(!momend_data || momend_data.length == 0 || momend_data['error']){
         load_failed();
         return;
     }
     create_objects_from_data();
     setAnimationQueue(momend_data['animation_layers']);
     startAllQueues();
-    $(window).resize(function(){
-        _calculate_dimensions();
-    });
-    volume_slider = $('#volume-slider');
-    volume_slider.val(100);
-    volume_slider.change(function(){volumeSliderChanged(slider.val())});
 }
 
 function load_failed(){
@@ -145,10 +139,10 @@ function create_objects_from_data(){
                         if(node['post_enhancements']){
                             _apply_post_enhancements(created_div,node['post_enhancements']);
                         }
-                        created_objects[node['data'].hashCode()] = created_div;
+                        created_objects[hashCode(node['data'])] = created_div;
 
                     case '{{USER_STATUS}}':
-                        node['animation']['object'] = created_objects[node['data'].hashCode()];
+                        node['animation']['object'] = created_objects[hashCode(node['data'])];
                         break;
 
 

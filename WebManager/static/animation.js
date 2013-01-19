@@ -22,26 +22,34 @@ var isPlaying = false;
 
 var keywordLookupTable; //Keeps the latest values of keyword related values like {{SCREEN_WIDTH}}
 
-
+function init_animation(){
+    $.cssEase._default = 'linear';
+    $(window).resize(function(){
+        _calculate_dimensions();
+    });
+    volume_slider = $('#volume-slider');
+    volume_slider.val(100);
+    volume_slider.change(function(){volumeSliderChanged(slider.val())});
+}
 /**
  * Instantiates global variables according to number of levels needed.
  * @param _level number of animations layers
  */
 function __generateQueues(_level){
-    animationQueue = new Array();
-    queueOnAction = new Array();
-    currentAnimation = new Array();
-    finishedAnimationQueue = new Array();
-    _layerWaitQueue = new Array();
-    _layerBreakPointWaitQueue = new Array();
-    _userInteractionQueue = new Array();
+    animationQueue = [];
+    queueOnAction = [];
+    currentAnimation = [];
+    finishedAnimationQueue = [];
+    _layerWaitQueue = [];
+    _layerBreakPointWaitQueue = [];
+    _userInteractionQueue = [];
     for(var i=0;i<_level;i++){
-        animationQueue.push(new Array());
+        animationQueue.push([]);
         queueOnAction.push(false);
-        currentAnimation.push(new Array());
-        finishedAnimationQueue.push(new Array())
-        _layerWaitQueue.push(new Array());
-        _layerBreakPointWaitQueue.push(new Array());
+        currentAnimation.push([]);
+        finishedAnimationQueue.push([])
+        _layerWaitQueue.push([]);
+        _layerBreakPointWaitQueue.push([]);
     }
 }
 /**
@@ -89,8 +97,8 @@ function setAnimationQueue(_queue){
 function _addInteractionAnimationLayerForObject(animations){
     animationQueue.push(animations);
     queueOnAction.push(false);
-    currentAnimation.push(new Array());
-    console.dir(animations);
+    currentAnimation.push([]);
+    finishedAnimationQueue.push([]);
     startQueue(animationQueue.length-1);
 }
 /**
@@ -156,6 +164,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
     }else{
         console.log('starting:'+_animation['type']);
     }
+    console.dir(_animation);
     if(_animation['type']==='sleep'){
         currentAnimation[_level].push(_node);
         _animation['sleepTimer'] = setTimeout(function(){
@@ -194,9 +203,6 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
                 }
                 _animation['pre'][key] = _replace_object_keywords(_animation['pre'][key],_obj);
             }
-            console.log('applying pre');
-            console.dir(_obj);
-            console.dir(_animation['pre']);
             _obj.css(_animation['pre']);
         }
         for(var key in _animation['anim']){
@@ -208,12 +214,12 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
             }
             _animation['anim'][key] = _replace_object_keywords(_animation['anim'][key],_obj);
         }
-        _obj.animate(_animation['anim'],{duration:_duration,queue:false,complete:function(){
+        _obj.transition(_animation['anim'],_duration,function(){
             _remove_node_from_current_queue(_level,_node);
             if(triggerNext){
                 nextAnimation(_level);
             }
-        }});
+        });
     }
     else if(_type==='show'){
         _obj.show();
@@ -328,9 +334,9 @@ function pause(){
     console.log('Pause');
     pause_time = new Date().getTime();
     stopAllQueues();
-    pauseQueue = new Array();
+    pauseQueue = [];
     for(var i = 0; i< currentAnimation.length; i++){
-        pauseQueue.push(new Array());
+        pauseQueue.push([]);
         for(var j = 0; j<currentAnimation[i].length; j++){
             var node = currentAnimation[i][j];
             if('animation' in node){
@@ -358,9 +364,9 @@ function pause(){
             }
         }
     }
-    currentAnimation = new Array();
+    currentAnimation = [];
     for(var i = 0; i < animationQueue.length; i++){
-        currentAnimation.push(new Array());
+        currentAnimation.push([]);
     }
     isPlaying = false;
     _toggle_play_button(true);
@@ -559,12 +565,12 @@ function _calculate_dimensions(){
 
 function _replace_object_keywords(_str, _obj){
     if(typeof _str !='string'){
-        console.log('Replace parameters error!');
+        console.log('Replace parameters error!: '+_str);
         return null;
     }
     var _child = _obj.children()[0];
-    return _str.replace('{{OBJECT_WIDTH}}',_child.width).
-        replace('{{OBJECT_HEIGHT}}',_child.height);
+    return _str.replace('{{OBJECT_WIDTH}}',100*(_child.width/keywordLookupTable['{{SCREEN_WIDTH}}'])+'%'). //Replace with percent value instead of px
+        replace('{{OBJECT_HEIGHT}}',100*(_child.height/keywordLookupTable['{{SCREEN_HEIGHT}}'])+'%');
 }
 
 /**

@@ -222,7 +222,7 @@ class Scenario(BaseDataManagerModel):
 class AnimationGroup(BaseDataManagerModel):
     name = models.CharField(max_length=255)
 
-    scenario = models.ForeignKey(Scenario, null=True)
+    scenario = models.ForeignKey(Scenario, null=True, blank=True)
 
     duration = models.IntegerField()
 

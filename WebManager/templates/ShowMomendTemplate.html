@@ -6,6 +6,7 @@
     <link href="{{ STATIC_URL }}momend_style.css" rel="stylesheet" type="text/css" />
     <link href="{{ STATIC_URL }}player_style.css" rel="stylesheet" type="text/css" />
     <script src="{{ STATIC_URL }}jquery.jplayer.min.js"></script>
+    <script src="{{ STATIC_URL }}jquery.transit.min.js"></script>
     <script src="{{ STATIC_URL }}animation.js"></script>
     <script src="{{ STATIC_URL }}momend.js"></script>
 {% endblock include %}
@@ -39,7 +40,8 @@
             _sendUserInteractionToServer('{% url 'momends:save-interaction' params.id %}')
         }
         function init(){
-            fetch_momend_data()
+            init_animation();
+            fetch_momend_data();
         }
     </script>
 {% endblock scripts %}

@@ -1,4 +1,5 @@
 #!/bin/bash
+cd WebManager/static/
 frame=$1
 x=$2
 y=$3
