@@ -2,6 +2,8 @@
 
 {% load url from future %}
 
+{% block heading %} {# empty for login #}  {% endblock heading %}
+{% block footer %} {# empty for login #}  {% endblock footer %}
 
 {% block content %}
     <a href="{% url 'socialauth_begin' 'facebook' %}">Login with Facebook</a>

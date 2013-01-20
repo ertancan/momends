@@ -9,9 +9,11 @@
 
     {% block default_include %} <!--includes for whole site -->
         <script>STATIC_URL = '{{ STATIC_URL }}';  </script>
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script src="http://code.jquery.com/jquery-latest.js"></script>
         <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap.js"></script>
         <link href="{{ STATIC_URL }}/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
+        <link href="{{ STATIC_URL }}/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+        <link href="{{ STATIC_URL }}/font/stylesheet.css" rel="stylesheet">
     {% endblock default_include %}
 
     {% block include %} {% endblock include %}   <!--additional includes for each page-->
@@ -23,7 +25,38 @@
 <body>
 
     {% block heading %}
-        <!--upper part of the site-->
+        {% block navbar %}
+            <div class="navbar navbar-static-top ">
+                <div class="navbar-inner">
+                    <a class="brand momend-title pull-left" href="#">momen<span style="color:#A04641">d</span>s</a>
+                    <div class="pull-right">
+                        {% if user.is_authenticated %}
+                            <span class="navbar-text" style="vertical-align: top"> {{ user.username }}</span>
+                            <div class="btn-group">
+                                <a class='btn-small' href="{% url 'momends:settings-screen' %}"><i class="icon-wrench"></i></a>
+                                <a class='btn-small' href="#"><i class="icon-question-sign"></i></a>
+                                <a class='btn-small' href="{% url 'auth_logout' %}"><i class="icon-off"></i></a>
+                            </div>
+                        {% else %}
+                            <div class="btn-group">
+                                <a href="#myLoginModal" role="button" class="btn-small" data-remote="{% url 'registration_register' %}">Sign up</a>
+                                <a href="#myLoginModal" role="button" class="btn-small" data-remote="{% url 'auth_login' %}" data-toggle="modal">Sign in</a>
+                            </div>
+                            <!-- Modal -->
+
+                            <div id="myLoginModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                <div class="modal-header">
+                                </div>
+                                <div class="modal-body">
+                                    <p>One fine body…</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endblock navbar %}
+
     {% endblock heading %}
 
     {% block content %}

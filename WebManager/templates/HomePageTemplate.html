@@ -1,51 +1,92 @@
 {% extends "MainSite.html" %}
 {% load url from future %}
 
-{% block heading %}
-
-    {% if user.is_authenticated %}
-        <a href="{% url 'momends:settings-screen' %}">Settings</a>
-        <a href="{% url 'auth_logout' %}">Logout</a>
-        {{ user.username }}
-        {{ user.first_name }}
-        {{ user.last_name }}
-    {% else %}
-        <!-- Button to trigger modal -->
-        <a href="#myModal" role="button" class="btn" data-remote="{% url 'auth_login' %}" data-toggle="modal">Sign In</a>
-        <a href="#myModal" role="button" class="btn" data-remote="{% url 'registration_register' %}" data-toggle="modal">Sign Up</a>
-
-        <!-- Modal -->
-        <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h3 id="myModalLabel">Login</h3>
-            </div>
-            <div class="modal-body">
-                <p>One fine body…</p>
-            </div>
-        </div>
-
-    {% endif %}
-
-{% endblock heading %}
+{% block include%}
+    <link href="{{ STATIC_URL }}/main.css" rel="stylesheet" media="screen">
+{% endblock include %}
 
 {% block content %}
-    {% if user.is_authenticated %}
-        <form action="" method="post">{% csrf_token %}
-            {{ form.as_p }}
-            <input type="submit" value="Get it now!" />
-        </form>
-    {% endif %}
 
-<h1>User Momends</h1>
-    {% for momend in user_top_momends %}
-        {{ momend.name }}
-    {% endfor %}
+    <div class="row row-gap">
+        <div class="span5 offset2">
+            <div id="signup-text">
+                <div class="top-left-group">
+                    <div>
+                        <p>Remember your past, Re- </p>
+                        <p>experience your</p>
+                    </div>
+                    <div class="momends-text pull-right">
+                        <p>momends</p>
+                    </div>
+                    <button class="btn btn-primary btn-large create-button" data-toggle="modal" data-target="#create-modal">
+                        {% if user.is_authenticated %}  Get it now!
+                        {% else %}Sign up & get yours! {% endif %}
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="span4 top-right-container">
+        {% if user.is_authenticated and user_top_momends %}
+            <div id="recent" style="display: block">
+                <span class="section-header">Recent Momends</span>
+                <div id="myCarousel" class="carousel slide" style="margin-bottom: 0;max-width: 600px">
+                    <!-- Carousel items -->
+                    <div class="carousel-inner carousel-container">
 
-<h1>Public Momends</h1>
-    {% for momend in public_top_momends %}
-        {{ momend.name }}
-    {% endfor %}
+                            {% for momend in user_top_momends %}
+                                <div class="{% if forloop.counter == 1 %}active {% endif %}item">
+                                    <a href="{% url 'momends:show-momend' 'm' momend.id %}" class="thumbnail recent-thumb">
+                                        <img data-src="holder.js/300x200" width=100% height=100% src="{{ STATIC_URL }}{{ momend.thumbnail }}" alt="momend {{ momend.id }}">
+                                    </a>
+                                    <div class="momend-info">
+                                        {{ momend.name|truncatechars:15}}
+                                        <i class="icon-eye-open"></i>
+                                    </div>
+                                </div>
+                            {% endfor %}
+
+                        <!-- Carousel nav -->
+                        <a class="carousel-control left" href="#myCarousel" data-slide="prev">&lsaquo;</a>
+                        <a class="carousel-control right" href="#myCarousel" data-slide="next">&rsaquo;</a>
+                    </div>
+                </div> {# end carousel container #}
+            </div> {# end recent #}
+        {% else %} {# not authenticated #}
+            <div id="video" class="span4 top-right-container">
+                <span class="section-header">See our video now!</span>
+                <div>
+                    <iframe width="560" height="315" src="http://www.youtube.com/embed/g8bV2aXRu4M?rel=0" frameborder="0" allowfullscreen></iframe>
+                </div>
+            </div>
+        {% endif %}
+        </div> {# end right container#}
+    </div> {# end of row #}
+
+    <div class="line-separator"></div>
+
+    <div class="row row-gap">
+        <div class="section-header offset1">
+            <p>Public Momends</p>
+        </div>
+    </div>
+
+    <div class="span10 offset1" >
+        <ul class="thumbnails">
+            {% for momend in public_top_momends %}
+                <li class="span2">
+                    <a href="{% url 'momends:show-momend' 'm' momend.id %}" class="thumbnail main-small-thumb">
+                        <img height="100%" width="100%" data-src="holder.js/480x320"
+                             {% if momend.thumbnail %}src="{{ STATIC_URL }}{{ momend.thumbnail }}" {% endif %}>
+                    </a>
+                    <div class="row">
+                        <p class="main-momend-info">{{ momend.name|truncatechars:15}}</p>
+                    </div>
+                </li>
+
+            {% endfor %}
+        </ul>
+    </div>
+
 
 {% endblock content %}
 
