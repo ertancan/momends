@@ -14,7 +14,7 @@ var ready_music_count = 0; //How many of the remaining music are ready for playi
 var node_waiting_to_play; //If the handle_node tried to play a music but it wasn't ready
 var music_layer; //Which layer belongs to music player
 var soundAnimationInProcess = false;
-var currentMusicObj = undefined;
+var currentMusicObj;
 
 var pause_time = 0; // Time that the user presses pause button, to calculate time between user interactions
 var pauseQueue; //Keeps the remaining animations that will be performed when un-paused
@@ -214,12 +214,22 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
             }
             _animation['anim'][key] = _replace_object_keywords(_animation['anim'][key],_obj);
         }
-        _obj.transition(_animation['anim'],_duration,function(){
-            _remove_node_from_current_queue(_level,_node);
-            if(triggerNext){
-                nextAnimation(_level);
-            }
-        });
+        if(_animation['extended_animation']){
+            _obj.transition(_animation['anim'],_duration,function(){
+                _remove_node_from_current_queue(_level,_node);
+                if(triggerNext){
+                    nextAnimation(_level);
+                }
+            });
+        }else{
+            _obj.animate(_animation['anim'],{duration:_duration,queue:false,complete:function(){
+                _remove_node_from_current_queue(_level,_node);
+                if(triggerNext){
+                    nextAnimation(_level);
+                }
+            }});
+        }
+
     }
     else if(_type==='show'){
         _obj.show();

@@ -13,7 +13,7 @@
 #                     either in range 0 to 360 (degrees) or 0 to 100 (percent)
 #                     depending upon the units argument; default=0 (red)
 # -s     sat          saturation value to use for coloration; values are 
-#                     integers in range 0 to 100 (percent); default=50
+#                     integers in range 0 to upon (percent); default=50
 # -l     light        lightness value to use for coloration; values are 
 #                     integers in range -100 to 100(percent); default=0
 # -u     units        units for hue; choices are: degrees (d) or percent (p); 
