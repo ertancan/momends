@@ -435,13 +435,13 @@ function handleClick(_obj){
     for (var i = 0; i<click_animation['animations'].length;i++){
         click_animation['animations'][i]['anim'] = _parse_string_to_dict(click_animation['animations'][i]['anim']);
         click_animation['animations'][i]['pre'] = _parse_string_to_dict(click_animation['animations'][i]['pre']);
-        click_animation['animations'][i]['object'] = _obj;
+        click_animation['animations'][i]['object'] = _node['animation']['object'];
     }
     if(click_animation['stop_current_animation']){
-        _obj.stop(true);
+        _obj.parent().stop(true);
     }
     if(click_animation['clear_further_animations']){
-        _clearObjectAnimationsFromQueues(_obj);
+        _clearObjectAnimationsFromQueues(_obj.parent());
     }
     if(click_animation['disable_further_interaction']){
         _obj.unbind('click');
@@ -462,17 +462,19 @@ function handleClick(_obj){
 function handleMouseEnter(_obj){
     var enter_time = new Date().getTime();
     var _node = _findObjectNode(_obj);
+    console.log("-----")
+    console.dir(_node)
     var enter_animation = _node['animation']['hover_animation'];
     for (var i = 0; i<enter_animation['animations'].length;i++){
         enter_animation['animations'][i]['anim'] = _parse_string_to_dict(enter_animation['animations'][i]['anim']);
         enter_animation['animations'][i]['pre'] = _parse_string_to_dict(enter_animation['animations'][i]['pre']);
-        enter_animation['animations'][i]['object'] = _obj;
+        enter_animation['animations'][i]['object'] = _node['animation']['object'];
     }
     if(enter_animation['stop_current_animation']){
-        _obj.stop(true);
+        _obj.parent().stop(true);
     }
     if(enter_animation['clear_further_animations']){
-        _clearObjectAnimationsFromQueues(_obj);
+        _clearObjectAnimationsFromQueues(_obj.parent());
     }
     if(enter_animation['disable_further_interaction']){
         _obj.unbind('click');
@@ -512,16 +514,20 @@ function _clearObjectAnimationsFromQueues(_obj){ //We may need to pass objects t
  * @private
  */
 function _findObjectNode(_obj){
+    var time = new Date().getTime();
     for(var i=0;i<momend_data['animation_layers'].length;i++){
         for(var j=0;j<momend_data['animation_layers'][i].length;j++){
             if(!momend_data['animation_layers'][i][j]['animation']['object']){
                 continue;
             }
-            if(momend_data['animation_layers'][i][j]['animation']['object'].selector ==='#'+_obj[0].id){
+            console.dir(momend_data['animation_layers'][i][j]['animation']['object'][0].children[0].id);
+            if(momend_data['animation_layers'][i][j]['animation']['object'][0].children[0].id ===_obj[0].id){
+                console.log('(Node found in:'+(new Date().getTime())-time);
                 return momend_data['animation_layers'][i][j];
             }
         }
     }
+    console.log('Node not found in:'+(new Date().getTime())-time);
 }
 
 function _convertLayerToJSON(_layer){
@@ -575,7 +581,6 @@ function _calculate_dimensions(){
 
 function _replace_object_keywords(_str, _obj){
     if(typeof _str !='string'){
-        console.log('Replace parameters error!: '+_str);
         return null;
     }
     var _child = _obj.children()[0];
