@@ -96,17 +96,18 @@ function create_objects_from_data(){
                             class: 'photo'
                         }).appendTo('.scene');
                         var created_div = $('#photo'+i+''+j);
-                        jQuery('<img/>',{
+                        var created_obj = jQuery('<img/>',{
                             class: 'photo_image',
+                            id: 'photo_image'+i+''+j,
                             src: filepath
                         }).appendTo(created_div);
                         if(typeof node['animation']['click_animation'] !== 'undefined'){
-                            created_div.click(function(){
+                            created_obj.click(function(){
                                 handleClick($(this));
                             });
                         }
                         if(typeof node['animation']['hover_animation'] !== 'undefined'){
-                            created_div.mouseenter(function(){
+                            created_obj.mouseenter(function(){
                                 handleMouseEnter($(this));
                             });
                         }

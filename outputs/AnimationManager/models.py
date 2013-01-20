@@ -95,6 +95,7 @@ class CoreAnimationData(BaseDataManagerModel):
 
     used_object_type = models.CharField(max_length=255, null=True, blank=True) #What kind of object? i.e., USER_PHOTO,THEME_BG
     used_theme_data = models.ForeignKey('ThemeData', null=True, blank=True)
+    extended_animation = models.BooleanField(default=False)
     #Consistent with javascript interpreter
     name = models.CharField(max_length=255, null=True, blank=True) #Optional, descriptive, human readable name
     type = models.IntegerField(choices=_choices) #Type of the animation
