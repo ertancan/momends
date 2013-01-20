@@ -1,0 +1,92 @@
+body{
+    padding-bottom: 0;
+}
+.recent-thumb{
+    height:10%;
+}
+
+.main-small-thumb{
+    height:120px;
+    width: 170px;
+    max-width: 170px;
+}
+
+.friend-text{
+    position: relative;
+    top:-5px;
+    left:30px;
+    font-family: comfortaabold,sans-serif;
+    font-size: 13px;
+    color: #333;
+    min-width: 200px;
+
+}
+.friend-description{
+    position: relative;
+    top:-5px;
+    left:30px;
+    font-family: comfortaaregular,sans-serif;
+    font-size: 12px;
+    color: #333;
+    min-width: 200px;
+}
+.top-left-group{
+    margin-top: 5%;
+    font-family: comfortaaregular,sans-serif;
+    font-size: 2em;
+}
+
+.top-right-container{
+    max-width: 570px;
+}
+.momends-text{
+    margin-top: 5%;
+    font-family: comfortaabold,sans-serif;
+    font-size: 2em;
+}
+
+.section-header{
+    font-family: comfortaabold,sans-serif ;
+}
+.profile-owner{
+    font-family: comfortaabold,sans-serif ;
+    font-size: 1.5em;
+}
+.profile-info{
+    font-family: comfortaaregular,sans-serif ;
+    font-size: 1em;
+}
+.carousel-container{
+}
+
+.momend-info{
+    margin-left: 5%;
+    font-family: comfortaaregular,sans-serif ;
+    font-size: 1em;
+}
+.main-momend-info{
+    margin-left: 10%;
+    font-family: comfortaaregular,sans-serif ;
+    font-size: 1em;
+}
+.create-button{
+    margin: 13% 0 0 20%;
+}
+
+.create-thumb{
+    height:50px;
+}
+.modal-backdrop {background: none;}
+
+.row-gap {
+    *zoom: 1;
+    margin-top: 2%;
+}
+
+.line-separator{
+    margin-top: 2%;
+    height:1px;
+    background:#717171;
+    border-bottom:1px solid #313030;
+
+}
