@@ -36,17 +36,7 @@
                         </div>
                     </div>
                     <div id="momend-player" class="row" style="margin-top:5px;height:540px; background-color:rgba(51,51,51,0.8)">
-                        <!--[if IE]>
-                        <object classid="clsid:25336920-03F9-11CF-8FD0-00AA00686F13" data="{% url 'momends:play-momend' params.type params.id %}">
-                        <p>backup content</p>
-                        </object>
-                        <![endif]-->
-
-                        <!--[if !IE]> <-->
-                        <object type="text/html" data="{% url 'momends:play-momend' params.type params.id %}" style="width:100%; height:100%">
-                            <p>backup content</p>
-                        </object>
-                        <!--> <![endif]-->
+                       <iframe onload="frameLoaded()" id="momend-player-frame" src="{% url 'momends:play-momend' params.type params.id %}" style="width: 100%;height: 100%;border: 0"></iframe>
                     </div>
                 </div>
 
@@ -84,12 +74,12 @@
                 <ul class="thumbnails">
                     {% for related in related_momends %}
                         {% if forloop.counter < 6 %}
-                        <li class="span2">
-                            <a href="#" class="thumbnail related-thumb">
-                                <img class="related-thumb" data-src="holder.js/300x200" width=100% height=100% src="{{ STATIC_URL }}{{ related.thumbnail }}" alt="momend {{ related.id }}">
-                                <span class="related-text">{{related.name}}</span>
-                            </a>
-                        </li>
+                            <li class="span2">
+                                <a href="#" class="thumbnail related-thumb">
+                                    <img class="related-thumb" data-src="holder.js/300x200" width=100% height=100% src="{{ STATIC_URL }}{{ related.thumbnail }}" alt="momend {{ related.id }}">
+                                    <span class="related-text">{{related.name}}</span>
+                                </a>
+                            </li>
                         {% endif %}
                     {% endfor %}
                 </ul>
@@ -101,14 +91,14 @@
     <!-- Used media modal -->
     <div id="media-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="modal-label" aria-hidden="true">
         <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <button onclick="resumePlayer()" type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
             <h4 id="modal-label">Original</h4>
         </div>
         <div class="modal-body">
             <img id="modal-img" style="height: 100%;width: 100%">
         </div>
         <div class="modal-footer">
-            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button onclick="resumePlayer()" class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
         </div>
     </div>
 
@@ -116,11 +106,23 @@
 
 {% block scripts %}
     <script>
+        player_loaded = null;
+        function pausePlayer(){
+            player_frame.contentWindow.pause();
+        }
+        function resumePlayer(){
+            player_frame.contentWindow.resume();
+        }
         function modalShow(media){
+            pausePlayer();
             $('#media-modal').modal();
             var _img = $('#modal-img');
             _img.attr('src',STATIC_URL+media);
         }
+    function frameLoaded(){
+        player_frame = document.getElementById('momend-player-frame');
+        $('#momend-player').css('background-color','rgba(51,51,51,0)');
+    }
     </script>
 
 {% endblock scripts %}
