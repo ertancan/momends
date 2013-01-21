@@ -22,7 +22,30 @@ function momend_arrived(){
     setAnimationQueue(momend_data['animation_layers']);
     startAllQueues();
 }
-
+/**
+ * Send the queue generated while user interacts with the animation to the given url
+ * Needs the CSRF token to be on the player's codes
+ * fills id and queue parameters of the request
+ * @param url that listens post requests and saves interaction
+ * @private
+ */
+function _sendUserInteractionToServer(url){
+    var json = _convertLayerToJSON(_userInteractionQueue);
+    var token = $('[name="csrfmiddlewaretoken"]')[0].value;
+    var momend_id = momend_data['id'];
+    $.ajax({
+        type: 'POST',
+        url: url,
+        beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', token);},
+        data: {
+            'queue':json,
+            'id':momend_id
+        },
+        success: function(msg){
+            console.log('Sent: '+msg);
+        }
+    });
+}
 function load_failed(){
     jQuery('<h1/>',{
         text : 'Momend could not be found!',

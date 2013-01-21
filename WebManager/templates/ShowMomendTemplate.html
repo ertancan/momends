@@ -15,12 +15,16 @@
                     <div class="row">
                         <div class="span6">
                             <div class="row momend-title">
-                                momend title
+                                {{ momend.name }}
                                 <i class="icon-eye-open" style="vertical-align: top"></i>
                             </div>
                             <div class="row momend-info">
                                 <i class="icon-calendar"></i>
-                                Date Time - Stuff
+                                {% if momend.momend_start_date == momend_end_date%}
+                                    {{ momend.momend_start_date|date:"j F Y" }}
+                                {% else %}
+                                    {{ momend.momend_start_date|date:"j F Y" }} - {{ momend.momend_end_date|date:"j F Y" }}
+                                {% endif %}
                             </div>
                         </div>
                         <div class="span3">
@@ -51,38 +55,23 @@
                         Used Media
                     </div>
                     <div class="row" style="height:350px; overflow:auto">
-                        <div class="row">
-                            <a href="#" class="thumbnail used-data-thumb"></a>
-                        </div>
-                        <div class="row">
-                            <a href="#" class="thumbnail used-data-thumb"></a>
-                        </div>
-                        <div class="row">
-                            <a href="#" class="thumbnail used-data-thumb"></a>
-                        </div>
-                        <div class="row">
-                            <a href="#" class="thumbnail used-data-thumb"></a>
-                        </div>
-                        <div class="row">
-                            <a href="#" class="thumbnail used-data-thumb"></a>
-                        </div>
-                        <div class="row">
-                            <a href="#" class="thumbnail used-data-thumb"></a>
-                        </div>
+                        {% for media in used_media %}
+                            <div class="row">
+                                <a href="#" onclick="modalShow('{{ media.data}}')" data-toggle="modal" class="thumbnail used-data-thumb"><img original_src="{{ media.data}}" style="height: 100%" src="{{ STATIC_URL }}{{media.thumb}}"></a>
+                            </div>
+                        {% endfor %}
                     </div>
                     <div class="row section-header">
                         Other Interactions
                     </div>
                     <div class="row" style="height:150px; overflow:auto">
-                        <div class="row">
-                            <a href="#" class="thumbnail used-data-thumb"></a>
-                        </div>
-                        <div class="row">
-                            <a href="#" class="thumbnail used-data-thumb"></a>
-                        </div>
-                        <div class="row">
-                            <a href="#" class="thumbnail used-data-thumb"></a>
-                        </div>
+                        {% for interaction in interactions %}
+                            <div class="row">
+                                <a href="{% url 'momends:show-momend' 'i' interaction.id %}" class="thumbnail interaction">
+                                    Interaction {{ forloop.counter }}:</br>{{ interaction.date|date:"j F Y" }}
+                                </a>
+                            </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -93,45 +82,46 @@
         <div class="navbar-inner" style="padding-left: 6%;">
             <div class="row" style="margin: 10px 10px -2px 1.4%;">
                 <ul class="thumbnails">
-                    <li class="span2">
-                        <a href="#" class="thumbnail related-thumb">
-                            <img data-src="holder.js/300x200" alt="">
-                            <span class="related-text"> Cok acayip momend</span>
-                        </a>
-                    </li>
-                    <li class="span2">
-                        <a href="#" class="thumbnail related-thumb">
-                            <img data-src="holder.js/300x200" alt="">
-                            <span class="related-text"> Cok acayip momend</span>
-                        </a>
-                    </li>
-                    <li class="span2">
-                        <a href="#" class="thumbnail related-thumb">
-                            <img data-src="holder.js/300x200" alt="">
-                            <span class="related-text"> Cok acayip momend</span>
-                        </a>
-                    </li>
-                    <li class="span2">
-                        <a href="#" class="thumbnail related-thumb">
-                            <img data-src="holder.js/300x200" alt="">
-                            <span class="related-text"> Cok acayip momend</span>
-                        </a>
-                    </li>
-                    <li class="span2">
-                        <a href="#" class="thumbnail related-thumb">
-                            <img data-src="holder.js/300x200" alt="">
-                            <span class="related-text"> Cok acayip momend</span>
-                        </a>
-                    </li>
+                    {% for related in related_momends %}
+                        {% if forloop.counter < 6 %}
+                        <li class="span2">
+                            <a href="#" class="thumbnail related-thumb">
+                                <img class="related-thumb" data-src="holder.js/300x200" width=100% height=100% src="{{ STATIC_URL }}{{ related.thumbnail }}" alt="momend {{ related.id }}">
+                                <span class="related-text">{{related.name}}</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
                 </ul>
             </div>
         </div>
 
     </div>
 
+    <!-- Used media modal -->
+    <div id="media-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="modal-label" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h4 id="modal-label">Original</h4>
+        </div>
+        <div class="modal-body">
+            <img id="modal-img" style="height: 100%;width: 100%">
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        </div>
+    </div>
+
 {% endblock content %}
 
 {% block scripts %}
+    <script>
+        function modalShow(media){
+            $('#media-modal').modal();
+            var _img = $('#modal-img');
+            _img.attr('src',STATIC_URL+media);
+        }
+    </script>
 
 {% endblock scripts %}
 

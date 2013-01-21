@@ -7,6 +7,13 @@
     height:80px;
     margin: 0;
 }
+
+.interaction{
+    font: comfortaaregular;
+    font-size: 1em;
+    color: #333;
+    margin-left: 30px;
+}
 .related-text{
     position: absolute;
     bottom: 3px;

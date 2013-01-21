@@ -541,24 +541,6 @@ function _convertLayerToJSON(_layer){
     return JSON.stringify(layerCopy);
 }
 
-function _sendUserInteractionToServer(url){
-    var json = _convertLayerToJSON(_userInteractionQueue);
-    var token = $('[name="csrfmiddlewaretoken"]')[0].value;
-    var momend_id = momend_data['id'];
-    $.ajax({
-        type: 'POST',
-        url: url,
-        beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', token);},
-        data: {
-            'queue':json,
-            'id':momend_id
-        },
-        success: function(msg){
-            console.log('Sent: '+msg);
-        }
-    });
-}
-
 /**
  * Music load callback to keep if we can start playing music tracks when play-music animation arrives
  * @param _loaded_obj which track loaded
