@@ -1,0 +1,42 @@
+.used-data-thumb{
+    height: 100px;
+    margin: 5px 8% 0px 14%;
+}
+
+.related-thumb{
+    height:80px;
+    margin: 0;
+}
+.related-text{
+    position: absolute;
+    bottom: 3px;
+    font-family: comfortaaregular;
+    font-size: 1em;
+}
+.related-header{
+    -moz-transform: rotate(-90deg);  /* FF3.5+ */
+    -o-transform: rotate(-90deg);  /* Opera 10.5 */
+    -webkit-transform: rotate(-90deg);  /* Saf3.1+, Chrome */
+    position: absolute;
+    left:1.8%;
+    bottom: 40%;
+    font-family: comfortaabold,sans-serif ;
+    font-size: 1em;
+}
+body{
+    margin-bottom: 40px;
+}
+
+.section-header{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-family: comfortaabold,sans-serif ;
+}
+.momend-title{
+    font-family: comfortaabold,sans-serif ;
+    font-size: 1.5em;
+}
+.momend-info{
+    font-family: comfortaaregular,sans-serif ;
+    font-size: 1em;
+}

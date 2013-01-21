@@ -3,48 +3,135 @@
 {% load url from future %}
 
 {% block include %}
-    <link href="{{ STATIC_URL }}momend_style.css" rel="stylesheet" type="text/css" />
-    <link href="{{ STATIC_URL }}player_style.css" rel="stylesheet" type="text/css" />
-    <script src="{{ STATIC_URL }}jquery.jplayer.min.js"></script>
-    <script src="{{ STATIC_URL }}jquery.transit.min.js"></script>
-    <script src="{{ STATIC_URL }}animation.js"></script>
-    <script src="{{ STATIC_URL }}momend.js"></script>
+    <link href="{{ STATIC_URL }}/show.css" rel="stylesheet" media="screen">
 {% endblock include %}
 
-{% block heading %} {% endblock heading %}
 {% block content %}
-    <body onload="init()">
-    <div class="player" style="width:100%;height: 100%">
-        <div class="scene" style="height: 97%"></div>
-        <div class="music"></div>
-        <div class="momend-player" style="height: 3%">
-            <button onclick="pause()" id="play-toggle" class="btn btn-mini"><i id="toggle-icon" class="icon-pause"></i></button>
-            <div class="slider-bg">
-                <input id="volume-slider" type="range" min="0" max="100" style="width: 100px">
+    <div class="row" style="margin: 35px 0 130px 3%" >
+
+        <div class="span12 offset1">
+            <div class="row">
+                <div class="span9">
+                    <div class="row">
+                        <div class="span6">
+                            <div class="row momend-title">
+                                momend title
+                                <i class="icon-eye-open" style="vertical-align: top"></i>
+                            </div>
+                            <div class="row momend-info">
+                                <i class="icon-calendar"></i>
+                                Date Time - Stuff
+                            </div>
+                        </div>
+                        <div class="span3">
+                            <div class="btn-group pull-right">
+                                <a class="btn btn-large" href="#"><i class="icon-heart"></i></a>
+                                <a class="btn btn-large" href="#"><i class="icon-share"></i></a>
+                                <a class="btn btn-large" href="#"><i class="icon-edit"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="momend-player" class="row" style="margin-top:5px;height:540px; background-color:rgba(51,51,51,0.8)">
+                        <!--[if IE]>
+                        <object classid="clsid:25336920-03F9-11CF-8FD0-00AA00686F13" data="{% url 'momends:play-momend' params.type params.id %}">
+                        <p>backup content</p>
+                        </object>
+                        <![endif]-->
+
+                        <!--[if !IE]> <-->
+                        <object type="text/html" data="{% url 'momends:play-momend' params.type params.id %}" style="width:100%; height:100%">
+                            <p>backup content</p>
+                        </object>
+                        <!--> <![endif]-->
+                    </div>
+                </div>
+
+                <div class="span2" style="margin-left: 5%">
+                    <div class="row section-header">
+                        Used Media
+                    </div>
+                    <div class="row" style="height:350px; overflow:auto">
+                        <div class="row">
+                            <a href="#" class="thumbnail used-data-thumb"></a>
+                        </div>
+                        <div class="row">
+                            <a href="#" class="thumbnail used-data-thumb"></a>
+                        </div>
+                        <div class="row">
+                            <a href="#" class="thumbnail used-data-thumb"></a>
+                        </div>
+                        <div class="row">
+                            <a href="#" class="thumbnail used-data-thumb"></a>
+                        </div>
+                        <div class="row">
+                            <a href="#" class="thumbnail used-data-thumb"></a>
+                        </div>
+                        <div class="row">
+                            <a href="#" class="thumbnail used-data-thumb"></a>
+                        </div>
+                    </div>
+                    <div class="row section-header">
+                        Other Interactions
+                    </div>
+                    <div class="row" style="height:150px; overflow:auto">
+                        <div class="row">
+                            <a href="#" class="thumbnail used-data-thumb"></a>
+                        </div>
+                        <div class="row">
+                            <a href="#" class="thumbnail used-data-thumb"></a>
+                        </div>
+                        <div class="row">
+                            <a href="#" class="thumbnail used-data-thumb"></a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    {% csrf_token %}
+    <div class="navbar navbar-fixed-bottom">
+        <div class="related-header">Related Momends</div>
+        <div class="navbar-inner" style="padding-left: 6%;">
+            <div class="row" style="margin: 10px 10px -2px 1.4%;">
+                <ul class="thumbnails">
+                    <li class="span2">
+                        <a href="#" class="thumbnail related-thumb">
+                            <img data-src="holder.js/300x200" alt="">
+                            <span class="related-text"> Cok acayip momend</span>
+                        </a>
+                    </li>
+                    <li class="span2">
+                        <a href="#" class="thumbnail related-thumb">
+                            <img data-src="holder.js/300x200" alt="">
+                            <span class="related-text"> Cok acayip momend</span>
+                        </a>
+                    </li>
+                    <li class="span2">
+                        <a href="#" class="thumbnail related-thumb">
+                            <img data-src="holder.js/300x200" alt="">
+                            <span class="related-text"> Cok acayip momend</span>
+                        </a>
+                    </li>
+                    <li class="span2">
+                        <a href="#" class="thumbnail related-thumb">
+                            <img data-src="holder.js/300x200" alt="">
+                            <span class="related-text"> Cok acayip momend</span>
+                        </a>
+                    </li>
+                    <li class="span2">
+                        <a href="#" class="thumbnail related-thumb">
+                            <img data-src="holder.js/300x200" alt="">
+                            <span class="related-text"> Cok acayip momend</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
 
 {% endblock content %}
 
 {% block scripts %}
 
-
-    <script type="text/javascript">
-        function fetch_momend_data(){
-            $.getJSON( '{% url 'momends:get-momend' params.type params.id %}', function(data) {
-                momend_data = data;
-                momend_arrived();
-            }).error(function(){load_failed();});
-        }
-        function send_interaction_data(){
-            _sendUserInteractionToServer('{% url 'momends:save-interaction' params.id %}')
-        }
-        function init(){
-            init_animation();
-            fetch_momend_data();
-        }
-    </script>
 {% endblock scripts %}
 

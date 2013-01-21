@@ -54,6 +54,9 @@ class HomePageNotLoggedView(TemplateView):
         context['public_top_momends'] = EnrichDataWorker.get_top_public_momends(max_count=20)
         return context
 
+class MomendPlayerView(TemplateView):
+    template_name = 'MomendPlayerTemplate.html'
+
 class ShowMomendView(TemplateView):
     template_name = 'ShowMomendTemplate.html'
 

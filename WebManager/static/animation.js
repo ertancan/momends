@@ -462,8 +462,6 @@ function handleClick(_obj){
 function handleMouseEnter(_obj){
     var enter_time = new Date().getTime();
     var _node = _findObjectNode(_obj);
-    console.log("-----")
-    console.dir(_node)
     var enter_animation = _node['animation']['hover_animation'];
     for (var i = 0; i<enter_animation['animations'].length;i++){
         enter_animation['animations'][i]['anim'] = _parse_string_to_dict(enter_animation['animations'][i]['anim']);
@@ -514,20 +512,23 @@ function _clearObjectAnimationsFromQueues(_obj){ //We may need to pass objects t
  * @private
  */
 function _findObjectNode(_obj){
+    console.log('Looking for:');
+    console.log(_obj[0].id);
     var time = new Date().getTime();
     for(var i=0;i<momend_data['animation_layers'].length;i++){
         for(var j=0;j<momend_data['animation_layers'][i].length;j++){
             if(!momend_data['animation_layers'][i][j]['animation']['object']){
                 continue;
             }
-            console.dir(momend_data['animation_layers'][i][j]['animation']['object'][0].children[0].id);
             if(momend_data['animation_layers'][i][j]['animation']['object'][0].children[0].id ===_obj[0].id){
-                console.log('(Node found in:'+(new Date().getTime())-time);
+                var foundTime=new Date().getTime()
+                console.log('Found in:'+(foundTime-time));
                 return momend_data['animation_layers'][i][j];
             }
         }
     }
-    console.log('Node not found in:'+(new Date().getTime())-time);
+    var finishTime=new Date().getTime();
+    console.log('Node not found in:'+(finishTime-time));
 }
 
 function _convertLayerToJSON(_layer){

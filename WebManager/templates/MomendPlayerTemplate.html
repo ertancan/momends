@@ -1,0 +1,50 @@
+{% extends "MainSite.html" %}
+
+{% load url from future %}
+
+{% block include %}
+    <link href="{{ STATIC_URL }}momend_style.css" rel="stylesheet" type="text/css" />
+    <link href="{{ STATIC_URL }}player_style.css" rel="stylesheet" type="text/css" />
+    <script src="{{ STATIC_URL }}jquery.jplayer.min.js"></script>
+    <script src="{{ STATIC_URL }}jquery.transit.min.js"></script>
+    <script src="{{ STATIC_URL }}animation.js"></script>
+    <script src="{{ STATIC_URL }}momend.js"></script>
+{% endblock include %}
+
+{% block heading %} {% endblock heading %}
+{% block content %}
+    <body onload="player_init()">
+    <div class="player" style="width:100%;height: 100%">
+        <div class="scene" style="height: 97%"></div>
+        <div class="music"></div>
+        <div class="momend-player" style="height: 3%">
+            <button onclick="pause()" id="play-toggle" class="btn btn-mini"><i id="toggle-icon" class="icon-pause"></i></button>
+            <div class="slider-bg">
+                <input id="volume-slider" type="range" min="0" max="100" style="width: 100px">
+            </div>
+        </div>
+    </div>
+    {% csrf_token %}
+
+{% endblock content %}
+
+{% block scripts %}
+
+
+    <script type="text/javascript">
+        function fetch_momend_data(){
+            $.getJSON( '{% url 'momends:get-momend' params.type params.id %}', function(data) {
+                momend_data = data;
+                momend_arrived();
+            }).error(function(){load_failed();});
+        }
+        function send_interaction_data(){
+            _sendUserInteractionToServer('{% url 'momends:save-interaction' params.id %}')
+        }
+        function player_init(){
+            init_animation();
+            fetch_momend_data();
+        }
+    </script>
+{% endblock scripts %}
+
