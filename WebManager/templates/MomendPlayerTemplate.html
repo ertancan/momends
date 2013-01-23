@@ -1,16 +1,24 @@
-{% extends "MainSite.html" %}
-
 {% load url from future %}
 
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} Momends {% endblock title %}</title>
+
 {% block include %}
+    <link href="{{ STATIC_URL }}/font-awesome/font-awesome.css" rel="stylesheet">
+    <!--[if IE 7]>
+		    <link href="css/font-awesome/font-awesome-ie7.css" rel="stylesheet">
+	    <![endif]-->
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
     <link href="{{ STATIC_URL }}momend_style.css" rel="stylesheet" type="text/css" />
     <link href="{{ STATIC_URL }}player_style.css" rel="stylesheet" type="text/css" />
-    <script src="{{ STATIC_URL }}jquery.jplayer.min.js"></script>
-    <script src="{{ STATIC_URL }}jquery.transit.min.js"></script>
-    <script src="{{ STATIC_URL }}animation.js"></script>
-    <script src="{{ STATIC_URL }}momend.js"></script>
+    <script>STATIC_URL = '{{ STATIC_URL }}';  </script>
 {% endblock include %}
+</head>
 
+<body>
 {% block heading %} {% endblock heading %}
 {% block content %}
     <body onload="player_init()">
@@ -22,6 +30,10 @@
             <div class="slider-bg">
                 <input id="volume-slider" type="range" min="0" max="100" style="width: 100px">
             </div>
+            <div class="momend-button-group pull-right">
+                <button class="icon-heart" href="#"></button>
+                <button class="icon-share" href="#"></button>
+            </div>
         </div>
     </div>
     {% csrf_token %}
@@ -30,6 +42,10 @@
 
 {% block scripts %}
 
+    <script src="{{ STATIC_URL }}jquery.jplayer.min.js"></script>
+    <script src="{{ STATIC_URL }}jquery.transit.min.js"></script>
+    <script src="{{ STATIC_URL }}animation.js"></script>
+    <script src="{{ STATIC_URL }}momend.js"></script>
 
     <script type="text/javascript">
         function fetch_momend_data(){

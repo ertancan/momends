@@ -9,6 +9,12 @@
     position: relative;
     left: 5px;
 }
+.momend-button-group{
+    position: absolute;
+    right: 5px;
+    bottom: 2px;
+    margin: 0;
+}
 .slider-bg{
     position: absolute;
     top: 10%;
