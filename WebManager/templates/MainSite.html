@@ -1,7 +1,7 @@
 {% load url from future %}
 
 <!doctype html>
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
 
@@ -10,15 +10,22 @@
     {% block default_include %} <!--includes for whole site -->
         <script>STATIC_URL = '{{ STATIC_URL }}';  </script>
         <script src="http://code.jquery.com/jquery-latest.js"></script>
-        <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap.js"></script>
-        <link href="{{ STATIC_URL }}/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
-        <link href="{{ STATIC_URL }}/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
         <link href="{{ STATIC_URL }}/fonts/comfortaa/stylesheet.css" rel="stylesheet">
+        <link href="{{ STATIC_URL }}/style.min.css" rel="stylesheet">
+        <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap.min.js"></script>
+        <link href="{{ STATIC_URL }}/font-awesome/font-awesome.css" rel="stylesheet">
+        <!--[if IE 7]>
+		    <link href="css/font-awesome/font-awesome-ie7.css" rel="stylesheet">
+	    <![endif]-->
+
+
     {% endblock default_include %}
 
-    {% block include %} {% endblock include %}   <!--additional includes for each page-->
+    {% block include %}
+    {% endblock include %}   <!--additional includes for each page-->
 
-    {% block scripts %} {% endblock scripts %}   <!--additional scripts for whole site -->
+    {% block scripts %}
+    {% endblock scripts %}   <!--additional scripts for whole site -->
 
 </head>
 

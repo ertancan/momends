@@ -4,89 +4,79 @@
 
 {% block include %}
     <link href="{{ STATIC_URL }}/show.css" rel="stylesheet" media="screen">
-{% endblock include %}
+{% endblock include %}   <!--additional includes for each page-->
 
 {% block content %}
-    <div class="row" style="margin: 35px 0 130px 3%" >
+    <section id="content" class="container">
 
-        <div class="span12 offset1">
-            <div class="row">
-                <div class="span9">
-                    <div class="row">
-                        <div class="span6">
-                            <div class="row momend-title">
-                                {{ momend.name }}
-                                <i class="icon-eye-open" style="vertical-align: top"></i>
-                            </div>
-                            <div class="row momend-info">
-                                <i class="icon-calendar"></i>
-                                {% if momend.momend_start_date == momend_end_date%}
-                                    {{ momend.momend_start_date|date:"j F Y" }}
-                                {% else %}
-                                    {{ momend.momend_start_date|date:"j F Y" }} - {{ momend.momend_end_date|date:"j F Y" }}
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="span3">
-                            <div class="btn-group pull-right">
-                                <a class="btn btn-large" href="#"><i class="icon-heart"></i></a>
-                                <a class="btn btn-large" href="#"><i class="icon-share"></i></a>
-                                <a class="btn btn-large" href="#"><i class="icon-edit"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="momend-player" class="row" style="margin-top:5px;height:540px; background-color:rgba(51,51,51,0.8)">
-                       <iframe onload="frameLoaded()" id="momend-player-frame" src="{% url 'momends:play-momend' params.type params.id %}" style="width: 100%;height: 100%;border: 0"></iframe>
-                    </div>
+        <section class="row" id="project">
+
+            <h1 class="span12">
+                {{ momend.name }}
+                <i class="icon-eye-open" style="vertical-align: middle"></i>
+            </h1>
+
+            <div class="span9 ">
+
+                <div id="momend-player" style="margin-top:5px;height:460px; background-color:rgba(51,51,51,0.8)">
+                    <iframe onload="frameLoaded()" id="momend-player-frame" src="{% url 'momends:play-momend' params.type params.id %}" style="width: 100%;height: 100%;border: 0"></iframe>
                 </div>
 
-                <div class="span2" style="margin-left: 5%">
-                    <div class="row section-header">
-                        Used Media
-                    </div>
-                    <div class="row" style="height:350px; overflow:auto">
-                        {% for media in used_media %}
-                            <div class="row">
-                                <a href="#" onclick="modalShow('{{ media.data}}')" data-toggle="modal" class="thumbnail used-data-thumb"><img original_src="{{ media.data}}" style="height: 100%" src="{{ STATIC_URL }}{{media.thumb}}"></a>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <div class="row section-header">
-                        Other Interactions
-                    </div>
-                    <div class="row" style="height:150px; overflow:auto">
+            </div>
+            <div class="span3 project-description">
+                <div class="interaction-list">
+                    <h4>Previous Interactions</h4>
+                    <ul>
                         {% for interaction in interactions %}
-                            <div class="row">
-                                <a href="{% url 'momends:show-momend' 'i' interaction.id %}" class="thumbnail interaction">
-                                    Interaction {{ forloop.counter }}:</br>{{ interaction.date|date:"j F Y" }}
-                                </a>
-                            </div>
+                        <li class="icon-magic interaction">
+                            <a href="{% url 'momends:show-momend' 'i' interaction.id %}">
+                                Interaction {{ forloop.counter }}:</br>{{ interaction.date|date:"j F Y" }}
+                            </a>
+                        </li>
                         {% endfor %}
-                    </div>
+                    </ul>
+                    <hr />
+                </div>
+                <div class="used-media">
+                    <h4>Used media</h4>
+                    <ul class="used-media-list">
+                        {% for media in used_media %}
+                            <li class="icon-picture used-media"><a href="#" onclick="modalShow('{{ media.data}}')" data-toggle="modal">{{ media.original_id }}</a></li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="navbar navbar-fixed-bottom">
-        <div class="related-header">Related Momends</div>
-        <div class="navbar-inner" style="padding-left: 6%;">
-            <div class="row" style="margin: 10px 10px -2px 1.4%;">
-                <ul class="thumbnails">
-                    {% for related in related_momends %}
-                        {% if forloop.counter < 6 %}
-                            <li class="span2">
-                                <a href="#" class="thumbnail related-thumb">
-                                    <img class="related-thumb" data-src="holder.js/300x200" width=100% height=100% src="{{ STATIC_URL }}{{ related.thumbnail }}" alt="momend {{ related.id }}">
-                                    <span class="related-text">{{related.name}}</span>
-                                </a>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
+            <!-- end portfolio item-->
 
-    </div>
+        </section>
+
+        <section class="row" id="related-projects">
+
+            <h3 class="span12">
+                <hr />
+                Related Momends
+            </h3>
+
+            {% for related in related_momends %}
+                {% if forloop.counter0 < 6 %}
+
+                    <article class="span2 project" rel="tooltip" title="Some other project">
+                        <div class="thumbnail">
+                            <a href="#" title="">
+                                <img alt="momend {{ related.id }}" src="{{ STATIC_URL }}{{ related.thumbnail }}" />
+                            </a>
+                        </div>
+                    </article>
+
+                {% endif %}
+            {% endfor %}
+
+
+
+
+        </section>
+
+    </section>
 
     <!-- Used media modal -->
     <div id="media-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="modal-label" aria-hidden="true">
@@ -119,10 +109,10 @@
             var _img = $('#modal-img');
             _img.attr('src',STATIC_URL+media);
         }
-    function frameLoaded(){
-        player_frame = document.getElementById('momend-player-frame');
-        $('#momend-player').css('background-color','rgba(51,51,51,0)');
-    }
+        function frameLoaded(){
+            player_frame = document.getElementById('momend-player-frame');
+            $('#momend-player').css('background-color','rgba(51,51,51,0)');
+        }
     </script>
 
 {% endblock scripts %}

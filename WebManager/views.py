@@ -95,6 +95,7 @@ class ShowMomendView(TemplateView):
                 _tmp = dict()
                 _tmp['data'] = _obj.data
                 _tmp['thumb'] = _obj.thumbnail
+                _tmp['original_id'] = _obj.original_id
                 _used_media.append(_tmp)
         context['used_media'] = _used_media
         return context
