@@ -102,6 +102,7 @@ class ShowMomendView(TemplateView):
 
 class GetMomendView(TemplateView):
     template_name = 'GetMomendTemplate.html'
+
     def get_context_data(self, **kwargs):
         context = super(GetMomendView, self).get_context_data(**kwargs)
         try:

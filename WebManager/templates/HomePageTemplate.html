@@ -6,89 +6,163 @@
 {% endblock include %}
 
 {% block content %}
+    <div class="lead-container">
+    <div class="container">
 
-    <div class="row row-gap">
-        <div class="span5 offset2">
-            <div id="signup-text">
-                <div class="top-left-group">
-                    <div>
-                        <p>Remember your past, Re- </p>
-                        <p>experience your</p>
-                    </div>
-                    <div class="momends-text pull-right">
-                        <p>momends</p>
-                    </div>
-                    <button class="btn btn-primary btn-large create-button" data-toggle="modal" data-target="#create-modal">
-                        {% if user.is_authenticated %}  Get it now!
-                        {% else %}Sign up & get yours! {% endif %}
-                    </button>
+        <div id="carousel" class="carousel slide stacked" rel="carousel">
+
+            <!-- Carousel items -->
+            <div class="carousel-inner">
+                <!-- Item -->
+                <div class="item active homepage-carousel-item">
+                    <img alt="" src="assets/home-variant/placeholder-940x480-1.gif" />
                 </div>
+                <!-- end Item -->
+                <!-- Item -->
+                <div class="item homepage-carousel-item">
+                    <img alt="" src="assets/home-variant/placeholder-940x480-2.gif" />
+                </div>
+                <!-- end Item -->
+                <!-- Item -->
+                <div class="item homepage-carousel-item">
+                    <img alt="" src="assets/home-variant/placeholder-940x480-3.gif" />
+                </div>
+                <!-- end Item -->
+            </div>
+            <!-- Carousel navigation -->
+            <a class="carousel-control left" href="#carousel" data-slide="prev"></a>
+            <a class="carousel-control right" href="#carousel" data-slide="next"></a>
+
+        </div>
+        <div class="row">
+            <div class="span4">
+                <span class="circle" style="background:#ED3E3E;"><i class="icon-magic"></i></span>&nbsp;
+                <h3 class="inline"><a href="#" onclick="showCreateModal()">Get yours now!</a></h3>
             </div>
         </div>
-        <div class="span4 top-right-container">
-        {% if user.is_authenticated and user_top_momends %}
-            <div id="recent" style="display: block">
-                <span class="section-header">Recent Momends</span>
-                <div id="myCarousel" class="carousel slide" style="margin-bottom: 0;max-width: 600px">
-                    <!-- Carousel items -->
-                    <div class="carousel-inner carousel-container">
 
-                            {% for momend in user_top_momends %}
-                                <div class="{% if forloop.counter == 1 %}active {% endif %}item">
-                                    <a href="{% url 'momends:show-momend' 'm' momend.id %}" class="thumbnail recent-thumb">
-                                        <img data-src="holder.js/300x200" width=100% height=100% src="{{ STATIC_URL }}{{ momend.thumbnail }}" alt="momend {{ momend.id }}">
-                                    </a>
-                                    <div class="momend-info">
-                                        {{ momend.name|truncatechars:15}}
-                                        <i class="icon-eye-open"></i>
-                                    </div>
-                                </div>
-                            {% endfor %}
+        <hr />
 
-                        <!-- Carousel nav -->
-                        <a class="carousel-control left" href="#myCarousel" data-slide="prev">&lsaquo;</a>
-                        <a class="carousel-control right" href="#myCarousel" data-slide="next">&rsaquo;</a>
+        <div id="portfolio">
+
+            <!-- portfolio filter -->
+            <ul id="portfolio-filter" class="nav nav-tabs">
+                <li class="active"><a href="#all" class="filter" data-filter="*">All</a></li>
+                <li><a href="#" class="filter" data-filter=".latest">Latest</a></li>
+                <li><a href="#" class="filter" data-filter=".popular">Popular</a></li>
+            </ul>
+
+            <!-- portfolio items -->
+            <section class="row" id="portfolio-items">
+
+                <!-- portfolio item-->
+                <article class="span6 project" data-tags="latest">
+
+                    <div class="thumbnail link">
+                        <!-- image -->
+                        <a href="project.html" title="">
+                            <img alt="" src="assets/a_s.jpg" />
+                        </a>
+                        <!-- description -->
+                        <div class="project-description">
+                            <!-- icon -->
+                            <i class="icon-th"></i>
+                            <!-- name -->
+                            <b class="project-name">Title</b>
+                        </div>
+                        <!-- ribbon -->
+                        <div class="ribbon"><span>Awarded</span></div>
                     </div>
-                </div> {# end carousel container #}
-            </div> {# end recent #}
-        {% else %} {# not authenticated #}
-            <div id="video" class="span4 top-right-container">
-                <span class="section-header">See our video now!</span>
-                <div>
-                    <iframe width="560" height="315" src="http://www.youtube.com/embed/g8bV2aXRu4M?rel=0" frameborder="0" allowfullscreen></iframe>
+
+                </article>
+                <!-- end portfolio item-->
+
+
+            </section>
+        </div>
+
+    </div>
+    </div>
+
+    <!-- Create Modal -->
+    <div id="create-modal" class="modal hide fade span9" tabindex="-1" role="dialog" aria-labelledby="create-modal" aria-hidden="true">
+        <div class="modal-body">
+
+            <form class="form-horizontal">
+                <div class="span4">
+                    <ul class="nav nav-tabs modal-nav-tabs"> <!-- Tab titles -->
+                        <li class="active"><a href="#fb" data-toggle="tab">Facebook</a></li>
+                        <li><a href="#tw" data-toggle="tab">Twitter</a></li>
+                        <li><a href="#upload" data-toggle="tab">Local</a></li>
+                    </ul>
+
+                    <div class="tab-content" style="margin: 0;"> <!--Tab contents -->
+                        <div class="tab-pane active" id="fb" style="overflow: auto;max-height: 200px;"> <!-- Facebook thumbnails -->
+                            <div class="section-header">Photo Albums</div>
+                            <div class="thumb-container">
+                                <ul class="thumbnails">
+                                    <li class="span1">
+                                        <a href="#" class="thumbnail create-thumb">
+                                            <img data-src="holder.js/300x200" alt="">
+                                        </a>
+                                    </li>
+                                    <li class="span1">
+                                        <a href="#" class="thumbnail create-thumb">
+                                            <img data-src="holder.js/300x200" alt="">
+                                        </a>
+                                    </li>
+                                    <li class="span1">
+                                        <a href="#" class="thumbnail create-thumb">
+                                            <img data-src="holder.js/300x200" alt="">
+                                        </a>
+                                    </li>
+                                    <li class="span1">
+                                        <a href="#" class="thumbnail create-thumb">
+                                            <img data-src="holder.js/300x200" alt="">
+                                        </a>
+                                    </li>
+                                    <li class="span1">
+                                        <a href="#" class="thumbnail create-thumb">
+                                            <img data-src="holder.js/300x200" alt="">
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="tw">
+                            <label for="hashtag">Hashtag</label>
+                            <input type="text" id="hashtag">
+                        </div>
+                        <div class="tab-pane" id="upload">Not Ready Yet!</div>
+                    </div>
                 </div>
-            </div>
-        {% endif %}
-        </div> {# end right container#}
-    </div> {# end of row #}
 
-    <div class="line-separator"></div>
+                <div class="span3" style="margin-top: 50px"> <!--From: To: etc. -->
+                    <label for="since" style="width: 50px">From:</label>
+                    <input class="input-mini" type="text" id="since" placeholder="  /  /    " style="margin-bottom: 10px">
+                    <a class="btn" style="vertical-align: top" href="#"><i class="icon-calendar"></i></a>
 
-    <div class="row row-gap">
-        <div class="section-header offset1">
-            <p>Public Momends</p>
+                    <label for="until" style="width: 50px">To:</label>
+                    <input class="input-mini" type="text" id="until" placeholder="  /  /    " style="margin-bottom: 10px">
+                    <a class="btn" href="#" style="vertical-align: top"><i class="icon-calendar"></i></a>
+                    <label>
+                        <input type="checkbox"> Public
+                    </label>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button class="btn btn-primary">Create</button>
         </div>
     </div>
-
-    <div class="span10 offset1" >
-        <ul class="thumbnails">
-            {% for momend in public_top_momends %}
-                <li class="span2">
-                    <a href="{% url 'momends:show-momend' 'm' momend.id %}" class="thumbnail main-small-thumb">
-                        <img height="100%" width="100%" data-src="holder.js/480x320"
-                             {% if momend.thumbnail %}src="{{ STATIC_URL }}{{ momend.thumbnail }}" {% endif %}>
-                    </a>
-                    <div class="row">
-                        <p class="main-momend-info">{{ momend.name|truncatechars:15}}</p>
-                    </div>
-                </li>
-
-            {% endfor %}
-        </ul>
-    </div>
-
-
 {% endblock content %}
-
-
-
+{% block scripts %}
+    <script>
+        function showCreateModal(){
+            var _modal = $('#create-modal');
+            _modal.css('margin-left',_modal.outerWidth()/-2);
+            _modal.modal();
+        }
+    </script>
+{% endblock scripts %}
