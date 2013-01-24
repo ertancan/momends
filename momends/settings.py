@@ -194,5 +194,9 @@ DATABASE_OPTIONS = {
     'charset': 'utf8'
 }
 
+from os import environ
+if environ['MOMENDS_HOST'] == 'development':
+    from local_settings import *
+else:
+    from local_settings_heroku import *
 
-from local_settings import *
