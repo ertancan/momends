@@ -1,7 +1,7 @@
 {% extends "MainSite.html" %}
 {% load url from future %}
 
-{% block heading %}
+{% block content %}
     <a href="{% url 'socialauth_begin' 'facebook' %}">Add Facebook</a>
     <a href="{% url 'socialauth_begin' 'twitter' %}">Add Twitter</a>
     <a href="{% url 'socialauth_disconnect' 'facebook' %}">Remove Facebook</a>
@@ -12,11 +12,6 @@
     {{ user.username }}
     {{ user.first_name }}
     {{ user.last_name }}
-
-{% endblock heading %}
-
-{% block content %}
-<li>settings page</li>
 
 {% endblock content %}
 
