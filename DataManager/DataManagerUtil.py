@@ -27,7 +27,7 @@ class DataManagerUtil:
         os.environ['PATH'] += ':/usr/local/bin' #TODO: remove this on prod For mac os
 
         _file_path = settings.THUMBNAIL_FILE_PATH + _output_name
-        s=["convert", _file, '-resize', '100x100', _file_path]
+        s=["convert", _file, '-resize', '500x500', _file_path]
         print s
         subprocess.Popen(s)
         return _file_path

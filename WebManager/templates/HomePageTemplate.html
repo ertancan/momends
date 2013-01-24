@@ -44,19 +44,18 @@
             </div>
             <div class="row">
                 <div class="span4">
-                    <span class="circle" style="background:#ED3E3E;"><i class="icon-magic"></i></span>&nbsp;
-                    <h3 class="inline"><a href="#" onclick="showCreateModal()">Get yours now!</a></h3>
+
+                    <a class="button orange large" onclick="showCreateModal()"><i class="icon-magic"></i>   Get yours now!</a>
                 </div>
             </div>
 
             <hr />
 
             <div id="portfolio">
-                {% if user_top_momends|length > 0 %}
+                {% if user.is_authenticated %}
                     <!-- portfolio filter -->
                     <ul id="portfolio-filter" class="nav nav-tabs">
-                        <li class="active"><a href="#all" class="filter" data-filter="*">All</a></li>
-                        <li><a href="#" class="filter" data-filter=".user">My Momends</a></li>
+                        <li><a href="#" class="filter active" data-filter=".user">My Momends</a></li>
                         <li><a href="#" class="filter" data-filter=".public">Public Momends</a></li>
                     </ul>
                 {% endif %}

@@ -12,7 +12,8 @@
         <script src="http://code.jquery.com/jquery-latest.js"></script>
         <link href="{{ STATIC_URL }}/fonts/comfortaa/stylesheet.css" rel="stylesheet">
         <link href="{{ STATIC_URL }}/style.min.css" rel="stylesheet">
-        <link href="{{ STATIC_URL }}/font-awesome/font-awesome.css" rel="stylesheet">
+        <link href="{{ STATIC_URL }}/site.css" rel="stylesheet">
+        <link href="{{ STATIC_URL }}/fonts/font-awesome/font-awesome.css" rel="stylesheet">
         <!--[if IE 7]>
 		    <link href="css/font-awesome/font-awesome-ie7.css" rel="stylesheet">
 	    <![endif]-->
@@ -36,7 +37,7 @@
                     <div class="navbar-inner">
                         <div class="container">
                             <!-- Logo -->
-                            <a class="brand" href={% url 'momends:front-page' %}>
+                            <a class="brand momend-word" href={% url 'momends:front-page' %}>
                                 momen<span style="color: darkred">d</span>s
                             </a>
                             <ul class="nav">
@@ -75,7 +76,7 @@
             <div class="container">
                 <div class="row">
                     <div class="span3">
-                        <a class="brand" href="index.html">
+                        <a class="brand momend-word" href={% url 'momends:front-page' %}>
                             momen<span style="color:#8b0000">d</span>s
                         </a>
 
