@@ -1,11 +1,6 @@
 {% load url from future %}
 
 <!doctype html>
-<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
-<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
-<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
-<!--[if (gte IE 9)|!(IE)]><!--><html class="not-ie" lang="en"> <!--<![endif]-->
-
 <html xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
@@ -15,13 +10,12 @@
     {% block default_include %} <!--includes for whole site -->
         <script>STATIC_URL = '{{ STATIC_URL }}';  </script>
         <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <link href="{{ STATIC_URL }}/fonts/comfortaa/stylesheet.css" rel="stylesheet">
         <link href="{{ STATIC_URL }}/style.min.css" rel="stylesheet">
         <link href="{{ STATIC_URL }}/font-awesome/font-awesome.css" rel="stylesheet">
         <!--[if IE 7]>
 		    <link href="css/font-awesome/font-awesome-ie7.css" rel="stylesheet">
 	    <![endif]-->
-
-
     {% endblock default_include %}
 
     {% block include %}
@@ -29,44 +23,42 @@
 
     {% block scripts %}
     {% endblock scripts %}   <!--additional scripts for whole site -->
-
-
-
 </head>
 
 <body>
 
     {% block heading %}
         {% block navbar %}
-            <div class="navbar navbar-static-top ">
-                <div class="navbar-inner">
-                    <a class="brand momend-title pull-left" href="#">momen<span style="color:#A04641">d</span>s</a>
-                    <div class="pull-right">
-                        {% if user.is_authenticated %}
-                            <span class="navbar-text" style="vertical-align: top"> {{ user.username }}</span>
-                            <div class="btn-group">
-                                <a class='btn-small' href="{% url 'momends:settings-screen' %}"><i class="icon-wrench"></i></a>
-                                <a class='btn-small' href="#"><i class="icon-question-sign"></i></a>
-                                <a class='btn-small' href="{% url 'auth_logout' %}"><i class="icon-off"></i></a>
-                            </div>
-                        {% else %}
-                            <div class="btn-group">
-                                <a href="#myLoginModal" role="button" class="btn-small" data-remote="{% url 'registration_register' %}">Sign up</a>
-                                <a href="#myLoginModal" role="button" class="btn-small" data-remote="{% url 'auth_login' %}" data-toggle="modal">Sign in</a>
-                            </div>
-                            <!-- Modal -->
+            <header id="header">
+                <!-- Navigation
+                ================================================== -->
+                <nav class="navbar">
+                    <div class="navbar-inner">
+                        <div class="container">
+                            <!-- Logo -->
+                            <a class="brand" href={% url 'momends:front-page' %}>
+                                momen<span style="color: darkred">d</span>s
+                            </a>
+                            <ul class="nav">
 
-                            <div id="myLoginModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                                <div class="modal-header">
-                                </div>
-                                <div class="modal-body">
-                                    <p>One fine body…</p>
-                                </div>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+                                {% if user.is_authenticated %}
+                                    <li><a href="{% url 'momends:settings-screen' %}" title="settings" >{{ user.username }}</a></li>
+                                    <li><a href="{% url 'auth_logout' %}" title="logout" >Logout</a></li>
+                                {% else %}
+                                    <li><a href="#myLoginModal" title="signin" data-remote="{% url 'auth_login' %}" data-toggle="modal">Sign in</a></li>
+                                    <li><a href="#myLoginModal" title="signup" data-remote="{% url 'registration_register' %}" data-toggle="modal">Sign up</a></li>
+                                    <!-- Modal -->
+                                    <div id="myLoginModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                        <div class="modal-header"> </div>
+                                        <div class="modal-body"><p> </p></div>
+                                    </div>
+                                {% endif %}
+
+                            </ul>
+                        </div><!-- end .container -->
+                    </div><!-- end .navbar-inner -->
+                </nav>
+            </header>
         {% endblock navbar %}
 
     {% endblock heading %}
@@ -77,11 +69,33 @@
     {% endblock content%}
 
     {% block footer %}
-        <!--here comes the footer-->
+        <!-- Footer
+        ================================================== -->
+        <footer id="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="span3">
+                        <a class="brand" href="index.html">
+                            momen<span style="color:#8b0000">d</span>s
+                        </a>
+
+                    </div>
+                    <div class="span4 social-networks">
+                        <p>
+                            <a class="social-network twitter" href="https://twitter.com/momends"></a>
+                            <a class="social-network facebook" href="https://www.facebook.com/momends"></a>
+                            <!--<a class="social-network linkedin"></a>
+                            <a class="social-network dribbble"></a>
+                            <a class="social-network pinterest"></a> -->
+                        </p>
+                    </div>
+                </div> <!-- end .row -->
+            </div> <!-- end .container -->
+        </footer><!-- end #footer -->
     {% endblock footer %}
 
     {% block default-scripts %}
-        <script type="text/javascript" src="{{ STATIC_URL }}/js/bootstrap.min.js"></script>
+        <script src="{{ STATIC_URL }}/js/bootstrap.min.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}/js/jquery.isotope.min.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}/js/jquery.touchSwipe.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}/js/jquery.hotkeys.min.js" charset='utf-8'></script>
