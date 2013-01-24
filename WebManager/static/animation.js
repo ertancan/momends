@@ -318,6 +318,7 @@ function nextAnimation(_level){
         console.log('INCONSISTENCY!!!');
     }
     if(animationQueue[_level].length===0){
+        console.log('Finished! layer:'+_level);
         return;
     }
     if(!queueOnAction[_level]){
@@ -336,6 +337,7 @@ function nextAnimation(_level){
             nextAnimation(_level);
         }
     }catch(error){
+        console.log('Animation error : '+error);
         console.dir(animationQueue[_level][0]);
     }
 }

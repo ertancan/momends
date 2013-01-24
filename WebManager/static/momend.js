@@ -1,6 +1,7 @@
 var momend_data;
 var created_objects;
 var volume_slider;
+var finished_modal;
 function hashCode(str){
     var hash = 0;
     if (str.length == 0) return hash;
@@ -252,4 +253,41 @@ function _parse_string_to_dict(_str,replaceKeywords){
         }
     }
     return resp;
+}
+
+function create_finish_view(){
+    finished_modal = jQuery('<div/>',{
+        class : 'finished-modal-bg',
+        id : 'finished-bg'
+    }).appendTo('body');
+    var _modal = jQuery('<div/>',{
+        class : 'finished-modal',
+        id : 'finished-modal'
+    }).appendTo(finished_modal);
+    var sendInteractionButton = jQuery('<div/>',{
+        id : 'send-interaction-button',
+        onclick : 'send_interaction_data()',
+        class : 'finished-modal-button'
+    }).appendTo(_modal);
+
+    jQuery('<i/>',{
+        class : 'icon-magic modal-icon'
+    }).appendTo(sendInteractionButton);
+    jQuery('<span/>',{
+        text : 'Save Interaction'
+    }).appendTo(sendInteractionButton);
+
+    var shareButton = jQuery('<div/>',{
+        id : 'share-button',
+        onclick : 'share()',
+        class : 'finished-modal-button'
+    }).appendTo(_modal);
+
+    jQuery('<i/>',{
+        class : 'icon-share modal-icon'
+    }).appendTo(shareButton);
+    jQuery('<span/>',{
+        text : 'Share'
+    }).appendTo(shareButton);
+    finished_modal.hide();
 }

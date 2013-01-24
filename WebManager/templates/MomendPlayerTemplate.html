@@ -26,13 +26,13 @@
         <div class="scene" style="height: 97%"></div>
         <div class="music"></div>
         <div class="momend-player" style="height: 3%">
-            <button onclick="pause()" id="play-toggle" class="btn btn-mini"><i id="toggle-icon" class="icon-pause"></i></button>
+            <button onclick="pause()" id="play-toggle" class="btn btn-mini player-button"><i id="toggle-icon" class="icon-pause"></i></button>
             <div class="slider-bg">
                 <input id="volume-slider" type="range" min="0" max="100" style="width: 100px">
             </div>
             <div class="momend-button-group pull-right">
-                <button class="icon-heart" href="#"></button>
-                <button class="icon-share" href="#"></button>
+                <button class="icon-heart player-button" href="#"></button>
+                <button class="icon-share player-button" href="#"></button>
             </div>
         </div>
     </div>
@@ -52,6 +52,7 @@
             $.getJSON( '{% url 'momends:get-momend' params.type params.id %}', function(data) {
                 momend_data = data;
                 momend_arrived();
+                create_finish_view();
             }).error(function(){load_failed();});
         }
         function send_interaction_data(){

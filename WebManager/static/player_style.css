@@ -24,3 +24,51 @@
     background-color: rgba(240,240,240,0.9);
     border-radius: 15px;
 }
+.finished-modal-bg{
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0,0,0,0.8);
+    z-index: 9999;
+}
+.finished-modal{
+    position: absolute;
+    border-radius: 15px;
+    -moz-border-radius: 15px;
+    -webkit-border-radius: 15px;
+    border: 2px solid #737272;
+    background-color: rgb(196, 196, 196);
+    width: 360px;
+    height: 230px;
+    left: 50%;
+    margin-left: -150px;
+    top:10%;
+    z-index: 9999;
+    -webkit-box-shadow: 0px 10px 16px rgba(50, 50, 50, 0.75);
+    -moz-box-shadow:    0px 10px 16px rgba(50, 50, 50, 0.75);
+    box-shadow:         0px 10px 16px rgba(50, 50, 50, 0.75);
+}
+.finished-modal-button{
+    cursor: pointer;
+    height: 60px;
+    background-color: rgba(50, 50, 50, 0.8);
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    padding-left: 20px;
+    padding-top: 15px;
+    margin: 30px;
+    font-size: 30px;
+}
+.finished-modal-button:hover{
+    background-color: rgba(150, 150, 150, 0.8);
+}
+.modal-icon{
+    font-size: 40px;
+    margin-right: 10px;
+}
+.player-button{
+    cursor: pointer;
+}

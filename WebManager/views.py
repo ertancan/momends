@@ -21,6 +21,7 @@ from DataManager.DataEnrich.EnrichDataWorker import EnrichDataWorker
 from social_auth.db.django_models import UserSocialAuth
 from random import randint
 from django.core.exceptions import ObjectDoesNotExist
+from LogManagers.Log import Log
 
 class HomePageLoggedFormView(FormView):
     form_class = CreateMomendForm
@@ -32,6 +33,7 @@ class HomePageLoggedFormView(FormView):
         return context
 
     def form_valid(self, form):
+        Log.debug('Create momend form sent')
         momend_name = form.cleaned_data['momend_name']
         start_date = form.cleaned_data['start_date']
         finish_date = form.cleaned_data['finish_date']

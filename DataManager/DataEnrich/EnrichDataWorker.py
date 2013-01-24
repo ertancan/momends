@@ -78,6 +78,7 @@ class EnrichDataWorker: #TODO keep this as base class and introduce different wo
             an array of curated top public momends
         """
         _obj = Momend.objects.filter(privacy=Momend.PRIVACY_CHOICES['Public']).order_by('create_date').reverse()
+
         return _obj if (_obj.count() < max_count) else _obj[_obj.count() - max_count:]
 
     @staticmethod

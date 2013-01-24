@@ -7,88 +7,115 @@
 
 {% block content %}
     <div class="lead-container">
-    <div class="container">
+        <div class="container">
 
-        <div id="carousel" class="carousel slide stacked" rel="carousel">
+            <div id="carousel" class="carousel slide stacked" rel="carousel" data-interval=5000>
 
-            <!-- Carousel items -->
-            <div class="carousel-inner">
-                <!-- Item -->
-                <div class="item active homepage-carousel-item">
-                    <img alt="" src="assets/home-variant/placeholder-940x480-1.gif" />
-                </div>
-                <!-- end Item -->
-                <!-- Item -->
-                <div class="item homepage-carousel-item">
-                    <img alt="" src="assets/home-variant/placeholder-940x480-2.gif" />
-                </div>
-                <!-- end Item -->
-                <!-- Item -->
-                <div class="item homepage-carousel-item">
-                    <img alt="" src="assets/home-variant/placeholder-940x480-3.gif" />
-                </div>
-                <!-- end Item -->
-            </div>
-            <!-- Carousel navigation -->
-            <a class="carousel-control left" href="#carousel" data-slide="prev"></a>
-            <a class="carousel-control right" href="#carousel" data-slide="next"></a>
-
-        </div>
-        <div class="row">
-            <div class="span4">
-                <span class="circle" style="background:#ED3E3E;"><i class="icon-magic"></i></span>&nbsp;
-                <h3 class="inline"><a href="#" onclick="showCreateModal()">Get yours now!</a></h3>
-            </div>
-        </div>
-
-        <hr />
-
-        <div id="portfolio">
-
-            <!-- portfolio filter -->
-            <ul id="portfolio-filter" class="nav nav-tabs">
-                <li class="active"><a href="#all" class="filter" data-filter="*">All</a></li>
-                <li><a href="#" class="filter" data-filter=".latest">Latest</a></li>
-                <li><a href="#" class="filter" data-filter=".popular">Popular</a></li>
-            </ul>
-
-            <!-- portfolio items -->
-            <section class="row" id="portfolio-items">
-
-                <!-- portfolio item-->
-                <article class="span6 project" data-tags="latest">
-
-                    <div class="thumbnail link">
-                        <!-- image -->
-                        <a href="project.html" title="">
-                            <img alt="" src="assets/a_s.jpg" />
-                        </a>
-                        <!-- description -->
-                        <div class="project-description">
-                            <!-- icon -->
-                            <i class="icon-th"></i>
-                            <!-- name -->
-                            <b class="project-name">Title</b>
-                        </div>
-                        <!-- ribbon -->
-                        <div class="ribbon"><span>Awarded</span></div>
+                <!-- Carousel items -->
+                <div class="carousel-inner">
+                    <!-- Item -->
+                    <div class="item active homepage-carousel-item">
+                        <img alt="momend picture" src="{{ STATIC_URL }}img/carousel1.jpg" />
+                    </div>
+                    <!-- end Item -->
+                    <!-- Item -->
+                    <div class="item homepage-carousel-item">
+                        <img alt="momend picture" src="{{ STATIC_URL }}img/carousel2.jpg" />
+                    </div>
+                    <!-- end Item -->
+                    <!-- Item -->
+                    <div class="item homepage-carousel-item">
+                        <img alt="momend picture" src="{{ STATIC_URL }}img/carousel3.jpg" />
+                    </div>
+                    <!-- end Item -->
+                    <div class="item homepage-carousel-item">
+                        <img alt="momend picture" src="{{ STATIC_URL }}img/carousel4.jpg" />
                     </div>
 
-                </article>
-                <!-- end portfolio item-->
+                    <div class="item homepage-carousel-item">
+                        <iframe width="940" height="480" src="http://www.youtube.com/embed/g8bV2aXRu4M?rel=0" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    <!-- end Item -->
+                </div>
+                <!-- Carousel navigation -->
+                <a class="carousel-control left" href="#carousel" data-slide="prev"></a>
+                <a class="carousel-control right" href="#carousel" data-slide="next"></a>
 
+            </div>
+            <div class="row">
+                <div class="span4">
+                    <span class="circle" style="background:#ED3E3E;"><i class="icon-magic"></i></span>&nbsp;
+                    <h3 class="inline"><a href="#" onclick="showCreateModal()">Get yours now!</a></h3>
+                </div>
+            </div>
 
-            </section>
+            <hr />
+
+            <div id="portfolio">
+                {% if user_top_momends|length > 0 %}
+                    <!-- portfolio filter -->
+                    <ul id="portfolio-filter" class="nav nav-tabs">
+                        <li class="active"><a href="#all" class="filter" data-filter="*">All</a></li>
+                        <li><a href="#" class="filter" data-filter=".user">My Momends</a></li>
+                        <li><a href="#" class="filter" data-filter=".public">Public Momends</a></li>
+                    </ul>
+                {% endif %}
+                <!-- portfolio items -->
+                <section class="row" id="portfolio-items">
+                {% for momend in public_top_momends %}
+                    <!-- portfolio item-->
+                    <article class="project {% cycle 'span6' 'span6' 'span4' 'span4' 'span4' 'span3' 'span3' 'span3' 'span3'%}" data-tags="public">
+
+                        <div class="thumbnail link">
+                            <!-- image -->
+                            <a href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
+                                <img alt="{{ momend.name }}" {% if momend.thumbnail %}src="{{ STATIC_URL }}{{ momend.thumbnail }}" {% endif %} />
+                            </a>
+                            <!-- description -->
+                            <div class="project-description">
+                                <!-- icon -->
+                                <i class="icon-magic"></i>
+                                <!-- name -->
+                                <b class="project-name">{{ momend.name }}</b>
+                            </div>
+                        </div>
+
+                    </article>
+                    <!-- end portfolio item-->
+                {% endfor %}
+                    {% for momend in user_top_momends %}
+                        <!-- portfolio item-->
+                        <article class="project {% cycle 'span6' 'span6' 'span4' 'span4' 'span4' 'span3' 'span3' 'span3' 'span3'%}" data-tags="user">
+
+                            <div class="thumbnail link">
+                                <!-- image -->
+                                <a href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
+                                    <img alt="{{ momend.name }}" {% if momend.thumbnail %}src="{{ STATIC_URL }}{{ momend.thumbnail }}" {% endif %} />
+                                </a>
+                                <!-- description -->
+                                <div class="project-description">
+                                    <!-- icon -->
+                                    <i class="icon-magic"></i>
+                                    <!-- name -->
+                                    <b class="project-name">{{ momend.name }}</b>
+                                </div>
+                            </div>
+
+                        </article>
+                        <!-- end portfolio item-->
+                    {% endfor %}
+                </section>
+            </div>
+
         </div>
-
-    </div>
     </div>
 
     <!-- Create Modal -->
     <div id="create-modal" class="modal hide fade span9" tabindex="-1" role="dialog" aria-labelledby="create-modal" aria-hidden="true">
-        <div class="modal-body">
+        <form class="form-horizontal" method="post" action="">{% csrf_token %}
 
-            <form class="form-horizontal">
+            <div class="modal-body">
+
                 <div class="span4">
                     <ul class="nav nav-tabs modal-nav-tabs"> <!-- Tab titles -->
                         <li class="active"><a href="#fb" data-toggle="tab">Facebook</a></li>
@@ -138,23 +165,27 @@
                 </div>
 
                 <div class="span3" style="margin-top: 50px"> <!--From: To: etc. -->
-                    <label for="since" style="width: 50px">From:</label>
-                    <input class="input-mini" type="text" id="since" placeholder="  /  /    " style="margin-bottom: 10px">
+                    <label style="width: 50px">Name:</label>
+                    {{ form.momend_name }}
+
+                    <label style="width: 50px">From:</label>
+                    {{ form.start_date }}
                     <a class="btn" style="vertical-align: top" href="#"><i class="icon-calendar"></i></a>
 
-                    <label for="until" style="width: 50px">To:</label>
-                    <input class="input-mini" type="text" id="until" placeholder="  /  /    " style="margin-bottom: 10px">
+                    <label style="width: 50px">To:</label>
+                    {{ form.finish_date }}
                     <a class="btn" href="#" style="vertical-align: top"><i class="icon-calendar"></i></a>
                     <label>
-                        <input type="checkbox"> Public
+                        <input type="checkbox" id="privacy_type"> Public
                     </label>
                 </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-            <button class="btn btn-primary">Create</button>
-        </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                <button class="btn btn-primary" type="submit">Create</button>
+            </div>
+        </form>
+
     </div>
 {% endblock content %}
 {% block scripts %}
