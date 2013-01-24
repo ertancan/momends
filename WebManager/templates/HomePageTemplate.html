@@ -9,12 +9,16 @@
     <div class="lead-container">
         <div class="container">
 
-            <div id="carousel" class="carousel slide stacked" rel="carousel" data-interval=5000>
-
+            <div id="carousel" class="carousel slide macbook" rel="carousel" data-interval=5000>
+                <img src="{{ STATIC_URL }}img/carousel-macbook.png" class="carousel-macbook" alt="" />
                 <!-- Carousel items -->
                 <div class="carousel-inner">
                     <!-- Item -->
                     <div class="item active homepage-carousel-item">
+                        <iframe width="515" height="306" src="http://www.youtube.com/embed/g8bV2aXRu4M?rel=0&showinfo=0&controls=0" frameborder="0" allowfullscreen></iframe>
+                    </div>
+
+                    <div class="item homepage-carousel-item">
                         <img alt="momend picture" src="{{ STATIC_URL }}img/carousel1.jpg" />
                     </div>
                     <!-- end Item -->
@@ -32,9 +36,6 @@
                         <img alt="momend picture" src="{{ STATIC_URL }}img/carousel4.jpg" />
                     </div>
 
-                    <div class="item homepage-carousel-item">
-                        <iframe width="940" height="480" src="http://www.youtube.com/embed/g8bV2aXRu4M?rel=0" frameborder="0" allowfullscreen></iframe>
-                    </div>
                     <!-- end Item -->
                 </div>
                 <!-- Carousel navigation -->
@@ -43,9 +44,8 @@
 
             </div>
             <div class="row">
-                <div class="span4">
-
-                    <a class="button orange large" onclick="showCreateModal()"><i class="icon-magic"></i>   Get yours now!</a>
+                <div class="">
+                    <a class="button large orange span12" style="text-align: center" onclick="showCreateModal()"><i class="icon-magic"></i> Get yours now!</a>
                 </div>
             </div>
 
