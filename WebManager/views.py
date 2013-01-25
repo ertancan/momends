@@ -33,7 +33,7 @@ class HomePageLoggedFormView(FormView):
         return context
 
     def form_valid(self, form):
-        Log.debug('Create momend form sent')
+        Log.debug('Create momend form sent form')
         momend_name = form.cleaned_data['momend_name']
         start_date = form.cleaned_data['start_date']
         finish_date = form.cleaned_data['finish_date']

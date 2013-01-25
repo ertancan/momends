@@ -8,19 +8,11 @@
 
 {% block content %}
     <section id="content" class="container">
-
         <section class="row" id="project">
-
-            <h1 class="span12">
-                {{ momend.name }}
-            </h1>
-
             <div class="span9 ">
-
-                <div id="momend-player" style="margin-top:5px;height:460px; background-color:rgba(51,51,51,0.8)">
+                <div id="momend-player" class="momend-player">
                     <iframe onload="frameLoaded()" id="momend-player-frame" src="{% url 'momends:play-momend' params.type params.id %}" style="width: 100%;height: 100%;border: 0"></iframe>
                 </div>
-
             </div>
             <div class="span3 project-description">
                 <div class="interaction-list">
@@ -49,20 +41,18 @@
                     </ul>
                 </div>
             </div>
+            <h2 class="span12">
+                {{ momend.name }}
+            </h2>
             <!-- end portfolio item-->
-
         </section>
-
         <section class="row" id="related-projects">
-
             <h3 class="span12">
                 <hr />
                 Related Momends
             </h3>
-
             {% for related in related_momends %}
                 {% if forloop.counter0 < 6 %}
-
                     <article class="span2 project" rel="tooltip" title="{{ related.name }}">
                         <div class="thumbnail">
                             <a href="{% url 'momends:show-momend' 'm' related.id %}" title="">
@@ -73,14 +63,8 @@
 
                 {% endif %}
             {% endfor %}
-
-
-
-
         </section>
-
     </section>
-
     <!-- Used media modal -->
     <div id="media-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="modal-label" aria-hidden="true">
         <div class="modal-header">

@@ -18,3 +18,8 @@
     margin-left: 0;
 }
 
+.momend-player {
+    margin-top:5px;
+    height:460px;
+    background-color:rgba(51,51,51,0.8);
+}
