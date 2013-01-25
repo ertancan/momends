@@ -17,6 +17,7 @@ class DataManagerUtil:
         with open(_file_path, "wb") as _local_file:
             _local_file.write(_url.read())
         _local_file.close()
+        Log.debug("saving file to: " + _file_path)
         return _file_path
 
     @staticmethod
