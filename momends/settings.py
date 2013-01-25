@@ -195,8 +195,8 @@ DATABASE_OPTIONS = {
 }
 
 from os import environ
-if environ['MOMENDS_HOST'] == 'development':
+if environ.get('MOMENDS_HOST','development') == 'development':
     from local_settings import *
-else:
+elif environ['MOMENDS_HOST'] == 'heroku':
     from local_settings_heroku import *
 

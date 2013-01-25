@@ -169,7 +169,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
         currentAnimation[_level].push(_node);
         _animation['sleepTimer'] = setTimeout(function(){
             _remove_node_from_current_queue(_level,_node);
-            nextAnimation(_level);
+            nextAnimation(_level,_node);
         },_animation['duration']);
         return;
     }
@@ -218,7 +218,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
             _obj.transition(_animation['anim'],_duration,function(){
                 _remove_node_from_current_queue(_level,_node);
                 if(triggerNext){
-                    nextAnimation(_level);
+                    nextAnimation(_level,_node);
                 }
             });
         }else{
@@ -305,7 +305,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
 
     //Trigger next animation if needed
     if(_type!='animation' && triggerNext){
-        nextAnimation(_level);
+        nextAnimation(_level,_node);
     }
 }
 
@@ -313,12 +313,16 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
  * Triggers the next animation in the queue
  * @param _level level of the queue
  */
-function nextAnimation(_level){
+function nextAnimation(_level,caller){
     if(currentAnimation.length!==animationQueue.length){
         console.log('INCONSISTENCY!!!');
     }
     if(animationQueue[_level].length===0){
-        console.log('Finished! layer:'+_level);
+        if(_level === 1){
+            console.log('Layer '+_level+' finished! by:');
+            console.dir(caller);
+            //finished_modal.show();
+        }
         return;
     }
     if(!queueOnAction[_level]){

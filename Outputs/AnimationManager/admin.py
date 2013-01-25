@@ -26,7 +26,7 @@ class UserInteractionAnimationGroupAdmin(admin.ModelAdmin):
     list_display = ['name', 'stop_current_animation', 'clear_further_animations', 'disable_further_interaction', 'animations']
 
 class CoreAnimationDataAdmin(admin.ModelAdmin):
-    list_display = ['group', 'order_in_group','used_object_type', 'used_theme_data', 'name', 'type', 'duration', 'click_animation', 'hover_animation']
+    list_display = ['group', 'order_in_group','used_object_type', 'used_theme_data', 'name', 'type', 'duration', 'triggerNext', 'waitPrev', 'click_animation', 'hover_animation']
     save_as = True
 
 class AnimationPlayStatAdmin(admin.ModelAdmin):

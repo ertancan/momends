@@ -29,7 +29,7 @@ class DataManager:
         self.momend = Momend(owner=self.user, name=name, momend_start_date=since, momend_end_date=until, privacy=privacy)
         self.momend.save()
         animation_worker = AnimationManagerWorker(self.momend)
-        animation_worker.generate_output(enriched_data, duration, theme, scenario)
+        generated_layer, duration = animation_worker.generate_output(enriched_data, duration, theme, scenario) #TODO save the duration, to Momend table?
         self._create_momend_thumbnail()
         self.momend.save()
 
@@ -87,10 +87,11 @@ class DataManager:
         try:
             out_data = self.momend.animationlayer_set.all()[1].outdata_set.order_by('?')
             for data in out_data:
-                if data.raw.type == RawData.DATA_TYPE['Photo']:
+                if data.raw and data.raw.type == RawData.DATA_TYPE['Photo']:
                     self.momend.thumbnail = DataManagerUtil.create_photo_thumbnail(data.final_data_path,'momend_'+str(self.momend.pk)+'_thumb.jpg')
-        except:
-            Log.error("Couldn't create thumbnail!")
+                    break
+        except Exception as error:
+            Log.error("Couldn't create thumbnail!-->"+str(error))
 
     def _instantiate_provider_worker(self, provider):
         """
