@@ -27,7 +27,7 @@ class AnimationManagerWorker(BaseOutputWorker):
         """
         :param enriched_data: Data with criteria and its results for objects
         :param theme: Theme to be used or None if random
-        :return: AnimationLayer[]
+        :return: AnimationLayer[], duration
         """
         if not theme:
             theme = Theme.objects.order_by('?')[0]
@@ -47,7 +47,7 @@ class AnimationManagerWorker(BaseOutputWorker):
         filled_scenario = self._fill_user_data(prepared_scenario['objects'], enriched_data)
         self._apply_theme(filled_scenario,theme,str(self.momend.pk))
 
-        return filled_scenario
+        return filled_scenario, duration
 
     def _validate_data_count(self,enriched_data, used_bg_count, used_photo_count, used_status_count, used_checkin_count):
         types = RawData.DATA_TYPE

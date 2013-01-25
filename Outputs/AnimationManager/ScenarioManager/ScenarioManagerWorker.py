@@ -2,6 +2,7 @@ __author__ = 'ertan'
 from DataManager.models import AnimationLayer
 from Outputs.AnimationManager.models import OutData
 from Outputs.AnimationManager.models import AnimationGroup,Scenario,CoreAnimationData
+from LogManagers.Log import Log
 class ScenarioManagerWorker(object):
     def prepare_scenario(self, momend, duration, theme, scenario=None, selection='basic', max_photo=0, max_bg=0, max_status=0, max_checkin=0):
         """Currently first 3 levels are assigned; 0-Background Layer, 1-Foreground Layer, 2-Music Layer. You can use any layer and
@@ -25,7 +26,9 @@ class ScenarioManagerWorker(object):
         compatible_animation_groups = AnimationGroup.objects.filter(scenario=scenario)
 
         if selection == 'random':
-            compatible_animation_groups.order_by('?')
+            compatible_animation_groups = compatible_animation_groups.order_by('?')
+
+        Log.debug('Preparing scenario with selection:'+selection)
 
         bgLayer = AnimationLayer()
         bgLayer.description = 'Background Layer'

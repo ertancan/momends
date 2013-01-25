@@ -14,12 +14,12 @@ class CreateMomendForm(forms.Form):
     finish_date = forms.DateTimeField(widget=widgets.DateInput(format='%d %b, %Y', attrs={'class':'modal-form-input'}), required=True,
         input_formats=['%d %b, %Y'], initial=date.today())
     privacy_type = forms.ChoiceField(choices=[[Momend.PRIVACY_CHOICES[key],key]
-                                              for key in Momend.PRIVACY_CHOICES.keys()])
+                                              for key in Momend.PRIVACY_CHOICES.keys()], widget=forms.Select(attrs={'class':'modal-form-input'}))
 
     THEME_CHOICES = dict()
     for theme in Theme.objects.all():
         THEME_CHOICES[theme.name] = theme.pk
-    momend_theme = forms.ChoiceField(choices=[[THEME_CHOICES[key],key] for key in THEME_CHOICES.keys()] )
+    momend_theme = forms.ChoiceField(choices=[[THEME_CHOICES[key],key] for key in THEME_CHOICES.keys()], widget=forms.Select(attrs={'class':'modal-form-input'}) )
 
 class SettingsForm(forms.Form):
     """for further usage"""

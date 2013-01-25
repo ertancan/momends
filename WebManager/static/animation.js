@@ -318,7 +318,10 @@ function nextAnimation(_level){
         console.log('INCONSISTENCY!!!');
     }
     if(animationQueue[_level].length===0){
-        console.log('Finished! layer:'+_level);
+        if(_level === 1){
+            console.log('Layer '+_level+' finished! by:');
+            finished_modal.show();
+        }
         return;
     }
     if(!queueOnAction[_level]){
