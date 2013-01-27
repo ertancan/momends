@@ -9,13 +9,14 @@
 
     {% block default_include %} <!--includes for whole site -->
         <script>STATIC_URL = '{{ STATIC_URL }}';  </script>
+        <script>MOMEND_FILE_URL = '{{ MOMEND_FILE_URL }}';  </script>
         <script src="http://code.jquery.com/jquery-latest.js"></script>
-        <link href="{{ STATIC_URL }}/fonts/comfortaa/stylesheet.css" rel="stylesheet">
-        <link href="{{ STATIC_URL }}/style.min.css" rel="stylesheet">
-        <link href="{{ STATIC_URL }}/site.css" rel="stylesheet">
-        <link href="{{ STATIC_URL }}/fonts/font-awesome/font-awesome.css" rel="stylesheet">
+        <link href="{{ STATIC_URL }}fonts/comfortaa/stylesheet.css" rel="stylesheet">
+        <link href="{{ STATIC_URL }}style.min.css" rel="stylesheet">
+        <link href="{{ STATIC_URL }}site.css" rel="stylesheet">
+        <link href="{{ STATIC_URL }}fonts/font-awesome/font-awesome.css" rel="stylesheet">
         <!--[if IE 7]>
-		    <link href="css/font-awesome/font-awesome-ie7.css" rel="stylesheet">
+		    <link href="{{ STATIC_URL }}fonts/font-awesome/font-awesome-ie7.css" rel="stylesheet">
 	    <![endif]-->
     {% endblock default_include %}
 
@@ -96,11 +97,11 @@
     {% endblock footer %}
 
     {% block default-scripts %}
-        <script src="{{ STATIC_URL }}/js/bootstrap.min.js"></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}/js/jquery.isotope.min.js"></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}/js/jquery.touchSwipe.js"></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}/js/jquery.hotkeys.min.js" charset='utf-8'></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}/js/functions.min.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.isotope.min.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.touchSwipe.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.hotkeys.min.js" charset='utf-8'></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}js/functions.min.js"></script>
     {% endblock %}
 </body>
 </html>

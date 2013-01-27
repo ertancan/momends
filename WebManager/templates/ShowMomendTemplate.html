@@ -3,7 +3,7 @@
 {% load url from future %}
 
 {% block include %}
-    <link href="{{ STATIC_URL }}/show.css" rel="stylesheet" media="screen">
+    <link href="{{ STATIC_URL }}show.css" rel="stylesheet" media="screen">
 {% endblock include %}   <!--additional includes for each page-->
 
 {% block content %}
@@ -56,7 +56,7 @@
                     <article class="span2 project" rel="tooltip" title="{{ related.name }}">
                         <div class="thumbnail">
                             <a href="{% url 'momends:show-momend' 'm' related.id %}" title="">
-                                <img alt="momend {{ related.id }}" src="{{ STATIC_URL }}{{ related.thumbnail }}" />
+                                <img alt="momend {{ related.id }}" src="{{ MOMEND_FILE_URL }}{{ related.thumbnail }}" />
                             </a>
                         </div>
                     </article>
@@ -94,7 +94,7 @@
             pausePlayer();
             $('#media-modal').modal();
             var _img = $('#modal-img');
-            _img.attr('src',STATIC_URL+media);
+            _img.attr('src',MOMEND_DATA_URL+media); //raw data path
         }
         function frameLoaded(){
             player_frame = document.getElementById('momend-player-frame');

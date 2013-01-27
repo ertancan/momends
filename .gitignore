@@ -2,5 +2,7 @@ venv/
 .idea/
 *.pyc
 *.iml
-userdata/
+operational_files/userdata/
+tmp/
 local_settings.py
+env.sh

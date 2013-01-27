@@ -2,7 +2,7 @@
 {% load url from future %}
 
 {% block include%}
-    <link href="{{ STATIC_URL }}/main.css" rel="stylesheet" media="screen">
+    <link href="{{ STATIC_URL }}main.css" rel="stylesheet" media="screen">
 {% endblock include %}
 
 {% block content %}
@@ -68,7 +68,7 @@
                         <div class="thumbnail link">
                             <!-- image -->
                             <a href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
-                                <img alt="{{ momend.name }}" {% if momend.thumbnail %}src="{{ STATIC_URL }}{{ momend.thumbnail }}" {% endif %} />
+                                <img alt="{{ momend.name }}" {% if momend.thumbnail %}src="{{ MOMEND_FILE_URL }}{{ momend.thumbnail }}" {% endif %} />
                             </a>
                             <!-- description -->
                             <div class="project-description">
@@ -89,7 +89,7 @@
                             <div class="thumbnail link">
                                 <!-- image -->
                                 <a href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
-                                    <img alt="{{ momend.name }}" {% if momend.thumbnail %}src="{{ STATIC_URL }}{{ momend.thumbnail }}" {% endif %} />
+                                    <img alt="{{ momend.name }}" {% if momend.thumbnail %}src="{{ MOMEND_FILE_URL }}{{ momend.thumbnail }}" {% endif %} />
                                 </a>
                                 <!-- description -->
                                 <div class="project-description">

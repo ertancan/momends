@@ -4,6 +4,7 @@ from models import *
 
 class MomendAdmin(admin.ModelAdmin):
     list_display = ('owner', 'name', 'thumbnail','create_date')
+    list_display_links = ('owner', 'name',)
 
 class MomendScoreAdmin(admin.ModelAdmin):
     list_display = ('momend', 'provider_score')

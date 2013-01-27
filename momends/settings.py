@@ -1,7 +1,8 @@
 # Django settings for momends project.
 
-from os.path import abspath, dirname, basename, join
+from os.path import abspath, dirname, basename
 from distutils.sysconfig import get_python_lib
+from os import environ
 
 
 ROOT_PATH = abspath(dirname(__file__))
@@ -46,19 +47,21 @@ MEDIA_ROOT = ''
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
 MEDIA_URL = ''
 
-# Absolute path to the directory static files should be collected to.
-# Don't put anything in this directory yourself; store your static files
-# in apps' "static/" subdirectories and in STATICFILES_DIRS.
-# Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = ''
+
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
 STATIC_URL = '/momends/static/'
+MOMEND_FILE_URL = STATIC_URL
+
+# Absolute path to the directory static files should be collected to.
+# Don't put anything in this directory yourself; store your static files
+# in apps' "static/" subdirectories and in STATICFILES_DIRS.
+# Example: "/home/media/media.lawrence.com/static/"
+STATIC_ROOT = 'WebManager/static/'
 
 # List of finder classes that know how to find static files in
 # various locations.
-#TODO(goktan): check http://django-storages.readthedocs.org/en/latest/backends/amazon-S3.html for s3
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
@@ -79,7 +82,6 @@ TEMPLATE_DIRS = (
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -97,7 +99,6 @@ ROOT_URLCONF = 'momends.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'momends.wsgi.application'
 
-
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -105,10 +106,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Uncomment the next line to enable the admin:
     'django.contrib.admin',
-    # Uncomment the next line to enable admin documentation:
-    # 'django.contrib.admindocs',
     'DataManager',
     'ExternalProviders.FacebookProvider',
     'ExternalProviders.TwitterProvider',
@@ -118,22 +116,20 @@ INSTALLED_APPS = (
     'WebManager',
     'social_auth',
     'registration',
+    'storages',
 )
 
 #Settings for directories
 ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scripts/'
-COLLECTED_FILE_PATH = 'userdata/collected/'
-THUMBNAIL_FILE_PATH = 'userdata/thumbnail/'
-ENHANCED_FILE_PATH = 'userdata/enhanced/'
-THEME_DATA_PATH = 'themedata/'
+COLLECTED_FILE_PATH = 'operational_files/userdata/collected/'
+THUMBNAIL_FILE_PATH = 'operational_files/userdata/thumbnail/'
+ENHANCED_FILE_PATH = 'operational_files/userdata/enhanced/'
+TMP_FILE_PATH = 'operational_files/tmp/'
+THEME_DATA_PATH = 'operational_files/themedata/'
 
 LOGIN_URL = '/momends/main/'
 LOGIN_ERROR_URL = '/accounts/login-error/'
 LOGIN_REDIRECT_URL = '/momends/home/'
-
-#Settings for social-auth
-#TWITTER_CONSUMER_KEY = '5DOIZsrFVxeL6L6dpsSBKg'          This is prod  FIND TEST IT IN LOCAL SETTINGS
-#TWITTER_CONSUMER_SECRET = 't9xLkL2e4MdxWWbS5WlbH9z16BYNipTnKHQv0q7JHic' this is prod FIND TEST IT IN LOCAL SETTINGS
 
 FACEBOOK_APP_ID = '125999474230740'
 FACEBOOK_API_SECRET = 'f68f2d67e320efc5e3790ae17004db7b'
@@ -153,6 +149,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.static',
     'django.contrib.messages.context_processors.messages',
     'social_auth.context_processors.social_auth_by_type_backends',
+    'momends.context_processors.momend_file_url',
     )
 
 SOCIAL_AUTH_PIPELINE = (
@@ -180,10 +177,9 @@ RECAPTCHA_PUBLIC_KEY = '6LeJPNsSAAAAAJHE_1NPmULdq6B6IYLhZFc4GmYZ'
 RECAPTCHA_PRIVATE_KEY = '6LeJPNsSAAAAAB-nhFCSR4D8t9rgSQbB0dMk9115'
 #RECAPTCHA_USE_SSL = True
 
-
 EMAIL_HOST = 'smtp.momends.com'
 EMAIL_HOST_USER = 'info@momends.com'
-EMAIL_HOST_PASSWORD = 'chalabye1!'
+EMAIL_HOST_PASSWORD = environ['EMAIL_HOST_PASSWORD']
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 SERVER_EMAIL = 'info@momends.com'
@@ -194,9 +190,26 @@ DATABASE_OPTIONS = {
     'charset': 'utf8'
 }
 
-from os import environ
-if environ.get('MOMENDS_HOST','development') == 'development':
+RUNNING_SERVER = environ.get('MOMENDS_HOST')
+if  RUNNING_SERVER == 'dev':
     from local_settings import *
-elif environ['MOMENDS_HOST'] == 'heroku':
+    FILE_TARGET = 'local'
+elif environ['MOMENDS_HOST'] == 'test':
+    FILE_TARGET = 'S3'
     from local_settings_heroku import *
+elif environ['MOMENDS_HOST'] == 'prod':
+    FILE_TARGET = 'S3'
+    from local_settings_aws import *
+else:
+    raise Exception
+
+if FILE_TARGET == 'S3': #settings for heroku and aws
+    AWS_STORAGE_BUCKET_NAME = environ['AWS_STORAGE_BUCKET_NAME']
+    AWS_ACCESS_KEY_ID = environ['AWS_ACCESS_KEY_ID']
+    AWS_SECRET_ACCESS_KEY = environ['AWS_SECRET_ACCESS_KEY']
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+    S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
+    MOMEND_FILE_URL = S3_URL
+    #STATIC_URL = S3_URL
+    #STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 

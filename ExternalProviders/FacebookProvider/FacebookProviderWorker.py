@@ -10,25 +10,20 @@ import pytz
 from LogManagers.Log import Log
 from social_auth.db.django_models import UserSocialAuth
 from DataManager.DataManagerUtil import DataManagerUtil
-
+from django.conf import settings
 
 class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker): #TODO not collecting location!
     def collect_photo(self, user, since, until):
         access_token=self._get_access_token(user)
         api = facebook.GraphAPI(access_token)
-
         provider = self.getProvider()
-
         try:
             result=api.get_connections('me', 'photos', limit=200, since=str(since), until=str(until),
                 fields = 'likes.limit(500),comments.limit(500),source,name,sharedposts,images')
         except:
             return None
-
-
         _return_data= []
         for obj in result['data']:
-
             if not RawData.objects.filter(original_id=obj['id']).filter(provider=provider).exists():
                 _raw = RawData()
                 _raw.original_id = obj['id']
@@ -64,14 +59,12 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
     def collect_status(self, user, since, until):
         access_token=self._get_access_token(user)
         api = facebook.GraphAPI(access_token)
-
         provider = self.getProvider()
         try:
             result=api.get_connections('me', 'statuses', limit=200, since=str(since), until=str(until),
                 fields='id,message,likes.limit(500),comments.limit(500),sharedposts,updated_time')
         except:
             return None
-
         _return_data= []
         for obj in result['data']:
             if not RawData.objects.filter(original_id=obj['id']).filter(provider=provider).exists():
@@ -93,7 +86,6 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
                 Log.debug( _raw.original_id + ' found in DB')
         return _return_data
-
 
     def collect_checkin(self, user, since, until):
         access_token=self._get_access_token(user)
