@@ -2,6 +2,7 @@ var momend_data;
 var created_objects;
 var volume_slider;
 var finished_modal;
+var fullscreen = false;
 function hashCode(str){
     var hash = 0;
     if (str.length == 0) return hash;
@@ -290,4 +291,23 @@ function create_finish_view(){
         text : 'Share'
     }).appendTo(shareButton);
     finished_modal.hide();
+}
+
+function fullscreenToggle(){
+    var _button = $('#button-fullscreen');
+    if(fullscreen){ //Was on fullscreen mode
+        _button.removeClass('icon-resize-small')
+        _button.addClass('icon-fullscreen');
+    }else{
+        _button.removeClass('icon-fullscreen')
+        _button.addClass('icon-resize-small');
+    }
+    fullscreen = !fullscreen;
+}
+
+function setFullscreenFunction(_func){
+    $('#button-fullscreen')[0].onclick=_func;
+}
+function addFinishListenerFunction(_func){
+    animation_finish_observer.push(_func);
 }

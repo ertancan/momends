@@ -22,6 +22,8 @@ var isPlaying = false;
 
 var keywordLookupTable; //Keeps the latest values of keyword related values like {{SCREEN_WIDTH}}
 
+var animation_finish_observer = [];
+
 function init_animation(){
     $.cssEase._default = 'linear';
     $(window).resize(function(){
@@ -319,8 +321,10 @@ function nextAnimation(_level){
     }
     if(animationQueue[_level].length===0){
         if(_level === 1){
-            console.log('Layer '+_level+' finished! by:');
             finished_modal.show();
+            for(var i=0; i<animation_finish_observer.length; i++){
+                animation_finish_observer[i]();
+            }
         }
         return;
     }
