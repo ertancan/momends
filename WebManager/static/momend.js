@@ -70,7 +70,7 @@ function create_objects_from_data(){
             }
             var filepath = node['final_data_path'];
             if(filepath && filepath.indexOf('http') != 0){
-                filepath = STATIC_URL + filepath;
+                filepath = MOMEND_FILE_URL + filepath;
             }
             if(node['animation']['used_theme_data'] != null){
                 if(created_objects[node['final_data_path']]){
@@ -212,7 +212,7 @@ function _apply_post_enhancements(created_obj, enhancements){
         var enh = enhancements[i];
         var path = enh['filepath'];
         if(path && path.indexOf('http') != 0){
-            path = STATIC_URL + path;
+            path = MOMEND_FILE_URL + path;
         }
         console.log(enh['type']);
         if(enh['type'] === 'apply_font'){

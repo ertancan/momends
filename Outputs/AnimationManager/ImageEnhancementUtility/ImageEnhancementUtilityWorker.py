@@ -4,14 +4,14 @@ import subprocess,os
 import re
 from Outputs.AnimationManager.models import ImageEnhancement
 from Outputs.AnimationManager.models import ThemeData
+from DataManager.DataManagerUtil import DataManagerUtil
+
 class ImageEnhancementUtility(object):
     @staticmethod
     def applyThemeEnhancementsOnImage(filename, enhancement_str, file_prefix, theme_data_manager):
         if len(enhancement_str) == 0:
             return filename
-
         os.environ['PATH'] += ':/usr/local/bin' #TODO: remove this on prod For mac os
-
         enhancement_objects = []
         enhancement_ids =enhancement_str.split(',')
         for enh_id in enhancement_ids:
@@ -28,28 +28,26 @@ class ImageEnhancementUtility(object):
 
         if settings.COLLECTED_FILE_PATH in name_part:
             name_part = name_part[len(settings.COLLECTED_FILE_PATH):]
-
-        i = 1
-
-        for enhance in enhancement_objects:
-            enhancement_parameters = ImageEnhancementUtility._replace_parameter_keywords(enhance.parameters, theme_data_manager) #Replace keywords in parameters
-
-            enh_out_filename = settings.ENHANCED_FILE_PATH + name_part +'_' + file_prefix + '_enh'+str(i)+ ext_part #name file as filename_enh1.ext etc.
-            params =settings.ENHANCEMENT_SCRIPT_DIR+enhance.script_path +' '
-            params += enhancement_parameters
+        _enh_tmp_out_filename = None
+        _enh_out_filename = None
+        for i, enhance in enumerate(enhancement_objects):
+            _enhancement_parameters = ImageEnhancementUtility._replace_parameter_keywords(enhance.parameters, theme_data_manager) #Replace keywords in parameters
+            _enh_tmp_out_filename = settings.TMP_FILE_PATH + name_part +'_' + file_prefix + '_enh'+str(i)+ ext_part #name file as filename_enh1.ext etc.
+            _enh_out_filename = settings.ENHANCED_FILE_PATH + name_part +'_' + file_prefix + '_enh'+str(i)+ ext_part #name file as filename_enh1.ext etc.
+            params = settings.ENHANCEMENT_SCRIPT_DIR + enhance.script_path +' '
+            params += _enhancement_parameters
             params += ' '
             params += current_filename
             params += ' '
-            params += enh_out_filename
+            params += _enh_tmp_out_filename
+            subprocess.call(params, shell=True, env=os.environ.copy()) #like ./script parameters input_file output_file
+            if i > 0: #Delete file if it is not the very first downloaded raw data
+                os.remove(current_filename)
+            current_filename = _enh_tmp_out_filename
 
-            subprocess.call(params,shell=True,env=os.environ.copy()) #like ./script parameters input_file output_file
-
-            if current_filename != filename: #Delete file if it won't be needed
-                subprocess.call(['rm',current_filename])
-            current_filename = enh_out_filename
-            i += 1
-
-        return current_filename
+        if _enh_out_filename:
+            DataManagerUtil.move_for_serving(_enh_tmp_out_filename, _enh_out_filename)
+        return _enh_out_filename
 
     @staticmethod
     def _replace_parameter_keywords(parameter,theme_data_manager):
