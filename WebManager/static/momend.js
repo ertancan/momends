@@ -29,9 +29,10 @@ function momend_arrived(){
  * Needs the CSRF token to be on the player's codes
  * fills id and queue parameters of the request
  * @param url that listens post requests and saves interaction
+ * @param callback function to be called when request finished
  * @private
  */
-function _sendUserInteractionToServer(url){
+function _sendUserInteractionToServer(url, callback){
     var json = _convertLayerToJSON(_userInteractionQueue);
     var token = $('[name="csrfmiddlewaretoken"]')[0].value;
     var momend_id = momend_data['id'];
@@ -44,7 +45,14 @@ function _sendUserInteractionToServer(url){
             'id':momend_id
         },
         success: function(msg){
-            console.log('Sent: '+msg);
+            if(callback){
+                callback(true,msg);
+            }
+        },
+        error: function(msg){
+            if(callback){
+                callback(false,msg);
+            }
         }
     });
 }
@@ -272,10 +280,12 @@ function create_finish_view(){
     }).appendTo(_modal);
 
     jQuery('<i/>',{
-        class : 'icon-magic modal-icon'
+        class : 'icon-magic modal-icon',
+        id : 'send-interaction-icon'
     }).appendTo(sendInteractionButton);
     jQuery('<span/>',{
-        text : 'Save Interaction'
+        text : 'Save Interaction',
+        id : 'send-interaction-text'
     }).appendTo(sendInteractionButton);
 
     var shareButton = jQuery('<div/>',{
@@ -285,7 +295,8 @@ function create_finish_view(){
     }).appendTo(_modal);
 
     jQuery('<i/>',{
-        class : 'icon-share modal-icon'
+        class : 'icon-share modal-icon',
+        id : 'share-button-icon'
     }).appendTo(shareButton);
     jQuery('<span/>',{
         text : 'Share'
