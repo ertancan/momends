@@ -15,7 +15,7 @@ class DataManagerUtil:
     @staticmethod
     def download_file(url, name ):
         """
-        Download file from a uri and store it to either tmp dir or default storage defined
+        Download file from an uri
         :param url: uri where content will be fetched
         :param name: name of file
         :return:
