@@ -101,7 +101,12 @@
             player_frame = document.getElementById('momend-player-frame');
             $('#momend-player').css('background-color','rgba(51,51,51,0)');
             player_frame.contentWindow.setFullscreenFunction(fullscreen);
-            player_frame.contentWindow.addFinishListenerFunction(fullscreen);
+            player_frame.contentWindow.addFinishListenerFunction(finished);
+        }
+        function finished(){
+            if(fullscreen_on){
+                fullscreen();
+            }
         }
         function fullscreen(){
             player_frame.contentWindow.fullscreenToggle();
