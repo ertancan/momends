@@ -387,6 +387,7 @@ function pause(){
     for(var i = 0; i < animationQueue.length; i++){
         currentAnimation.push([]);
     }
+    currentMusicObj.jPlayer('pause');
     isPlaying = false;
     _toggle_play_button(true);
 
@@ -410,6 +411,7 @@ function resume(){
             _handleNode(node,i);
         }
     }
+    currentMusicObj.jPlayer('play');
     isPlaying = true;
     _toggle_play_button(false);
 }

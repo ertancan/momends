@@ -57,8 +57,38 @@
                 create_finish_view();
             }).error(function(){load_failed();});
         }
+
         function send_interaction_data(){
-            _sendUserInteractionToServer('{% url 'momends:save-interaction' params.id %}')
+            _sendUserInteractionToServer('{% url 'momends:save-interaction' params.id %}', send_interaction_callback);
+            var sendText = $('#send-interaction-text');
+            var sendIcon = $('#send-interaction-icon');
+            sendText.text('Sending..');
+            sendIcon.removeClass('icon-magic');
+            sendIcon.addClass('icon-spin');
+            sendIcon.addClass('icon-spinner')
+        }
+
+        function send_interaction_callback(success, msg){
+            var sendButton = $('#send-interaction-button');
+            var sendText = $('#send-interaction-text');
+            var sendIcon = $('#send-interaction-icon');
+            if(success){
+                sendText.text('Play Interaction');
+                sendButton.unbind('click').click(function(){
+                    if(page_redirect_function){
+                        page_redirect_function(msg); //Redirect to returned url to view the interaction
+                    }else{
+                        window.location.replace(msg);
+                    }
+                });
+                sendIcon.addClass('icon-ok-sign');
+            }else{
+                sendButton.text(msg);
+                sendIcon.addClass('icon-exclamation-sign');
+            }
+            sendIcon.removeClass('icon-spin');
+            sendIcon.removeClass('icon-spinner');
+
         }
         function player_init(){
             init_animation();

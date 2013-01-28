@@ -3,6 +3,8 @@ var created_objects;
 var volume_slider;
 var finished_modal;
 var fullscreen = false;
+var page_redirect_function;
+var _interaction_sent = false;
 function hashCode(str){
     var hash = 0;
     if (str.length == 0) return hash;
@@ -33,6 +35,9 @@ function momend_arrived(){
  * @private
  */
 function _sendUserInteractionToServer(url, callback){
+    if(_interaction_sent){
+        return;
+    }
     var json = _convertLayerToJSON(_userInteractionQueue);
     var token = $('[name="csrfmiddlewaretoken"]')[0].value;
     var momend_id = momend_data['id'];
@@ -48,6 +53,7 @@ function _sendUserInteractionToServer(url, callback){
             if(callback){
                 callback(true,msg);
             }
+            _interaction_sent = true;
         },
         error: function(msg){
             if(callback){
@@ -275,10 +281,9 @@ function create_finish_view(){
     }).appendTo(finished_modal);
     var sendInteractionButton = jQuery('<div/>',{
         id : 'send-interaction-button',
-        onclick : 'send_interaction_data()',
         class : 'finished-modal-button'
     }).appendTo(_modal);
-
+    sendInteractionButton.click(send_interaction_data);
     jQuery('<i/>',{
         class : 'icon-magic modal-icon',
         id : 'send-interaction-icon'
@@ -316,9 +321,29 @@ function fullscreenToggle(){
     fullscreen = !fullscreen;
 }
 
+/**
+ * Sets the listener of FullScreen trigger button. Sends both fullscreen and shrink events to the same function
+ * so you should keep the current state and perform operations.
+ * @param _func in signature; func()
+ */
 function setFullscreenFunction(_func){
     $('#button-fullscreen')[0].onclick=_func;
 }
+
+/**
+ * Adds a listener to the animation finish listeners. This function will be called when the main animation finished.
+ * @param _func in signature; func()
+ */
 function addFinishListenerFunction(_func){
     animation_finish_observer.push(_func);
+}
+
+/**
+ * Sets the function which will handle the url change requests of the player,
+ * i.e. view saved interaction
+ * opening the url and opening it in the current or new tab is up to you.
+ * @param _func in signature; func(url:String)
+ */
+function setRedirectFunction(_func){
+    page_redirect_function = _func;
 }

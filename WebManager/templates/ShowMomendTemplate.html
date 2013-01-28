@@ -19,7 +19,8 @@
                     <h4>Interactions of this Momend</h4>
                     <ul>
                         {% for interaction in interactions %}
-                        <li class="icon-magic interaction">
+                        <li class="interaction">
+                            <i class="icon-magic"></i>
                             <a href="{% url 'momends:show-momend' 'i' interaction.id %}">
                                 Interaction {{ forloop.counter }} : {{ interaction.date|date:"j M Y" }}
                             </a>
@@ -102,6 +103,8 @@
             $('#momend-player').css('background-color','rgba(51,51,51,0)');
             player_frame.contentWindow.setFullscreenFunction(fullscreen);
             player_frame.contentWindow.addFinishListenerFunction(finished);
+            player_frame.contentWindow.setRedirectFunction(redirectToPage);
+            //We may want to open in a new tab?
         }
         function finished(){
             if(fullscreen_on){
@@ -116,6 +119,9 @@
                 $('#momend-player').attr("class","player");
             }
             fullscreen_on = !fullscreen_on;
+        }
+        function redirectToPage(url){
+            window.location.replace(url);
         }
     </script>
 

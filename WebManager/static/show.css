@@ -1,6 +1,7 @@
 .interaction-list{
     width: 100%;
     max-height:200px;
+    overflow: auto;
 }
 .interaction{
     width: 100%;
@@ -13,9 +14,6 @@
 }
 .used-media{
     width: 100%;
-}
-#project ul.used-media-list{
-    margin-left: 0;
 }
 .player{
     margin-top:5px;
