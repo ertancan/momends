@@ -13,29 +13,6 @@ class DataManagerUtil:
     __metaclass__ = abc.ABCMeta
 
     @staticmethod
-    def get_file2serve(name, params='rb'):
-        """
-        give a file object from local filesystem or S3 depending to configuration
-        """
-        if settings.FILE_TARGET == 'S3':
-            _local_file = default_storage.open(name, params)
-        else:
-            _local_file = open(name, params)
-
-        return _local_file
-
-    @staticmethod
-    def move_for_serving(file, target):
-        """
-        move a file from temp place to serving place where this can be filesystem or S3 depending to configuration
-        """
-        with open(file,'rb') as _local_file:
-            _target_file = DataManagerUtil.get_file2serve(target, 'wb')
-            _target_file.write(_local_file.read())
-            _target_file.close()
-            os.remove(file)
-
-    @staticmethod
     def download_file(url, name ):
         """
         Download file from a uri and store it to either tmp dir or default storage defined

@@ -116,7 +116,6 @@ INSTALLED_APPS = (
     'WebManager',
     'social_auth',
     'registration',
-    'storages',
 )
 
 #Settings for directories
@@ -203,13 +202,4 @@ elif environ['MOMENDS_HOST'] == 'prod':
 else:
     raise Exception
 
-if FILE_TARGET == 'S3': #settings for heroku and aws
-    AWS_STORAGE_BUCKET_NAME = environ['AWS_STORAGE_BUCKET_NAME']
-    AWS_ACCESS_KEY_ID = environ['AWS_ACCESS_KEY_ID']
-    AWS_SECRET_ACCESS_KEY = environ['AWS_SECRET_ACCESS_KEY']
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-    S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
-    MOMEND_FILE_URL = S3_URL
-    #STATIC_URL = S3_URL
-    #STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
