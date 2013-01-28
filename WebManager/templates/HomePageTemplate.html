@@ -206,6 +206,7 @@
             var _modal = $('#create-modal');
             _modal.css('margin-left',_modal.outerWidth()/-2);
             _modal.modal();
+            ytplayer.pauseVideo();
         }
         function onytplayerStateChange(newState) {
             if(newState==0){ //Video finished
