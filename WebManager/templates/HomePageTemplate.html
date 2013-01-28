@@ -9,34 +9,31 @@
     <div class="lead-container">
         <div class="container">
 
-            <div id="carousel" class="carousel slide macbook" rel="carousel" data-interval=5000>
+            <div id="carousel" class="carousel slide macbook" rel="carousel" data-interval="15000">
                 <img src="{{ STATIC_URL }}img/carousel-macbook.png" class="carousel-macbook" alt="" />
                 <!-- Carousel items -->
                 <div class="carousel-inner">
-                    <!-- Item -->
-                    <div class="item active homepage-carousel-item">
-                        <iframe width="515" height="306" src="http://www.youtube.com/embed/g8bV2aXRu4M?rel=0&showinfo=0&controls=0" frameborder="0" allowfullscreen></iframe>
+                    <div class="item active homepage-carousel-item" id="yt-container">
+                        <div class="video_container" id="video_container">
+                            <iframe width="515" height="306" src="http://www.youtube.com/embed/dVZpm0okAH8?rel=0&showinfo=0&controls=0" frameborder="0" allowfullscreen></iframe>
+                        </div>
                     </div>
-
                     <div class="item homepage-carousel-item">
                         <img alt="momend picture" src="{{ STATIC_URL }}img/carousel1.jpg" />
+                        <div class="slogan" >YOU ARE AT THE STAGE...</div>
                     </div>
-                    <!-- end Item -->
-                    <!-- Item -->
+                    <div class="item homepage-carousel-item">
+                        <img alt="momend picture" src="{{ STATIC_URL }}img/carousel5.jpg" />
+                        <div class="slogan" >YOU HAVE MOMENDS TO LIVE...</div>
+                    </div>
                     <div class="item homepage-carousel-item">
                         <img alt="momend picture" src="{{ STATIC_URL }}img/carousel2.jpg" />
+                        <div class="slogan">CAPTURE THE MOMEND...</div>
                     </div>
-                    <!-- end Item -->
-                    <!-- Item -->
                     <div class="item homepage-carousel-item">
                         <img alt="momend picture" src="{{ STATIC_URL }}img/carousel3.jpg" />
+                        <div class="slogan">SHARE YOUR MOMENDS...</div>
                     </div>
-                    <!-- end Item -->
-                    <div class="item homepage-carousel-item">
-                        <img alt="momend picture" src="{{ STATIC_URL }}img/carousel4.jpg" />
-                    </div>
-
-                    <!-- end Item -->
                 </div>
                 <!-- Carousel navigation -->
                 <a class="carousel-control left" href="#carousel" data-slide="prev"></a>
@@ -55,33 +52,33 @@
                 {% if user.is_authenticated %}
                     <!-- portfolio filter -->
                     <ul id="portfolio-filter" class="nav nav-tabs">
-                        <li><a href="#" class="filter active" data-filter=".user">My Momends</a></li>
+                        <li class="active"><a href="#" class="filter" data-filter=".user">My Momends</a></li>
                         <li><a href="#" class="filter" data-filter=".public">Public Momends</a></li>
                     </ul>
                 {% endif %}
                 <!-- portfolio items -->
                 <section class="row" id="portfolio-items">
-                {% for momend in public_top_momends %}
-                    <!-- portfolio item-->
-                    <article class="project {% cycle 'span6' 'span6' 'span4' 'span4' 'span4' 'span3' 'span3' 'span3' 'span3'%}" data-tags="public">
+                    {% for momend in public_top_momends %}
+                        <!-- portfolio item-->
+                        <article class="project {% cycle 'span6' 'span6' 'span4' 'span4' 'span4' 'span3' 'span3' 'span3' 'span3'%}" data-tags="public">
 
-                        <div class="thumbnail link">
-                            <!-- image -->
-                            <a href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
-                                <img alt="{{ momend.name }}" {% if momend.thumbnail %}src="{{ MOMEND_FILE_URL }}{{ momend.thumbnail }}" {% endif %} />
-                            </a>
-                            <!-- description -->
-                            <div class="project-description">
-                                <!-- icon -->
-                                <i class="icon-magic"></i>
-                                <!-- name -->
-                                <b class="project-name">{{ momend.name }}</b>
+                            <div class="thumbnail link">
+                                <!-- image -->
+                                <a href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
+                                    <img alt="{{ momend.name }}" {% if momend.thumbnail %}src="{{ MOMEND_FILE_URL }}{{ momend.thumbnail }}" {% endif %} />
+                                </a>
+                                <!-- description -->
+                                <div class="project-description">
+                                    <!-- icon -->
+                                    <i class="icon-magic"></i>
+                                    <!-- name -->
+                                    <b class="project-name">{{ momend.name }}</b>
+                                </div>
                             </div>
-                        </div>
 
-                    </article>
-                    <!-- end portfolio item-->
-                {% endfor %}
+                        </article>
+                        <!-- end portfolio item-->
+                    {% endfor %}
                     {% for momend in user_top_momends %}
                         <!-- portfolio item-->
                         <article class="project {% cycle 'span6' 'span6' 'span4' 'span4' 'span4' 'span3' 'span3' 'span3' 'span3'%}" data-tags="user">
@@ -189,11 +186,34 @@
     </div>
 {% endblock content %}
 {% block scripts %}
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
     <script>
+        $('body').ready(function(){
+            $('#portfolio-items').isotope({filter: '.user'}); //Filter thumbnails for .user
+            $('.carousel').carousel({interval: 15000})
+            if(swfobject.hasFlashPlayerVersion("8")){
+                var params = { allowScriptAccess: "always" };
+                var atts = { id: "ytvideo" ,
+                            wmode:"transparent"};
+                swfobject.embedSWF("http://www.youtube.com/v/dVZpm0okAH8?showinfo=0&controls=0&rel=0&&enablejsapi=1", "video_container", "515", "306", "8",null,null,params,atts);
+            }
+        });
+        function onYouTubePlayerReady(playerId) {
+            ytplayer = document.getElementById("ytvideo");
+            ytplayer.addEventListener("onStateChange", "onytplayerStateChange");
+        }
         function showCreateModal(){
             var _modal = $('#create-modal');
             _modal.css('margin-left',_modal.outerWidth()/-2);
             _modal.modal();
+        }
+        function onytplayerStateChange(newState) {
+            if(newState==0){ //Video finished
+                $('#carousel').carousel('cycle');
+            }
+            if(newState==1){
+                $('#carousel').carousel('pause');
+            }
         }
     </script>
 {% endblock scripts %}

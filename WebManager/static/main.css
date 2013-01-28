@@ -1,7 +1,7 @@
 .modal-backdrop {background: none;}
 
 .homepage-carousel-item{
-    height: 480px;
+    height: 306px;
 }
 .modal-nav-tabs{
     margin: 0;
@@ -13,4 +13,20 @@ input.modal-form-input{
 select.modal-form-input{
     width: 150px;
     margin-bottom: 10px;
+}
+@font-face {
+    font-family: 'Mathlete';
+    src: url("fonts/mathlete/Mathlete-Bulky-webfont.ttf");
+    font-weight: normal;
+    font-style: normal;
+}
+.slogan{
+    position: absolute;
+    top: 260px;
+    right: 0px;
+    margin: 10px;
+    color: white;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    font-size:2.5em;
+    font-family:Mathlete,serif;
 }
