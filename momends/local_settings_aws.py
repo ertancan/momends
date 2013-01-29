@@ -15,8 +15,6 @@ DATABASES = {
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
 }
-import dj_database_url
-DATABASES['default'] =  dj_database_url.config()
 
 # Additional locations of static files
 STATICFILES_DIRS = (
