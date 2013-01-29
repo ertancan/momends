@@ -26,12 +26,12 @@
     <div class="player" style="width:100%;height: 100%">
         <div class="scene" style="height: 97%"></div>
         <div class="music"></div>
-        <div class="momend-player" style="height: 3%">
-            <button onclick="pause()" id="play-toggle" class="btn btn-mini player-button"><i id="toggle-icon" class="icon-pause"></i></button>
-            <div class="slider-bg">
-                <input id="volume-slider" type="range" min="0" max="100" style="width: 100px">
+        <div class="momend-player">
+            <div class="momend-button-group">
+                <button onclick="pause()" id="play-toggle" class="icon-pause player-button"></button>
+                <input id="volume-slider" type="range" min="0" max="100" style="width: 80px">
             </div>
-            <div class="momend-button-group pull-right">
+            <div class="momend-button-group right-group">
                 <button class="icon-heart player-button" href="#"></button>
                 <button class="icon-share player-button" href="#"></button>
                 <button class="icon-fullscreen player-button" href="#" id="button-fullscreen"></button>
