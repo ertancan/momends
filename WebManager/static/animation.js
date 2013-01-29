@@ -596,15 +596,16 @@ function _remove_node_from_current_queue(_level,_node){
 }
 
 function _toggle_play_button(toPlay){
-    var icon = $('#toggle-icon');
     var button = $('#play-toggle');
 
     if(toPlay){
-        icon.attr('class','icon-play');
+        button.removeClass('icon-pause');
+        button.addClass('icon-play');
         button.attr('onclick','resume()');
 
     }else{
-        icon.attr('class','icon-pause');
+        button.removeClass('icon-play');
+        button.addClass('icon-pause');
         button.attr('onclick','pause()');
     }
 }
