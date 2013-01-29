@@ -322,6 +322,7 @@ function nextAnimation(_level){
     if(animationQueue[_level].length===0){
         if(_level === 1){
             finished_modal.show();
+            currentMusicObj.jPlayer('stop');
             for(var i=0; i<animation_finish_observer.length; i++){
                 animation_finish_observer[i]();
             }
