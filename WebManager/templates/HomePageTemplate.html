@@ -101,7 +101,10 @@
     <!-- Create Modal -->
     <div id="create-modal" class="modal hide fade span9" tabindex="-1" role="dialog" aria-labelledby="create-modal" aria-hidden="true">
         <form class="form-horizontal" method="post" action="">{% csrf_token %}
-
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h2>Create your momend!</h2>
+            </div>
             <div class="modal-body" id="create-modal-body">
 
                 <div class="span9">
@@ -111,18 +114,18 @@
                         <br/>
                         <label for="id_momend_theme" class="modal-form-item">Theme:</label>
                         {{ form.momend_theme }}
-                        <label for="id_privacy_type"style="display: inline; margin-left: 12px">Privacy:</label>
+                        <label for="id_privacy_type"style="display: inline; margin-left: 26px">Privacy:</label>
                         {{ form.privacy_type }}
-                        <a onclick="uploadPressed()" class="upload-button"><i id="upload-button" class="icon-4x icon-upload model-icon-button" href="#" ></i><br/><b style="font-size: 15px"> Upload</b></a>
+                        <a onclick="uploadPressed()" class="upload-button"><i id="upload-button-icon" class="icon-4x icon-upload model-icon-button" href="#" ></i><br/><b style="font-size: 15px"> Upload</b></a>
                     </div>
                     <hr/>
                     <div class="modal-group-container">
                         <div class="modal-icon-group span1">
-                            <a id="alltab" class="icon-3x icon-download model-icon-button tab-icon active" onclick="clickTab('alltab')" href="#"></a>
+                            <a id="alltab" class="icon-3x icon-download model-icon-button tab-icon active more-clickable" onclick="clickTab('alltab')" href="#"></a>
                             <hr/>
-                            <a id="fbtab" class="icon-3x icon-facebook model-icon-button tab-icon" onclick="clickTab('fbtab')" href="#"></a>
+                            <a id="fbtab" class="icon-3x icon-facebook-sign model-icon-button tab-icon more-clickable" onclick="clickTab('fbtab')" href="#"></a>
                             <hr/>
-                            <a id="twtab" class="icon-3x icon-twitter model-icon-button tab-icon" onclick="clickTab('twtab')" href="#"></a>
+                            <a id="twtab" class="icon-3x icon-twitter-sign model-icon-button tab-icon more-clickable" onclick="clickTab('twtab')" href="#"></a>
                             <hr/>
                         </div>
                         <div class="modal-tab-content span8">
@@ -146,8 +149,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-                <button class="btn btn-primary" type="submit">Get it</button>
+                <button class="btn btn-primary btn-large" type="submit">Get it</button>
             </div>
         </form>
 
