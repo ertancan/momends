@@ -2,8 +2,9 @@
     position: absolute;
     bottom: 0;
     width: 100%;
-    background-color: rgba(0,0,0,0.9);
-    min-height: 25px;
+    background-color: rgba(27, 27, 27, 1);
+    height: 30px;
+    padding-top: 1px;
 }
 #play-toggle{
     position: relative;
@@ -11,19 +12,19 @@
 }
 .momend-button-group{
     position: absolute;
-    right: 5px;
-    bottom: 2px;
     margin: 0;
+    bottom: 3px;
 }
-.slider-bg{
+.right-group{
+    right: 5px;
+}
+input[type='range'] {
+    -webkit-appearance: none !important;
+    background-color : rgb(185, 31, 31);
+    height:5px;
     position: absolute;
-    top: 10%;
-    left: 40px;
-    padding-left: 10px;
-    padding-right: 10px;
-    background-color: rgba(240,240,240,1);
-    border-radius: 15px;
-    height: 18px;
+    top: 6px;
+    left: 50px;
 }
 .finished-modal-bg{
     position: absolute;
@@ -72,4 +73,11 @@
 }
 .player-button{
     cursor: pointer;
+    background-color: rgb(27, 27, 27);
+    color: rgb(126, 126, 126);
+    border: 0;
+    font-size: 1em;
+}
+.player-button:hover{
+    color: rgb(149, 149, 149);
 }

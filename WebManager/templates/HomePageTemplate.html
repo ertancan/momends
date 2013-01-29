@@ -1,12 +1,8 @@
 {% extends "MainSite.html" %}
 {% load url from future %}
 
-{% block include%}
-    <link href="{{ STATIC_URL }}main.css" rel="stylesheet" media="screen">
-{% endblock include %}
-
 {% block content %}
-    <div class="lead-container">
+    <div class="lead-container" xmlns="http://www.w3.org/1999/html">
         <div class="container">
 
             <div id="carousel" class="carousel slide macbook" rel="carousel" data-interval="15000">
@@ -19,16 +15,16 @@
                         </div>
                     </div>
                     <div class="item homepage-carousel-item">
-                        <img alt="momend picture" src="{{ STATIC_URL }}img/carousel1.jpg" />
+                        <img class="momend-carousel-picture" alt="momend picture" src="{{ STATIC_URL }}img/carousel1.jpg" />
                     </div>
                     <div class="item homepage-carousel-item">
-                        <img alt="momend picture" src="{{ STATIC_URL }}img/carousel5.jpg" />
+                        <img class="momend-carousel-picture" alt="momend picture" src="{{ STATIC_URL }}img/carousel5.jpg" />
                     </div>
                     <div class="item homepage-carousel-item">
-                        <img alt="momend picture" src="{{ STATIC_URL }}img/carousel2.jpg" />
+                        <img class="momend-carousel-picture" alt="momend picture" src="{{ STATIC_URL }}img/carousel2.jpg" />
                     </div>
                     <div class="item homepage-carousel-item">
-                        <img alt="momend picture" src="{{ STATIC_URL }}img/carousel3.jpg" />
+                        <img class="momend-carousel-picture" alt="momend picture" src="{{ STATIC_URL }}img/carousel3.jpg" />
                     </div>
                 </div>
                 <!-- Carousel navigation -->
@@ -106,76 +102,52 @@
     <div id="create-modal" class="modal hide fade span9" tabindex="-1" role="dialog" aria-labelledby="create-modal" aria-hidden="true">
         <form class="form-horizontal" method="post" action="">{% csrf_token %}
 
-            <div class="modal-body">
+            <div class="modal-body" id="create-modal-body">
 
-                <div class="span4">
-                    <ul class="nav nav-tabs modal-nav-tabs"> <!-- Tab titles -->
-                        <li class="active"><a href="#fb" data-toggle="tab">Facebook</a></li>
-                        <li><a href="#tw" data-toggle="tab">Twitter</a></li>
-                        <li><a href="#upload" data-toggle="tab">Local</a></li>
-                    </ul>
-
-                    <div class="tab-content" style="margin: 0;"> <!--Tab contents -->
-                        <div class="tab-pane active" id="fb" style="overflow: auto;max-height: 200px;"> <!-- Facebook thumbnails -->
-                            <div class="section-header">Photo Albums</div>
-                            <div class="thumb-container">
-                                <ul class="thumbnails">
-                                    <li class="span1">
-                                        <a href="#" class="thumbnail create-thumb">
-                                            <img data-src="holder.js/300x200" alt="">
-                                        </a>
-                                    </li>
-                                    <li class="span1">
-                                        <a href="#" class="thumbnail create-thumb">
-                                            <img data-src="holder.js/300x200" alt="">
-                                        </a>
-                                    </li>
-                                    <li class="span1">
-                                        <a href="#" class="thumbnail create-thumb">
-                                            <img data-src="holder.js/300x200" alt="">
-                                        </a>
-                                    </li>
-                                    <li class="span1">
-                                        <a href="#" class="thumbnail create-thumb">
-                                            <img data-src="holder.js/300x200" alt="">
-                                        </a>
-                                    </li>
-                                    <li class="span1">
-                                        <a href="#" class="thumbnail create-thumb">
-                                            <img data-src="holder.js/300x200" alt="">
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="tab-pane" id="tw">
-                            <label for="hashtag">Hashtag</label>
-                            <input type="text" id="hashtag">
-                        </div>
-                        <div class="tab-pane" id="upload">Not Ready Yet!</div>
+                <div class="span9">
+                    <div class="modal-group-container">
+                        <label for="id_momend_name" class="modal-form-item">Name:</label>
+                        {{ form.momend_name }}
+                        <br/>
+                        <label for="id_momend_theme" class="modal-form-item">Theme:</label>
+                        {{ form.momend_theme }}
+                        <label for="id_privacy_type"style="display: inline; margin-left: 12px">Privacy:</label>
+                        {{ form.privacy_type }}
+                        <a onclick="uploadPressed()" class="upload-button"><i id="upload-button" class="icon-4x icon-upload model-icon-button" href="#" ></i><br/><b style="font-size: 15px"> Upload</b></a>
                     </div>
-                </div>
+                    <hr/>
+                    <div class="modal-group-container">
+                        <div class="modal-icon-group span1">
+                            <a id="alltab" class="icon-3x icon-download model-icon-button tab-icon active" onclick="clickTab('alltab')" href="#"></a>
+                            <hr/>
+                            <a id="fbtab" class="icon-3x icon-facebook model-icon-button tab-icon" onclick="clickTab('fbtab')" href="#"></a>
+                            <hr/>
+                            <a id="twtab" class="icon-3x icon-twitter model-icon-button tab-icon" onclick="clickTab('twtab')" href="#"></a>
+                            <hr/>
+                        </div>
+                        <div class="modal-tab-content span8">
+                            <div id="alltab-content" class="tab-content">
+                                <label for="id_start_date" class="modal-form-item">From:</label>
+                                {{ form.start_date }}
+                                <a class="btn" style="vertical-align: top" href="#" onclick="showDatePicker('id_start_date')"><i class="icon-calendar"></i></a>
+                                <br/>
+                                <label for="id_finish_date" class="modal-form-item">To:</label>
+                                {{ form.finish_date }}
+                                <a class="btn" href="#" style="vertical-align: top" onclick="showDatePicker('id_finish_date')"><i class="icon-calendar"></i></a>
+                                <br/>
+                                <label for="id_with" class="modal-form-item">With:</label>
+                                <input id="id_with" type="text" class="modal-form-item-medium" value="" name="with">
+                            </div>
+                            <div id="fbtab-content" class="tab-content">FB</div>
+                            <div id="twtab-content" class="tab-content">TW</div>
+                        </div>
+                    </div>
 
-                <div class="span3" style="margin-top: 50px"> <!--From: To: etc. -->
-                    <label for="id_momend_name" style="width: 50px">Name:</label>
-                    {{ form.momend_name }}
-
-                    <label for="id_start_date" style="width: 50px">From:</label>
-                    {{ form.start_date }}
-                    <a class="btn" style="vertical-align: top" href="#"><i class="icon-calendar"></i></a>
-
-                    <label for="id_finish_date"style="width: 50px">To:</label>
-                    {{ form.finish_date }}
-                    <a class="btn" href="#" style="vertical-align: top"><i class="icon-calendar"></i></a>
-                    <label for="id_privacy_type"style="width: 50px">Privacy:</label>
-                    {{ form.privacy_type }}
-                    <label for="id_momend_theme"style="width: 50px">Theme:</label>
-                    {{ form.momend_theme }}
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-                <button class="btn btn-primary" type="submit">Create</button>
+                <button class="btn btn-primary" type="submit">Get it</button>
             </div>
         </form>
 
@@ -199,9 +171,23 @@
             ytplayer.addEventListener("onStateChange", "onytplayerStateChange");
         }
         function showCreateModal(){
+            try{
+                ytplayer.pauseVideo();
+            }catch(ex){
+                console.log(ex);
+            }
+
             var _modal = $('#create-modal');
             _modal.css('margin-left',_modal.outerWidth()/-2);
             _modal.modal();
+            _modal.ready(function(){
+                var contents = $('.tab-icon');
+                for(var i=1; i<contents.length;i++){
+                    $('#'+contents[i].id+'-content').hide(); //TODO fix
+                }
+                previous_tab = contents[0].id;
+            });
+
         }
         function onytplayerStateChange(newState) {
             if(newState==0){ //Video finished
@@ -211,5 +197,24 @@
                 $('#carousel').carousel('pause');
             }
         }
+        function clickTab(tab){
+            var _newCont = $('#'+tab+'-content');
+            _newCont.show();
+            $('#'+tab).addClass('active');
+            $('#'+previous_tab+'-content').hide();
+            $('#'+previous_tab).removeClass('active');
+            previous_tab = tab;
+        }
+    function showDatePicker(_on_id){
+        var input = $('#'+_on_id);
+        input.datepicker({
+            onClose: function(dateText, inst) {
+                input.datepicker('destroy');
+            },
+            dateFormat: "d M, yy"
+        });
+        input.focus();
+
+    }
     </script>
 {% endblock scripts %}

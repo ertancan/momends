@@ -1,3 +1,104 @@
 .momend-word{
     font-family: comfortaabold,sans-serif;
 }
+
+/* Home Page */
+.modal-backdrop {background: none;}
+
+div#create-modal-body.modal-body{
+    overflow-x: hidden;
+}
+.modal-group-container{
+}
+.modal-icon-group{
+    height: 250px;
+    overflow-y: auto;
+    margin-left: 0;
+}
+.model-icon-button {
+    color: rgb(102, 102, 102);
+    cursor: pointer;
+}
+.model-icon-button:hover{
+    color: rgb(150, 150, 150);
+    text-decoration: none;
+}
+.model-icon-button.active{
+    color: rgb(0, 115, 205)
+}
+.modal-tab-content{
+    height: 250px;
+    margin-top: 2px;
+}
+.homepage-carousel-item{
+    height: 306px;
+}
+.momend-carousel-picture{
+    height: 306px;
+    width: 515px;
+}
+.modal-nav-tabs{
+    margin: 0;
+}
+input.modal-form-item{
+    width: 250px;
+    margin-bottom: 10px;
+}
+input.modal-form-item-small{
+    width: 150px;
+    margin-bottom: 10px;
+}
+input.modal-form-item-medium{
+    width: 193px;
+    margin-bottom: 10px;
+}
+select.modal-form-item{
+    width: 100px;
+    margin-bottom: 10px;
+}
+label.modal-form-item{
+    display: inline-block;
+    width: 100px;
+}
+.upload-button{
+    position: absolute;
+    right: 30px;
+    top: 11px;
+    color: rgb(102, 102, 102);
+}
+a.upload-button{
+    text-decoration: none;
+}
+
+/* Show Page */
+.interaction-list{
+    width: 100%;
+    max-height:200px;
+    overflow: auto;
+}
+.interaction{
+    width: 100%;
+}
+.used-media-list{
+    width: 100%;
+    height: 250px;
+    overflow: auto;
+    margin-left: -10px;
+}
+.used-media{
+    width: 100%;
+}
+.player{
+    margin-top:5px;
+    height:460px;
+    background-color:rgba(51,51,51,0.8);
+}
+.player-fullscreen{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255,255,255,1) !important;
+    z-index: 9999;
+}
