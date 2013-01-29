@@ -45,26 +45,38 @@ input.modal-form-item{
     margin-bottom: 10px;
 }
 input.modal-form-item-small{
-    width: 150px;
+    width: 160px;
     margin-bottom: 10px;
 }
 input.modal-form-item-medium{
-    width: 193px;
+    width: 203px;
+    margin-bottom: 10px;
+}
+input.modal-form-item-large{
+    width: 304px;
     margin-bottom: 10px;
 }
 select.modal-form-item{
-    width: 100px;
+    width: 120px;
     margin-bottom: 10px;
 }
 label.modal-form-item{
     display: inline-block;
-    width: 100px;
+    width: 90px;
 }
 .upload-button{
     position: absolute;
     right: 30px;
-    top: 11px;
+    top: 85px;
     color: rgb(102, 102, 102);
+}
+#upload-button-icon{
+    position: relative;
+    left:3px;
+}
+.more-clickable{
+    display: block;
+    padding: 10px;
 }
 a.upload-button{
     text-decoration: none;
