@@ -5,6 +5,9 @@ var finished_modal;
 var fullscreen = false;
 var page_redirect_function;
 var _interaction_sent = false;
+var total_objects = 0;
+var loaded_objects = 0;
+var _load_callback;
 function hashCode(str){
     var hash = 0;
     if (str.length == 0) return hash;
@@ -22,9 +25,11 @@ function momend_arrived(){
         load_failed();
         return;
     }
-    create_objects_from_data();
-    setAnimationQueue(momend_data['animation_layers']);
-    startAllQueues();
+    create_objects_from_data(function(){
+            setAnimationQueue(momend_data['animation_layers']);
+            startAllQueues();
+        });
+
 }
 /**
  * Send the queue generated while user interacts with the animation to the given url
@@ -69,7 +74,8 @@ function load_failed(){
         id : 'error'
     }).appendTo('body');
 }
-function create_objects_from_data(){
+function create_objects_from_data(load_callback){
+    _load_callback = load_callback;
     created_objects = {};
     for(var i = 0;i<momend_data['animation_layers'].length;i++){
         for(var j = 0;j < momend_data['animation_layers'][i].length;j++){
@@ -90,6 +96,7 @@ function create_objects_from_data(){
                 if(created_objects[node['final_data_path']]){
                     node['animation']['object'] = created_objects[node['final_data_path']];
                 }else{
+                    total_objects++; //Player should wait for item to load
                     jQuery('<div/>',{
                         id: 'stub'+i+''+j,
                         class: 'photo'
@@ -98,7 +105,10 @@ function create_objects_from_data(){
                     var created_obj = jQuery('<img/>',{
                         class: 'photo_image',
                         id: 'stub-image'+i+''+j,
-                        src: filepath
+                        src: filepath,
+                        ready : function(){
+                            _object_ready();
+                        }
                     }).appendTo(created_div);
                     if(typeof node['animation']['click_animation'] !== 'undefined'){
                         created_obj.click(function(){
@@ -117,20 +127,25 @@ function create_objects_from_data(){
                 switch(node['animation']['used_object_type']){
                     case '{{NEXT_THEME_BG}}':
                     case '{{RAND_THEME_BG}}':
-                        jQuery('<div/>',{
+                        total_objects++; //Player should wait for item to load
+                        var created_div = jQuery('<div/>',{
                             id: 'bg'+i+''+j,
                             class: 'scene-background'
                         }).appendTo('.scene');
-                        jQuery('<img/>',{
+                        var created_pbj = jQuery('<img/>',{
                             class: 'background-image',
-                            src: filepath
-                        }).appendTo('#bg'+i+''+j);
+                            src: filepath,
+                            ready : function(){
+                                _object_ready();
+                            }
+                        }).appendTo(created_div);
                         created_objects[node['final_data_path']] = $('#bg'+i+''+j);
                     case '{{THEME_BG}}':
                         node['animation']['object'] = created_objects[node['final_data_path']];
                         break;
                     case '{{NEXT_USER_PHOTO}}':
                     case '{{RAND_USER_PHOTO}}':
+                        total_objects++; //Player should wait for item to load
                         jQuery('<div/>',{
                             id: 'photo'+i+''+j,
                             class: 'photo'
@@ -139,7 +154,10 @@ function create_objects_from_data(){
                         var created_obj = jQuery('<img/>',{
                             class: 'photo_image',
                             id: 'photo_image'+i+''+j,
-                            src: filepath
+                            src: filepath,
+                            ready : function(){
+                                _object_ready();
+                            }
                         }).appendTo(created_div);
                         if(typeof node['animation']['click_animation'] !== 'undefined'){
                             created_obj.click(function(){
@@ -190,6 +208,7 @@ function create_objects_from_data(){
                     case '{{NEXT_THEME_MUSIC}}':
                     case '{{RAND_THEME_MUSIC}}':
                     case '{{NEXT_USER_MUSIC}}':
+                        total_objects++; //Player should wait for item to load
                         jQuery('<div/>',{
                             id:'music'+i+''+j,
                             class:'jp-jplayer'
@@ -198,7 +217,7 @@ function create_objects_from_data(){
                         music_obj[0]['filepath'] = filepath;
                         music_obj.jPlayer({
                             ready: function (event){
-                                console.dir(event.delegateTarget);
+                               _object_ready();
                                 $(this).jPlayer("setMedia",{
                                     mp3:event.delegateTarget['filepath']
                                 });
@@ -219,6 +238,15 @@ function create_objects_from_data(){
 
             }
         }
+    }
+}
+function _object_ready(){
+    loaded_objects++;
+    setTimeout(_check_if_ready,10);
+}
+function _check_if_ready(){
+    if(loaded_objects === total_objects){
+        _load_callback();
     }
 }
 function _apply_post_enhancements(created_obj, enhancements){
