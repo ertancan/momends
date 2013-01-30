@@ -15,8 +15,6 @@ DATABASES = {
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
 }
-import dj_database_url
-DATABASES['default'] =  dj_database_url.config()
 
 # Additional locations of static files
 STATICFILES_DIRS = (
@@ -79,7 +77,3 @@ LOGGING = {
             }
     }
 }
-
-
-TWITTER_CONSUMER_KEY = 'xcQRbBLzNzS0eWrB1JRsw'
-TWITTER_CONSUMER_SECRET = 'GBmfSzXdkPWTkN2w7F533351kRChmP2RlUV1b1kX2w'

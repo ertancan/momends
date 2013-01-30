@@ -47,10 +47,7 @@ MEDIA_ROOT = ''
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
 MEDIA_URL = ''
 
-
-
 # URL prefix for static files.
-# Example: "http://media.lawrence.com/static/"
 STATIC_URL = '/momends/static/'
 MOMEND_FILE_URL = STATIC_URL
 
@@ -116,7 +113,6 @@ INSTALLED_APPS = (
     'WebManager',
     'social_auth',
     'registration',
-    'storages',
 )
 
 #Settings for directories
@@ -131,9 +127,12 @@ LOGIN_URL = '/momends/main/'
 LOGIN_ERROR_URL = '/accounts/login-error/'
 LOGIN_REDIRECT_URL = '/momends/home/'
 
-FACEBOOK_APP_ID = '125999474230740'
-FACEBOOK_API_SECRET = 'f68f2d67e320efc5e3790ae17004db7b'
+FACEBOOK_APP_ID = environ.get('FACEBOOK_APP_ID')
+FACEBOOK_API_SECRET = environ.get('FACEBOOK_API_SECRET')
 FACEBOOK_EXTENDED_PERMISSIONS = ['email', 'user_about_me', 'user_activities', 'user_location', 'user_photos', 'user_status']
+
+TWITTER_CONSUMER_KEY = environ.get('TWITTER_CONSUMER_KEY')
+TWITTER_CONSUMER_SECRET = environ.get('TWITTER_CONSUMER_SECRET')
 
 AUTHENTICATION_BACKENDS = (
     'social_auth.backends.twitter.TwitterBackend',
@@ -173,8 +172,8 @@ ACCOUNT_ACTIVATION_DAYS = 7
 
 #captcha framework
 #https://www.google.com/recaptcha/admin/site?siteid=316357769
-RECAPTCHA_PUBLIC_KEY = '6LeJPNsSAAAAAJHE_1NPmULdq6B6IYLhZFc4GmYZ'
-RECAPTCHA_PRIVATE_KEY = '6LeJPNsSAAAAAB-nhFCSR4D8t9rgSQbB0dMk9115'
+RECAPTCHA_PUBLIC_KEY = environ.get('RECAPTCHA_PUBLIC_KEY')
+RECAPTCHA_PRIVATE_KEY = environ.get('RECAPTCHA_PRIVATE_KEY')
 #RECAPTCHA_USE_SSL = True
 
 EMAIL_HOST = 'smtp.momends.com'
@@ -193,23 +192,11 @@ DATABASE_OPTIONS = {
 RUNNING_SERVER = environ.get('MOMENDS_HOST')
 if  RUNNING_SERVER == 'dev':
     from local_settings import *
-    FILE_TARGET = 'local'
 elif environ['MOMENDS_HOST'] == 'test':
-    FILE_TARGET = 'S3'
     from local_settings_heroku import *
 elif environ['MOMENDS_HOST'] == 'prod':
-    FILE_TARGET = 'S3'
     from local_settings_aws import *
 else:
     raise Exception
 
-if FILE_TARGET == 'S3': #settings for heroku and aws
-    AWS_STORAGE_BUCKET_NAME = environ['AWS_STORAGE_BUCKET_NAME']
-    AWS_ACCESS_KEY_ID = environ['AWS_ACCESS_KEY_ID']
-    AWS_SECRET_ACCESS_KEY = environ['AWS_SECRET_ACCESS_KEY']
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-    S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
-    MOMEND_FILE_URL = S3_URL
-    #STATIC_URL = S3_URL
-    #STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
