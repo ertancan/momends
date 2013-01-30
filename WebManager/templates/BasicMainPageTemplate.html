@@ -11,20 +11,38 @@
         {{ user.last_name }}
     {% else %}
         <!-- Button to trigger modal -->
-        <a href="#myModal" role="button" class="btn" data-remote="{% url 'auth_login' %}" data-toggle="modal">Sign In</a>
-        <a href="#myModal" role="button" class="btn" data-remote="{% url 'registration_register' %}" data-toggle="modal">Sign Up</a>
+        <a href="#" role="button" class="btn" onclick='showAuthModal("{% url 'auth_login' %}","Login")'>Sign In</a>
+        <a href="#" role="button" class="btn" onclick='showAuthModal("{% url 'registration_register' %}","Sign Up")' >Sign Up</a>
 
-        <!-- Modal -->
-        <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h3 id="myModalLabel">Login</h3>
-            </div>
-            <div class="modal-body">
-                <p>One fine body…</p>
-            </div>
-        </div>
-
+    <script>
+        function showAuthModal(_url, title){
+            var modal =jQuery('<div/>',{
+                    'id': 'modal',
+                    'class' : 'modal hide fade',
+                    'tabindex' : '-1',
+                    'role' : 'dialog',
+                    'aria-lablledby' : 'modal-label',
+                    'aria-hidden' : 'true'
+                }).appendTo('body');
+            var header = jQuery('<div/>',{
+                'class' : 'modal-header',
+            }).appendTo(modal);
+            jQuery('<h3/>',{
+                'text' : title
+            }).appendTo(header);
+            var modal_body = jQuery('<div/>',{
+                class : 'modal-body',
+            }).appendTo(modal);
+            modal.ready(function(){
+                modal.modal({
+                    'remote' : _url
+                });
+            })
+            modal.bind('hidden',function(){
+                $(this).remove();
+            });
+        }
+    </script>
     {% endif %}
 
 {% endblock heading %}

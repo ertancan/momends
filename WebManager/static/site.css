@@ -81,6 +81,16 @@ label.modal-form-item{
 a.upload-button{
     text-decoration: none;
 }
+.delete-button{
+    color: rgb(102, 102, 102);
+    font-size: 15px;
+}
+.delete-button:hover{
+    font-size: 17px;
+    color: rgb(185, 31, 31);
+    text-decoration: none;
+    cursor: pointer;
+}
 
 /* Show Page */
 .interaction-list{
