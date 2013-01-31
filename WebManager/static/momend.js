@@ -65,9 +65,7 @@ function _sendUserInteractionToServer(url, callback){
             'id':momend_id
         },
         success: function(msg){
-            console.log(msg);
             var data = jQuery.parseJSON(msg);
-            console.dir(data);
             if(callback){
                 if(data.resp === "true"){
                     callback(true,data.url);
@@ -78,8 +76,9 @@ function _sendUserInteractionToServer(url, callback){
             _interaction_sent = true;
         },
         error: function(msg){
+            var data = jQuery.parseJSON(msg);
             if(callback){
-                callback(false,msg);
+                callback(false,data.msg);
             }
         }
     });

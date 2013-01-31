@@ -132,7 +132,7 @@ class SaveInteractionView(View):
     def post(self, request, *args, **kwargs): #TODO user check may be?
         if not request.user:
             Log.error('Not authenticated interaction save request')
-            return HttpResponse('{"resp":"false","msg":"Not Logged In"}',status=401)
+            return HttpResponse('{"resp":"false","msg":"Please Login First"}')
         try:
             queue = request.POST['queue']
             momend_id = request.POST['id']
@@ -141,10 +141,10 @@ class SaveInteractionView(View):
             interaction.interaction = queue
             interaction.creator = request.user
             interaction.save()
-            return HttpResponse('{"resp":"true","url":"'+str(reverse_lazy('momends:show-momend',args=('i',interaction.pk)))+'"}',status=200)
+            return HttpResponse('{"resp":"true","url":"'+str(reverse_lazy('momends:show-momend',args=('i',interaction.pk)))+'"}')
         except Exception as e:
             Log.error('Error while saving interaction: '+str(e))
-            return HttpResponse('{"resp":"false","msg":"Try Again"}',status=400) #TODO error message may be? (if it is not secret)
+            return HttpResponse('{"resp":"false","msg":"Try Again"}') #TODO error message may be? (if it is not secret)
 
 class SettingsFormView(FormView):
     form_class = SettingsForm
