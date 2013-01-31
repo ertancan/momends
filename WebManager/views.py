@@ -130,13 +130,21 @@ class GetMomendView(TemplateView):
 
 class SaveInteractionView(View):
     def post(self, request, *args, **kwargs): #TODO user check may be?
-        queue = request.POST['queue']
-        momend_id = request.POST['id']
-        interaction = UserInteraction()
-        interaction.momend_id = momend_id
-        interaction.interaction = queue
-        interaction.save()
-        return HttpResponse('true',status=200)
+        if not request.user:
+            Log.error('Not authenticated interaction save request')
+            return HttpResponse('{"resp":"false","msg":"Please Login First"}')
+        try:
+            queue = request.POST['queue']
+            momend_id = request.POST['id']
+            interaction = UserInteraction()
+            interaction.momend_id = momend_id
+            interaction.interaction = queue
+            interaction.creator = request.user
+            interaction.save()
+            return HttpResponse('{"resp":"true","url":"'+str(reverse_lazy('momends:show-momend',args=('i',interaction.pk)))+'"}')
+        except Exception as e:
+            Log.error('Error while saving interaction: '+str(e))
+            return HttpResponse('{"resp":"false","msg":"Try Again"}') #TODO error message may be? (if it is not secret)
 
 class SettingsFormView(FormView):
     form_class = SettingsForm

@@ -281,14 +281,16 @@ class UserInteraction(BaseDataManagerModel):
     momend = models.ForeignKey('Momend')
     date = models.DateTimeField(auto_now_add=True)
     interaction = models.TextField()
+    creator = models.ForeignKey(User)
 
     def __unicode__(self):
-        return str(self.momend)+':'+str(self.date)+'='+str(self.interaction)
+        return str(self.momend)+'-'+str(self.creator)+':'+str(self.date)
 
     def encode(self):
         momend_data = self.momend.encode()
         momend_data['animation_layers'].append(simplejson.loads(self.interaction))
         momend_data['interaction_date'] = self.date
+        momend_data['creator'] = dict(id=self.creator.id, username=self.creator.username)
         return momend_data
 
     def toJSON(self):

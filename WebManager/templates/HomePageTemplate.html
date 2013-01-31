@@ -5,7 +5,7 @@
     <div class="lead-container" xmlns="http://www.w3.org/1999/html">
         <div class="container">
 
-            <div id="carousel" class="carousel slide macbook" rel="carousel" data-interval="15000">
+            <div id="carousel" class="carousel slide macbook" rel="carousel" data-interval=15000>
                 <img src="{{ STATIC_URL }}img/carousel-macbook.png" class="carousel-macbook" alt="" />
                 <!-- Carousel items -->
                 <div class="carousel-inner">
@@ -34,7 +34,8 @@
             </div>
             <div class="row">
                 <div>
-                    <a class="button large orange offset1 span10" style="text-align: center;margin-left: 8.4%" onclick="showCreateModal()"><i class="icon-magic"></i> Get yours now!</a>
+                    <a class="button large orange offset1 span10" style="text-align: center;margin-left: 8.4%" onclick="{% if user.is_authenticated %}
+                            showCreateModal() {% else %} getYours() {% endif %}"><i class="icon-magic"></i> Get yours now!</a>
                 </div>
             </div>
 
@@ -86,6 +87,7 @@
                                     <i class="icon-magic"></i>
                                     <!-- name -->
                                     <b class="project-name">{{ momend.name }}</b>
+                                    <a id="delete-{{ momend.id }}" class="icon-remove-sign pull-right delete-button" href="#" onclick="deleteMomend({{ momend.id }})"></a>
                                 </div>
                             </div>
 
@@ -160,7 +162,7 @@
     <script>
         $('body').ready(function(){
             $('#portfolio-items').isotope({filter: '.user'}); //Filter thumbnails for .user
-            $('.carousel').carousel({interval: 15000})
+            $('#carousel').carousel({interval: 15000})
             if(swfobject.hasFlashPlayerVersion("8")){
                 var params = { allowScriptAccess: "always" };
                 var atts = { id: "ytvideo" ,
@@ -171,6 +173,9 @@
         function onYouTubePlayerReady(playerId) {
             ytplayer = document.getElementById("ytvideo");
             ytplayer.addEventListener("onStateChange", "onytplayerStateChange");
+        }
+        function getYours(){
+            showAuthModal("{% url 'auth_login' %}","Login");
         }
         function showCreateModal(){
             try{
@@ -197,6 +202,7 @@
             }
             if(newState==1){
                 $('#carousel').carousel('pause');
+
             }
         }
         function clickTab(tab){
@@ -216,6 +222,10 @@
             dateFormat: "d M, yy"
         });
         input.focus();
+
+    }
+    function deleteMomend(_momend){
+        $('#delete-'+_momend).preventDefault();
 
     }
     </script>

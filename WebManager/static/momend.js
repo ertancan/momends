@@ -5,6 +5,9 @@ var finished_modal;
 var fullscreen = false;
 var page_redirect_function;
 var _interaction_sent = false;
+var total_objects = 0;
+var loaded_objects = 0;
+var _load_callback;
 function hashCode(str){
     var hash = 0;
     if (str.length == 0) return hash;
@@ -22,9 +25,20 @@ function momend_arrived(){
         load_failed();
         return;
     }
-    create_objects_from_data();
+    create_objects_from_data(start_animation); //start animation as create objects callback
+}
+function start_animation(){
     setAnimationQueue(momend_data['animation_layers']);
-    startAllQueues();
+    $('#loading-bg').animate({
+        'top':'-100%',
+        'opacity' : '0.5'
+    },{
+        duration: 500,
+        complete: function(){
+            $(this).hide();
+            startAllQueues();
+        }
+    });
 }
 /**
  * Send the queue generated while user interacts with the animation to the given url
@@ -38,6 +52,7 @@ function _sendUserInteractionToServer(url, callback){
     if(_interaction_sent){
         return;
     }
+    console.log('sending')
     var json = _convertLayerToJSON(_userInteractionQueue);
     var token = $('[name="csrfmiddlewaretoken"]')[0].value;
     var momend_id = momend_data['id'];
@@ -50,14 +65,20 @@ function _sendUserInteractionToServer(url, callback){
             'id':momend_id
         },
         success: function(msg){
+            var data = jQuery.parseJSON(msg);
             if(callback){
-                callback(true,msg);
+                if(data.resp === "true"){
+                    callback(true,data.url);
+                }else{
+                    callback(false,data.msg);
+                }
             }
             _interaction_sent = true;
         },
         error: function(msg){
+            var data = jQuery.parseJSON(msg);
             if(callback){
-                callback(false,msg);
+                callback(false,data.msg);
             }
         }
     });
@@ -69,7 +90,8 @@ function load_failed(){
         id : 'error'
     }).appendTo('body');
 }
-function create_objects_from_data(){
+function create_objects_from_data(load_callback){
+    _load_callback = load_callback;
     created_objects = {};
     for(var i = 0;i<momend_data['animation_layers'].length;i++){
         for(var j = 0;j < momend_data['animation_layers'][i].length;j++){
@@ -90,6 +112,7 @@ function create_objects_from_data(){
                 if(created_objects[node['final_data_path']]){
                     node['animation']['object'] = created_objects[node['final_data_path']];
                 }else{
+                    total_objects++; //Player should wait for item to load
                     jQuery('<div/>',{
                         id: 'stub'+i+''+j,
                         class: 'photo'
@@ -98,7 +121,10 @@ function create_objects_from_data(){
                     var created_obj = jQuery('<img/>',{
                         class: 'photo_image',
                         id: 'stub-image'+i+''+j,
-                        src: filepath
+                        src: filepath,
+                        ready : function(){
+                            _object_ready();
+                        }
                     }).appendTo(created_div);
                     if(typeof node['animation']['click_animation'] !== 'undefined'){
                         created_obj.click(function(){
@@ -117,20 +143,25 @@ function create_objects_from_data(){
                 switch(node['animation']['used_object_type']){
                     case '{{NEXT_THEME_BG}}':
                     case '{{RAND_THEME_BG}}':
-                        jQuery('<div/>',{
+                        total_objects++; //Player should wait for item to load
+                        var created_div = jQuery('<div/>',{
                             id: 'bg'+i+''+j,
                             class: 'scene-background'
                         }).appendTo('.scene');
-                        jQuery('<img/>',{
+                        var created_pbj = jQuery('<img/>',{
                             class: 'background-image',
-                            src: filepath
-                        }).appendTo('#bg'+i+''+j);
+                            src: filepath,
+                            ready : function(){
+                                _object_ready();
+                            }
+                        }).appendTo(created_div);
                         created_objects[node['final_data_path']] = $('#bg'+i+''+j);
                     case '{{THEME_BG}}':
                         node['animation']['object'] = created_objects[node['final_data_path']];
                         break;
                     case '{{NEXT_USER_PHOTO}}':
                     case '{{RAND_USER_PHOTO}}':
+                        total_objects++; //Player should wait for item to load
                         jQuery('<div/>',{
                             id: 'photo'+i+''+j,
                             class: 'photo'
@@ -139,7 +170,10 @@ function create_objects_from_data(){
                         var created_obj = jQuery('<img/>',{
                             class: 'photo_image',
                             id: 'photo_image'+i+''+j,
-                            src: filepath
+                            src: filepath,
+                            ready : function(){
+                                _object_ready();
+                            }
                         }).appendTo(created_div);
                         if(typeof node['animation']['click_animation'] !== 'undefined'){
                             created_obj.click(function(){
@@ -190,6 +224,7 @@ function create_objects_from_data(){
                     case '{{NEXT_THEME_MUSIC}}':
                     case '{{RAND_THEME_MUSIC}}':
                     case '{{NEXT_USER_MUSIC}}':
+                        total_objects++; //Player should wait for item to load
                         jQuery('<div/>',{
                             id:'music'+i+''+j,
                             class:'jp-jplayer'
@@ -198,7 +233,7 @@ function create_objects_from_data(){
                         music_obj[0]['filepath'] = filepath;
                         music_obj.jPlayer({
                             ready: function (event){
-                                console.dir(event.delegateTarget);
+                               _object_ready();
                                 $(this).jPlayer("setMedia",{
                                     mp3:event.delegateTarget['filepath']
                                 });
@@ -219,6 +254,15 @@ function create_objects_from_data(){
 
             }
         }
+    }
+}
+function _object_ready(){
+    loaded_objects++;
+    setTimeout(_check_if_ready,10);
+}
+function _check_if_ready(){
+    if(loaded_objects === total_objects){
+        _load_callback();
     }
 }
 function _apply_post_enhancements(created_obj, enhancements){
@@ -269,46 +313,6 @@ function _parse_string_to_dict(_str,replaceKeywords){
     }
     return resp;
 }
-
-function create_finish_view(){
-    finished_modal = jQuery('<div/>',{
-        class : 'finished-modal-bg',
-        id : 'finished-bg'
-    }).appendTo('body');
-    var _modal = jQuery('<div/>',{
-        class : 'finished-modal',
-        id : 'finished-modal'
-    }).appendTo(finished_modal);
-    var sendInteractionButton = jQuery('<div/>',{
-        id : 'send-interaction-button',
-        class : 'finished-modal-button'
-    }).appendTo(_modal);
-    sendInteractionButton.click(send_interaction_data);
-    jQuery('<i/>',{
-        class : 'icon-magic modal-icon',
-        id : 'send-interaction-icon'
-    }).appendTo(sendInteractionButton);
-    jQuery('<span/>',{
-        text : 'Save Interaction',
-        id : 'send-interaction-text'
-    }).appendTo(sendInteractionButton);
-
-    var shareButton = jQuery('<div/>',{
-        id : 'share-button',
-        onclick : 'share()',
-        class : 'finished-modal-button'
-    }).appendTo(_modal);
-
-    jQuery('<i/>',{
-        class : 'icon-share modal-icon',
-        id : 'share-button-icon'
-    }).appendTo(shareButton);
-    jQuery('<span/>',{
-        text : 'Share'
-    }).appendTo(shareButton);
-    finished_modal.hide();
-}
-
 function fullscreenToggle(){
     var _button = $('#button-fullscreen');
     if(fullscreen){ //Was on fullscreen mode

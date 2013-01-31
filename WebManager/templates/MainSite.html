@@ -6,11 +6,13 @@
     <meta charset="UTF-8">
 
     <title>{% block title %} Momends {% endblock title %}</title>
+    {% block jquery %}
+        <script src="http://code.jquery.com/jquery-latest.js"></script>
+    {% endblock jquery %}
 
     {% block default_include %} <!--includes for whole site -->
         <script>STATIC_URL = '{{ STATIC_URL }}';  </script>
         <script>MOMEND_FILE_URL = '{{ MOMEND_FILE_URL }}';  </script>
-        <script src="http://code.jquery.com/jquery-latest.js"></script>
         <link href="{{ STATIC_URL }}fonts/comfortaa/stylesheet.css" rel="stylesheet">
         <link href="{{ STATIC_URL }}style.min.css" rel="stylesheet">
         <link href="{{ STATIC_URL }}site.css" rel="stylesheet">
@@ -40,8 +42,8 @@
                     <div class="navbar-inner">
                         <div class="container">
                             <!-- Logo -->
-                            <a class="brand momend-word" href={% url 'momends:front-page' %}>
-                                momen<span style="color: darkred">d</span>s
+                            <a class="brand" href={% url 'momends:front-page' %}>
+                                <img src="{{ STATIC_URL }}/img/logo.png" class="logo">
                             </a>
                             <ul class="nav">
 
@@ -49,13 +51,8 @@
                                     <li><a href="{% url 'momends:settings-screen' %}" title="settings" >{{ user.username }}</a></li>
                                     <li><a href="{% url 'auth_logout' %}" title="logout" >Logout</a></li>
                                 {% else %}
-                                    <li><a href="#myLoginModal" title="signin" data-remote="{% url 'auth_login' %}" data-toggle="modal">Sign in</a></li>
-                                    <li><a href="#myLoginModal" title="signup" data-remote="{% url 'registration_register' %}" data-toggle="modal">Sign up</a></li>
-                                    <!-- Modal -->
-                                    <div id="myLoginModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                                        <div class="modal-header"> </div>
-                                        <div class="modal-body"><p> </p></div>
-                                    </div>
+                                    <li><a href="#" onclick='showAuthModal("{% url 'auth_login' %}","Login")'>Sign in</a></li>
+                                    <li><a href="#" onclick='showAuthModal("{% url 'registration_register' %}","Sign Up")'>Sign up</a></li>
                                 {% endif %}
 
                             </ul>
@@ -73,8 +70,6 @@
     {% endblock content%}
 
     {% block footer %}
-        <!-- Footer
-        ================================================== -->
         <footer id="footer">
             <div class="container">
                 <div class="row">
@@ -105,6 +100,35 @@
         <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.touchSwipe.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.hotkeys.min.js" charset='utf-8'></script>
         <script type="text/javascript" src="{{ STATIC_URL }}js/functions.min.js"></script>
+        <script>
+            function showAuthModal(_url, title){
+                var modal =jQuery('<div/>',{
+                    'id': 'modal',
+                    'class' : 'modal hide fade',
+                    'tabindex' : '-1',
+                    'role' : 'dialog',
+                    'aria-lablledby' : 'modal-label',
+                    'aria-hidden' : 'true'
+                }).appendTo('body');
+                var header = jQuery('<div/>',{
+                    'class' : 'modal-header',
+                }).appendTo(modal);
+                jQuery('<h3/>',{
+                    'text' : title
+                }).appendTo(header);
+                var modal_body = jQuery('<div/>',{
+                    class : 'modal-body',
+                }).appendTo(modal);
+                modal.ready(function(){
+                    modal.modal({
+                        'remote' : _url
+                    });
+                })
+                modal.bind('hidden',function(){
+                    $(this).remove();
+                });
+            }
+        </script>
     {% endblock %}
 </body>
 </html>

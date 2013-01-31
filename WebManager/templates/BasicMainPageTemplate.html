@@ -1,38 +1,145 @@
 {% extends "MainSite.html" %}
 {% load url from future %}
-
-{% block heading %}
-
-    {% if user.is_authenticated %}
-        <a href="{% url 'momends:settings-screen' %}">Settings</a>
-        <a href="{% url 'auth_logout' %}">Logout</a>
-        {{ user.username }}
-        {{ user.first_name }}
-        {{ user.last_name }}
-    {% else %}
-        <!-- Button to trigger modal -->
-        <a href="#myModal" role="button" class="btn" data-remote="{% url 'auth_login' %}" data-toggle="modal">Sign In</a>
-        <a href="#myModal" role="button" class="btn" data-remote="{% url 'registration_register' %}" data-toggle="modal">Sign Up</a>
-
-        <!-- Modal -->
-        <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h3 id="myModalLabel">Login</h3>
-            </div>
-            <div class="modal-body">
-                <p>One fine body…</p>
-            </div>
-        </div>
-
-    {% endif %}
-
-{% endblock heading %}
+{% block include %}
+    <link href="{{ STATIC_URL }}basicmain_style.css" rel="stylesheet">
+{% endblock include %}
+{% block heading %} {% endblock heading %}
 
 {% block content %}
+    <div id="maindiv" class="scene">
 
+        <iframe align="center" id="video" class="video" width="100%" height="100%" src="http://www.youtube.com/embed/dVZpm0okAH8?rel=0" frameborder="0" allowfullscreen></iframe>
 
+        <div class="transparent" id="transparent-content">
+            <div class="logo-div">
+                <h6 class="logo">momen<span style="color: darkred">d</span>s</h6>
+            </div>
+            <div class="actions">
+                    <a href="javascript:watchVideo()" class="white-link">
+                        <img src="{{ STATIC_URL }}img/video-icon.jpg"/>
+                        Watch Video
+                    </a>
+                <b style="font-size: 20px;color: #ffffff; margin: 0 9px 0 9px">|</b> <!-- I had to! (pixel perfection :)) -->
+                        <a href="#" class="btn auth-button" onclick='showAuthModal("{% url 'auth_login' %}","Login")'>Log in</a>
+                        <a href="#" class="btn auth-button" onclick='showAuthModal("{% url 'registration_register' %}","Sign Up")' >Sign Up</a>
+
+                </div>
+            </div>
+        </div>
+    <script>
+    var currentBg = 0;
+    var lastLoaded = -1;
+    var bgArr = [];
+    var bgDivArr = [];
+    var animationInterval = 5000;
+    $('body').ready(function(){
+        for(var i=0;i<5;i++){
+            bgArr.push(STATIC_URL+'img/carousel'+(i+1)+'.jpg');
+        }
+        for (var i = bgArr.length - 1; i > 0; i--) { //Shuffle bg
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = bgArr[i];
+            bgArr[i] = bgArr[j];
+            bgArr[j] = temp;
+        }
+        loadNext();
+    });
+    function loadNext(){
+        if(lastLoaded == bgArr.length-1){
+            return;
+        }
+        var _cont = jQuery('<div/>',{
+            id : 'bg-container'+(lastLoaded+1),
+            class : 'scene-background'
+        }).appendTo('#maindiv');
+        bgDivArr.push(_cont);
+        var _img = jQuery('<img/>',{
+            id : 'bg-img'+(lastLoaded+1),
+            class : 'background-image',
+            src : bgArr[lastLoaded+1]
+        }).appendTo(_cont);
+        _img.ready(function(){
+            lastLoaded++;
+            console.log('loaded:'+lastLoaded);
+            loadNext();
+            if(lastLoaded>0){
+                _cont.hide();
+            }else{
+                nextAnimation();
+            }
+        });
+    }
+    function nextAnimation(){
+        if(lastLoaded != bgDivArr.length-1 && lastLoaded < currentBg+1){ //next item not loaded yet
+            setTimeout(nextAnimation, animationInterval);
+            return;
+        }
+        var _cur = currentBg;
+        currentBg = _cur + 1;
+        if(currentBg == bgDivArr.length){
+            currentBg = 0;
+        }
+        var _appear = bgDivArr[currentBg];
+        _appear.css({'opacity':0});
+        _appear.show();
+        _appear.animate({
+            opacity:1
+        },{duration:1500,complete:function(){
+            setTimeout(nextAnimation, animationInterval);
+        }});
+        var _disappear = bgDivArr[_cur];
+        _disappear.animate({
+            opacity:0
+        },{duration:1500,complete:function(){
+            $(this).hide();
+        }});
+    }
+    function watchVideo(){
+        var box = $("<div/>").addClass("darkCover").click(function(){
+            $(this).fadeOut();
+            content.fadeOut();
+            document.getElementById('video').src="http://www.youtube.com/embed/dVZpm0okAH8?rel=0";
+
+        });
+        $("body").prepend(box);
+
+        box.fadeTo("fast",0.8);
+        var content = $('#video');
+        content.fadeIn(1000);
+        $("body").prepend(content);
+        content.fadeTo("fast",1);
+    }
+
+    function showAuthModal(_url, title){
+        var modal =jQuery('<div/>',{
+            'id': 'modal',
+            'class' : 'modal hide fade',
+            'tabindex' : '-1',
+            'role' : 'dialog',
+            'aria-lablledby' : 'modal-label',
+            'aria-hidden' : 'true'
+        }).appendTo('body');
+        var header = jQuery('<div/>',{
+            'class' : 'modal-header'
+        }).appendTo(modal);
+        jQuery('<h3/>',{
+            'text' : title
+        }).appendTo(header);
+        var modal_body = jQuery('<div/>',{
+            class : 'modal-body'
+        }).appendTo(modal);
+        modal.ready(function(){
+            modal.modal({
+                'remote' : _url
+            });
+        })
+        modal.bind('hidden',function(){
+            $(this).remove();
+        });
+    }
+</script>
 {% endblock content %}
+{% block footer%} {% endblock footer %}
 
 
 
