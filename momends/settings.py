@@ -49,10 +49,8 @@ MEDIA_URL = ''
 
 # URL prefix for static files.
 STATIC_URL = '/momends/static/'
-#MOMEND_FILE_URL = STATIC_URL
-AWS_STORAGE_BUCKET_NAME = environ['AWS_STORAGE_BUCKET_NAME']
-S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
-MOMEND_FILE_URL = S3_URL
+
+
 
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
