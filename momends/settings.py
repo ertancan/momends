@@ -52,7 +52,10 @@ MEDIA_URL = ''
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
 STATIC_URL = '/momends/static/'
-MOMEND_FILE_URL = STATIC_URL
+#MOMEND_FILE_URL = STATIC_URL
+AWS_STORAGE_BUCKET_NAME = environ['AWS_STORAGE_BUCKET_NAME']
+S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
+MOMEND_FILE_URL = S3_URL
 
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
@@ -192,12 +195,9 @@ DATABASE_OPTIONS = {
 RUNNING_SERVER = environ.get('MOMENDS_HOST')
 if  RUNNING_SERVER == 'dev':
     from local_settings import *
-    FILE_TARGET = 'local'
 elif environ['MOMENDS_HOST'] == 'test':
-    FILE_TARGET = 'S3'
     from local_settings_heroku import *
 elif environ['MOMENDS_HOST'] == 'prod':
-    FILE_TARGET = 'S3'
     from local_settings_aws import *
 else:
     raise Exception
