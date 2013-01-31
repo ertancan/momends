@@ -28,7 +28,6 @@ class ImageEnhancementUtility(object):
 
         if settings.COLLECTED_FILE_PATH in name_part:
             name_part = name_part[len(settings.COLLECTED_FILE_PATH):]
-        _enh_tmp_out_filename = None
         _enh_out_filename = None
         for i, enhance in enumerate(enhancement_objects):
             _enhancement_parameters = ImageEnhancementUtility._replace_parameter_keywords(enhance.parameters, theme_data_manager) #Replace keywords in parameters
@@ -45,8 +44,6 @@ class ImageEnhancementUtility(object):
                 os.remove(current_filename)
             current_filename = _enh_tmp_out_filename
 
-        if _enh_out_filename:
-            DataManagerUtil.move_for_serving(_enh_tmp_out_filename, _enh_out_filename)
         return _enh_out_filename
 
     @staticmethod
