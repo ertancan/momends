@@ -449,6 +449,9 @@ function volumeSliderChanged(_val){
  * @param _obj clicked object
  */
 function handleClick(_obj){
+    if(!isPlaying){ //Don't let interactions if paused
+        return;
+    }
     var click_time = new Date().getTime();
     var _node = _findObjectNode(_obj);
     var click_animation = _node['animation']['click_animation'];
@@ -480,6 +483,9 @@ function handleClick(_obj){
  * @param _obj clicked object
  */
 function handleMouseEnter(_obj){
+    if(!isPlaying){ //Don't let interactions if paused
+        return;
+    }
     var enter_time = new Date().getTime();
     var _node = _findObjectNode(_obj);
     var enter_animation = _node['animation']['hover_animation'];
