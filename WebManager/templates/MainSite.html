@@ -42,8 +42,8 @@
                     <div class="navbar-inner">
                         <div class="container">
                             <!-- Logo -->
-                            <a class="brand momend-word" href={% url 'momends:front-page' %}>
-                                momen<span style="color: darkred">d</span>s
+                            <a class="brand" href={% url 'momends:front-page' %}>
+                                <img src="{{ STATIC_URL }}/img/logo.png" class="logo">
                             </a>
                             <ul class="nav">
 
@@ -52,7 +52,7 @@
                                     <li><a href="{% url 'auth_logout' %}" title="logout" >Logout</a></li>
                                 {% else %}
                                     <li><a href="#" onclick='showAuthModal("{% url 'auth_login' %}","Login")'>Sign in</a></li>
-                                    <li><a href="#" onclick='showAuthModal("{% url 'auth_login' %}","Sign Up")'>Sign up</a></li>
+                                    <li><a href="#" onclick='showAuthModal("{% url 'registration_register' %}","Sign Up")'>Sign up</a></li>
                                 {% endif %}
 
                             </ul>
