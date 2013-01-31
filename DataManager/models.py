@@ -30,7 +30,8 @@ class Momend(BaseDataManagerModel):
         return str(self.pk) + ' : ' + str(self.owner) + ':'+str(self.momend_start_date)+' - '+str(self.momend_end_date)
 
     def encode(self):
-        enc = model_to_dict(self)
+        enc = model_to_dict(self,exclude=['owner'])
+        enc['owner'] = dict(id=self.owner.id, username=self.owner.username)
         layers = []
         for layer in AnimationLayer.objects.filter(momend=self, is_interaction=False):
             layers.append(layer.encode())

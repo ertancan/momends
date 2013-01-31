@@ -33,7 +33,7 @@ class AnimationPlayStatAdmin(admin.ModelAdmin):
     list_display = ['momend', 'date', 'user', 'redirect_url']
 
 class UserInteractionAdmin(admin.ModelAdmin):
-    list_display = ['momend','date','interaction']
+    list_display = ['momend', 'creator', 'date','interaction']
 
 class PostEnhancementAdmin(admin.ModelAdmin):
     list_display = ['name','type','filepath','used_object_type']

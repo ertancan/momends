@@ -25,11 +25,20 @@ function momend_arrived(){
         load_failed();
         return;
     }
-    create_objects_from_data(function(){
-            setAnimationQueue(momend_data['animation_layers']);
+    create_objects_from_data(start_animation); //start animation as create objects callback
+}
+function start_animation(){
+    setAnimationQueue(momend_data['animation_layers']);
+    $('#loading-bg').animate({
+        'top':'-100%',
+        'opacity' : '0.5'
+    },{
+        duration: 500,
+        complete: function(){
+            $(this).hide();
             startAllQueues();
-        });
-
+        }
+    });
 }
 /**
  * Send the queue generated while user interacts with the animation to the given url
@@ -43,6 +52,7 @@ function _sendUserInteractionToServer(url, callback){
     if(_interaction_sent){
         return;
     }
+    console.log('sending')
     var json = _convertLayerToJSON(_userInteractionQueue);
     var token = $('[name="csrfmiddlewaretoken"]')[0].value;
     var momend_id = momend_data['id'];
@@ -55,8 +65,15 @@ function _sendUserInteractionToServer(url, callback){
             'id':momend_id
         },
         success: function(msg){
+            console.log(msg);
+            var data = jQuery.parseJSON(msg);
+            console.dir(data);
             if(callback){
-                callback(true,msg);
+                if(data.resp === "true"){
+                    callback(true,data.url);
+                }else{
+                    callback(false,data.msg);
+                }
             }
             _interaction_sent = true;
         },
@@ -297,46 +314,6 @@ function _parse_string_to_dict(_str,replaceKeywords){
     }
     return resp;
 }
-
-function create_finish_view(){
-    finished_modal = jQuery('<div/>',{
-        class : 'finished-modal-bg',
-        id : 'finished-bg'
-    }).appendTo('body');
-    var _modal = jQuery('<div/>',{
-        class : 'finished-modal',
-        id : 'finished-modal'
-    }).appendTo(finished_modal);
-    var sendInteractionButton = jQuery('<div/>',{
-        id : 'send-interaction-button',
-        class : 'finished-modal-button'
-    }).appendTo(_modal);
-    sendInteractionButton.click(send_interaction_data);
-    jQuery('<i/>',{
-        class : 'icon-magic modal-icon',
-        id : 'send-interaction-icon'
-    }).appendTo(sendInteractionButton);
-    jQuery('<span/>',{
-        text : 'Save Interaction',
-        id : 'send-interaction-text'
-    }).appendTo(sendInteractionButton);
-
-    var shareButton = jQuery('<div/>',{
-        id : 'share-button',
-        onclick : 'share()',
-        class : 'finished-modal-button'
-    }).appendTo(_modal);
-
-    jQuery('<i/>',{
-        class : 'icon-share modal-icon',
-        id : 'share-button-icon'
-    }).appendTo(shareButton);
-    jQuery('<span/>',{
-        text : 'Share'
-    }).appendTo(shareButton);
-    finished_modal.hide();
-}
-
 function fullscreenToggle(){
     var _button = $('#button-fullscreen');
     if(fullscreen){ //Was on fullscreen mode

@@ -1,7 +1,14 @@
 .momend-word{
     font-family: comfortaabold,sans-serif;
 }
-
+.logo{
+    width: 100px;
+}
+.navbar .brand{
+    padding: 0;
+    position: relative;
+    top: -10px;
+}
 /* Home Page */
 .modal-backdrop {background: none;}
 

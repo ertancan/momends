@@ -34,7 +34,8 @@
             </div>
             <div class="row">
                 <div>
-                    <a class="button large orange offset1 span10" style="text-align: center;margin-left: 8.4%" onclick="showCreateModal()"><i class="icon-magic"></i> Get yours now!</a>
+                    <a class="button large orange offset1 span10" style="text-align: center;margin-left: 8.4%" onclick="{% if user.is_authenticated %}
+                            showCreateModal() {% else %} getYours() {% endif %}"><i class="icon-magic"></i> Get yours now!</a>
                 </div>
             </div>
 
@@ -172,6 +173,9 @@
         function onYouTubePlayerReady(playerId) {
             ytplayer = document.getElementById("ytvideo");
             ytplayer.addEventListener("onStateChange", "onytplayerStateChange");
+        }
+        function getYours(){
+            showAuthModal("{% url 'auth_login' %}","Login");
         }
         function showCreateModal(){
             try{

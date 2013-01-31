@@ -278,7 +278,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
     else if(_type === 'music-play'){
         music_layer = _level;
         currentMusicObj = _obj;
-        if(ready_music_count>0){
+        if(ready_music_count>0){ //If the music player object loaded and ready TODO check first music instead of loaded count
             _obj.jPlayer("play");
             node_waiting_to_play=null;
             ready_music_count--;
@@ -321,11 +321,7 @@ function nextAnimation(_level){
     }
     if(animationQueue[_level].length===0){
         if(_level === 1){
-            finished_modal.show();
-            currentMusicObj.jPlayer('stop');
-            for(var i=0; i<animation_finish_observer.length; i++){
-                animation_finish_observer[i]();
-            }
+            finish();
         }
         return;
     }
@@ -349,7 +345,22 @@ function nextAnimation(_level){
         console.dir(animationQueue[_level][0]);
     }
 }
+/**
+ * Shows finish dialog and stops player functions
+ * !Also informs finish observers!
+ */
+function finish(){
+    $('#finished-bg').show();
+    currentMusicObj.jPlayer('stop');
+    for(var i=0; i<animation_finish_observer.length; i++){
+        animation_finish_observer[i]();
+    }
+    _toggle_play_button(true);
+}
 
+/**
+ * Pauses the current animation and saves the current states of animations to be able to resume
+ */
 function pause(){
     console.log('Pause');
     pause_time = new Date().getTime();
@@ -365,8 +376,7 @@ function pause(){
             node = $.extend(node, {}, true);
 
             var passed = pause_time - currentAnimation[i][j]['startTime'];
-            var remaining = node['duration'] - passed;
-            node['duration'] = remaining;
+            node['duration'] = node['duration'] - passed; //Assign remaining time
 
             if('object' in node){
                 var _obj=node['object'];
@@ -407,8 +417,6 @@ function resume(){
             if('pre' in node){
                 node['pre'] = {}; //Clear pre-conditions, since they have already applied
             }
-            console.log('sending this to handle');
-            console.dir(node);
             _handleNode(node,i);
         }
     }

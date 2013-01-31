@@ -38,6 +38,23 @@
             </div>
         </div>
     </div>
+    <div class="finished-modal-bg" id="finished-bg" style="display: none;">
+        <div class="finished-modal" id="finished-modal">
+            <div id="send-interaction-button" onclick="send_interaction_data()" class="finished-modal-button">
+                <i class="icon-magic modal-icon" id="send-interaction-icon"></i>
+                <span id="send-interaction-text">Save Interaction</span>
+            </div>
+            <div id="share-button" onclick="share()" class="finished-modal-button">
+                <i class="icon-share modal-icon" id="share-button-icon"></i>
+                <span>Share</span>
+            </div>
+        </div>
+    </div>
+    <div class="loading-bg" id="loading-bg">
+        <i class="icon-refresh icon-spin icon-3x"></i>
+        <br>
+        <b class="loading-text">Loading momend...</b>
+    </div>
     {% csrf_token %}
 
 {% endblock content %}
@@ -54,7 +71,7 @@
             $.getJSON( '{% url 'momends:get-momend' params.type params.id %}', function(data) {
                 momend_data = data;
                 momend_arrived();
-                create_finish_view();
+
             }).error(function(){load_failed();});
         }
 
