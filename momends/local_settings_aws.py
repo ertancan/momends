@@ -81,4 +81,4 @@ from os import environ
 AWS_STORAGE_BUCKET_NAME = environ['AWS_STORAGE_BUCKET_NAME']
 S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
 MOMEND_FILE_URL = S3_URL
-TMP_FILE_PATH = '/tmp/momends_tmp'
+TMP_FILE_PATH = '/tmp/momends_tmp/'
