@@ -6,7 +6,6 @@ import subprocess
 import os
 from django.conf import settings
 from LogManagers.Log import Log
-from django.core.files.storage import default_storage
 
 
 class DataManagerUtil:
@@ -21,8 +20,8 @@ class DataManagerUtil:
         :return:
         """
         _url = urllib2.urlopen(url)
-        _file_path = settings.COLLECTED_FILE_PATH + '/' + name
-        _save_file_path = settings.SAVE_PREFIX + '/' + _file_path
+        _file_path = settings.COLLECTED_FILE_PATH + name
+        _save_file_path = settings.SAVE_PREFIX + _file_path
 
         with open(_save_file_path, 'wb') as _local_file:
             _local_file.write(_url.read())
