@@ -4,6 +4,7 @@ import subprocess,os
 import re
 from Outputs.AnimationManager.models import ImageEnhancement
 from Outputs.AnimationManager.models import ThemeData
+import shutil
 
 class ImageEnhancementUtility(object):
     @staticmethod
@@ -42,7 +43,7 @@ class ImageEnhancementUtility(object):
                 os.remove(_tmp_filename)
             _tmp_filename = _enh_out_filename
         _current_filename = settings.SAVE_PREFIX + _tmp_filename.replace(settings.TMP_FILE_PATH, settings.ENHANCED_FILE_PATH)
-        os.rename(_tmp_filename, _current_filename)
+        shutil.move(_tmp_filename, _current_filename)
         return _current_filename
 
     @staticmethod
