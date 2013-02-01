@@ -41,7 +41,7 @@ class ImageEnhancementUtility(object):
             if i > 0: #Delete file if it is not the very first downloaded raw data
                 os.remove(_tmp_filename)
             _tmp_filename = _enh_out_filename
-        _current_filename = '%s/' %settings.SAVE_PREFIX %_tmp_filename.replace(settings.TMP_FILE_PATH, settings.ENHANCED_FILE_PATH)
+        _current_filename = settings.SAVE_PREFIX + _tmp_filename.replace(settings.TMP_FILE_PATH, settings.ENHANCED_FILE_PATH)
         os.rename(_tmp_filename, _current_filename)
         return _current_filename
 
