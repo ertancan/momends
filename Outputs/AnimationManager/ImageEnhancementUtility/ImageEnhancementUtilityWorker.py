@@ -26,7 +26,7 @@ class ImageEnhancementUtility(object):
             ext_part = ''  #there is no extension, unlikely but possible
 
         if settings.COLLECTED_FILE_PATH in name_part:
-            name_part = name_part[len(settings.COLLECTED_FILE_PATH):]
+            name_part = name_part[len(settings.SAVE_PREFIX) + len(settings.COLLECTED_FILE_PATH):]
 
         for i, enhance in enumerate(enhancement_objects):
             _enhancement_parameters = ImageEnhancementUtility._replace_parameter_keywords(enhance.parameters, theme_data_manager) #Replace keywords in parameters
