@@ -11,6 +11,8 @@ from social_auth.db.django_models import UserSocialAuth
 from LogManagers.Log import Log
 from DataManagerUtil import DataManagerUtil
 from django.db.models import Q
+from django.conf import settings
+
 class DataManager:
     def __init__(self, user):
         self.user = user
@@ -88,7 +90,8 @@ class DataManager:
             out_data = self.momend.animationlayer_set.all()[1].outdata_set.order_by('?')
             for data in out_data:
                 if data.raw and data.raw.type == RawData.DATA_TYPE['Photo']:
-                    self.momend.thumbnail = DataManagerUtil.create_photo_thumbnail(data.final_data_path,'momend_'+str(self.momend.pk)+'_thumb.jpg')
+                    self.momend.thumbnail = DataManagerUtil.create_photo_thumbnail(settings.SAVE_PREFIX + data.final_data_path,
+                        'momend_'+str(self.momend.pk)+'_thumb.jpg')
                     break
         except Exception as error:
             Log.error("Couldn't create thumbnail!-->"+str(error))
