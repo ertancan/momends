@@ -7,7 +7,6 @@ import os
 from django.conf import settings
 from LogManagers.Log import Log
 
-
 class DataManagerUtil:
     __metaclass__ = abc.ABCMeta
 
