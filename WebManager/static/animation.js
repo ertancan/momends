@@ -31,7 +31,7 @@ function init_animation(){
     });
     volume_slider = $('#volume-slider');
     volume_slider.val(100);
-    volume_slider.change(function(){volumeSliderChanged(slider.val())});
+    volume_slider.change(function(){volumeSliderChanged(volume_slider.val())});
 }
 /**
  * Instantiates global variables according to number of levels needed.
@@ -346,7 +346,7 @@ function nextAnimation(_level){
     }
 }
 /**
- * Shows finish dialog and stops player functions
+ * Shows finish dialog and stops player functions and current animations
  * !Also informs finish observers!
  */
 function finish(){
@@ -356,6 +356,20 @@ function finish(){
         animation_finish_observer[i]();
     }
     _toggle_play_button(true);
+    stopAllQueues();
+
+    for(var i = 0; i< currentAnimation.length; i++){ //Stop active animations (i.e. background)
+        for(var j = 0; j<currentAnimation[i].length; j++){
+            var node = currentAnimation[i][j];
+            if('animation' in node){
+                var _animation = node['animation'];
+                if('object' in _animation){
+                    var _obj=_animation['object'];
+                    _obj.stop();
+                }
+            }
+        }
+    }
 }
 
 /**
