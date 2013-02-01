@@ -4,7 +4,6 @@ import subprocess,os
 import re
 from Outputs.AnimationManager.models import ImageEnhancement
 from Outputs.AnimationManager.models import ThemeData
-from DataManager.DataManagerUtil import DataManagerUtil
 
 class ImageEnhancementUtility(object):
     @staticmethod
@@ -28,23 +27,23 @@ class ImageEnhancementUtility(object):
 
         if settings.COLLECTED_FILE_PATH in name_part:
             name_part = name_part[len(settings.COLLECTED_FILE_PATH):]
-        _enh_out_filename = None
+
         for i, enhance in enumerate(enhancement_objects):
-            _enhancement_parameters = ImageEnhancementUtility._replace_parameter_keywords(enhance.parameters, theme_data_manager) #Replace keywords in parameters
-            _enh_tmp_out_filename = settings.TMP_FILE_PATH + name_part +'_' + file_prefix + '_enh'+str(i)+ ext_part #name file as filename_enh1.ext etc.
-            _enh_out_filename = settings.ENHANCED_FILE_PATH + name_part +'_' + file_prefix + '_enh'+str(i)+ ext_part #name file as filename_enh1.ext etc.
+            enhancement_parameters = ImageEnhancementUtility._replace_parameter_keywords(enhance.parameters, theme_data_manager) #Replace keywords in parameters
+            enh_out_filename = settings.ENHANCED_FILE_PATH + name_part +'_' + file_prefix + '_enh'+str(i)+ ext_part #name file as filename_enh1.ext etc.
             params = settings.ENHANCEMENT_SCRIPT_DIR + enhance.script_path +' '
-            params += _enhancement_parameters
+            params += enhancement_parameters
             params += ' '
             params += current_filename
             params += ' '
-            params += _enh_tmp_out_filename
+            params += enh_out_filename
             subprocess.call(params, shell=True, env=os.environ.copy()) #like ./script parameters input_file output_file
+
             if i > 0: #Delete file if it is not the very first downloaded raw data
                 os.remove(current_filename)
-            current_filename = _enh_tmp_out_filename
+            current_filename = enh_out_filename
 
-        return _enh_out_filename
+        return current_filename
 
     @staticmethod
     def _replace_parameter_keywords(parameter,theme_data_manager):
