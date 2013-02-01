@@ -5,6 +5,8 @@ from Outputs.AnimationManager.ImageEnhancementUtility.ImageEnhancementUtilityWor
 from Outputs.AnimationManager.models import CoreAnimationData
 from Outputs.AnimationManager.ThemeManager.ThemeDataManager import ThemeDataManager
 from LogManagers.Log import Log
+from django.conf import settings
+
 class ThemeManagerWorker:
 
     def __init__(self,theme):
@@ -67,7 +69,8 @@ class ThemeManagerWorker:
             outdata.save()
             return outdata
 
-        last_filename = ImageEnhancementUtility.applyThemeEnhancementsOnImage(raw_filename, rand_enhancement.enhancement_functions, file_prefix, self.data_manager)
+        last_filename = ImageEnhancementUtility.applyThemeEnhancementsOnImage(settings.SAVE_PREFIX + raw_filename,
+            rand_enhancement.enhancement_functions, file_prefix, self.data_manager)
 
         outdata.final_data_path = last_filename #Update final data with enhanced one
         self.enhancement_applied_objects[raw_filename] = last_filename
