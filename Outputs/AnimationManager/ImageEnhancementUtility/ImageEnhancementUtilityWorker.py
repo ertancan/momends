@@ -16,7 +16,7 @@ class ImageEnhancementUtility(object):
         for enh_id in enhancement_ids:
             enhancement_objects.append(ImageEnhancement.objects.get(pk=int(enh_id)))
 
-        current_filename = filename
+        _tmp_filename = filename
         try:
             dot_index = filename.rindex('.')
             name_part = filename[:dot_index]
@@ -29,21 +29,21 @@ class ImageEnhancementUtility(object):
             name_part = name_part[len(settings.COLLECTED_FILE_PATH):]
 
         for i, enhance in enumerate(enhancement_objects):
-            enhancement_parameters = ImageEnhancementUtility._replace_parameter_keywords(enhance.parameters, theme_data_manager) #Replace keywords in parameters
-            enh_out_filename = settings.ENHANCED_FILE_PATH + name_part +'_' + file_prefix + '_enh'+str(i)+ ext_part #name file as filename_enh1.ext etc.
-            params = settings.ENHANCEMENT_SCRIPT_DIR + enhance.script_path +' '
-            params += enhancement_parameters
-            params += ' '
-            params += current_filename
-            params += ' '
-            params += enh_out_filename
-            subprocess.call(params, shell=True, env=os.environ.copy()) #like ./script parameters input_file output_file
-
+            _enhancement_parameters = ImageEnhancementUtility._replace_parameter_keywords(enhance.parameters, theme_data_manager) #Replace keywords in parameters
+            _enh_out_filename = settings.TMP_FILE_PATH + name_part +'_' + file_prefix + '_enh'+str(i)+ ext_part #name file as filename_enh1.ext etc.
+            _params = settings.ENHANCEMENT_SCRIPT_DIR + enhance.script_path +' '
+            _params += _enhancement_parameters
+            _params += ' '
+            _params += _tmp_filename
+            _params += ' '
+            _params += _enh_out_filename
+            subprocess.call(_params, shell=True, env=os.environ.copy()) #like ./script parameters input_file output_file
             if i > 0: #Delete file if it is not the very first downloaded raw data
-                os.remove(current_filename)
-            current_filename = enh_out_filename
-
-        return current_filename
+                os.remove(_tmp_filename)
+            _tmp_filename = _enh_out_filename
+        _current_filename = '%s/' %settings.SAVE_PREFIX %_tmp_filename.replace(settings.TMP_FILE_PATH, settings.ENHANCED_FILE_PATH)
+        os.rename(_tmp_filename, _current_filename)
+        return _current_filename
 
     @staticmethod
     def _replace_parameter_keywords(parameter,theme_data_manager):

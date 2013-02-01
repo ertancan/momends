@@ -21,8 +21,10 @@ class DataManagerUtil:
         :return:
         """
         _url = urllib2.urlopen(url)
-        _file_path = settings.COLLECTED_FILE_PATH + name
-        with open(_file_path, 'wb') as _local_file:
+        _file_path = '%s/%s' %settings.COLLECTED_FILE_PATH %name
+        _save_file_path = '%s/%s' %settings.SAVE_PREFIX %_file_path
+
+        with open(_save_file_path, 'wb') as _local_file:
             _local_file.write(_url.read())
         _local_file.close()
         return _file_path
@@ -34,6 +36,7 @@ class DataManagerUtil:
             return
         os.environ['PATH'] += ':/usr/local/bin' #TODO: remove this on prod For mac os
         _file_path = settings.THUMBNAIL_FILE_PATH + _output_name
-        s=["convert", _file, '-resize', '500x320^', '-gravity', 'center', '-extent', '500x320', _file_path]
+        _save_file_path = settings.SAVE_PREFIX + _file_path
+        s=["convert", _file, '-resize', '500x320^', '-gravity', 'center', '-extent', '500x320', _save_file_path]
         subprocess.Popen(s).wait()
         return _file_path

@@ -50,8 +50,6 @@ MEDIA_URL = ''
 # URL prefix for static files.
 STATIC_URL = '/momends/static/'
 
-
-
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
@@ -117,12 +115,13 @@ INSTALLED_APPS = (
 )
 
 #Settings for directories
+
+SAVE_PREFIX = 'operational_files/'
 ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scripts/'
-COLLECTED_FILE_PATH = 'operational_files/userdata/collected/'
-THUMBNAIL_FILE_PATH = 'operational_files/userdata/thumbnail/'
-ENHANCED_FILE_PATH = 'operational_files/userdata/enhanced/'
-TMP_FILE_PATH = 'operational_files/tmp/'
-THEME_DATA_PATH = 'operational_files/themedata/'
+COLLECTED_FILE_PATH = 'userdata/collected/'
+THUMBNAIL_FILE_PATH = 'userdata/thumbnail/'
+ENHANCED_FILE_PATH = 'userdata/enhanced/'
+THEME_DATA_PATH =  'themedata/'
 
 LOGIN_URL = '/momends/main/'
 LOGIN_ERROR_URL = '/accounts/login-error/'
@@ -193,8 +192,6 @@ DATABASE_OPTIONS = {
 RUNNING_SERVER = environ.get('MOMENDS_HOST')
 if  RUNNING_SERVER == 'dev':
     from local_settings import *
-elif environ['MOMENDS_HOST'] == 'test':
-    from local_settings_heroku import *
 elif environ['MOMENDS_HOST'] == 'prod':
     from local_settings_aws import *
 else:
