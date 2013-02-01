@@ -35,7 +35,7 @@
             <div class="row">
                 <div>
                     <a class="button large orange offset1 span10" style="text-align: center;margin-left: 8.4%" onclick="{% if user.is_authenticated %}
-                            showCreateModal() {% else %} getYours() {% endif %}"><i class="icon-magic"></i> Get yours now!</a>
+                        showCreateModal() {% else %} getYours() {% endif %}"><i class="icon-magic"></i> Get yours now!</a>
                 </div>
             </div>
 
@@ -102,7 +102,7 @@
 
     <!-- Create Modal -->
     <div id="create-modal" class="modal hide fade span9" tabindex="-1" role="dialog" aria-labelledby="create-modal" aria-hidden="true">
-        <form class="form-horizontal" method="post" action="">{% csrf_token %}
+        <form class="form-horizontal" id="create-form" method="post" action="">{% csrf_token %}
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h2>Create your momend!</h2>
@@ -110,13 +110,17 @@
             <div class="modal-body" id="create-modal-body">
 
                 <div class="span9">
+                    {{ form.non_field_errors }}
                     <div class="modal-group-container">
+                        {{ form.momend_name.errors }}
                         <label for="id_momend_name" class="modal-form-item">Name:</label>
                         {{ form.momend_name }}
                         <br/>
+                        {{ form.momend_theme.errors }}
                         <label for="id_momend_theme" class="modal-form-item">Theme:</label>
                         {{ form.momend_theme }}
-                        <label for="id_privacy_type"style="display: inline; margin-left: 26px">Privacy:</label>
+                        {{ form.privacy_type.errors }}
+                        <label for="id_privacy_type"style="display: inline; margin: 0 20px 0 26px">Privacy:</label>
                         {{ form.privacy_type }}
                         <a onclick="uploadPressed()" class="upload-button"><i id="upload-button-icon" class="icon-4x icon-upload model-icon-button" href="#" ></i><br/><b style="font-size: 15px"> Upload</b></a>
                     </div>
@@ -132,10 +136,12 @@
                         </div>
                         <div class="modal-tab-content span8">
                             <div id="alltab-content" class="tab-content">
+                                {{ form.start_date.errors }}
                                 <label for="id_start_date" class="modal-form-item">From:</label>
                                 {{ form.start_date }}
                                 <a class="btn" style="vertical-align: top" href="#" onclick="showDatePicker('id_start_date')"><i class="icon-calendar"></i></a>
                                 <br/>
+                                {{ form.finish_date.errors }}
                                 <label for="id_finish_date" class="modal-form-item">To:</label>
                                 {{ form.finish_date }}
                                 <a class="btn" href="#" style="vertical-align: top" onclick="showDatePicker('id_finish_date')"><i class="icon-calendar"></i></a>
@@ -151,24 +157,41 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary btn-large" type="submit">Get it</button>
+                <button class="btn btn-primary" id="get-button" type="submit">Get it!</button>
             </div>
         </form>
-
+        <div class="creating-dialog" id="creating-dialog">
+            <h3>Please Wait...</h3>
+            <img class="collect-box" src="{{ STATIC_URL }}img/box.png">
+            <img src="{{ STATIC_URL }}img/arrows.png">
+            <h3 id="collecting-text">We are creating your momend</h3>
+        </div>
     </div>
+
+
 {% endblock content %}
 {% block scripts %}
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
     <script>
+        var form_has_errors = {% if form.errors %} true;
+        {% else %} false;
+        {% endif %}
         $('body').ready(function(){
             $('#portfolio-items').isotope({filter: '.user'}); //Filter thumbnails for .user
-            $('#carousel').carousel({interval: 15000})
-            if(swfobject.hasFlashPlayerVersion("8")){
+            $('#carousel').carousel({interval: 15000}); //Activate carousel
+            if(swfobject.hasFlashPlayerVersion("8")){ //Replace iframe video with swf object to control, pause
                 var params = { allowScriptAccess: "always" };
                 var atts = { id: "ytvideo" ,
-                            wmode:"transparent"};
+                    wmode:"transparent"};
                 swfobject.embedSWF("http://www.youtube.com/v/dVZpm0okAH8?showinfo=0&controls=0&rel=0&&enablejsapi=1", "video_container", "515", "306", "8",null,null,params,atts);
             }
+            if(form_has_errors){ //Show error messages if this page is response to create request
+                showCreateModal();
+            }
+            $('#get-button').click(function(){
+                $('#creating-dialog').fadeIn();
+                animateCollectingText();
+            });
         });
         function onYouTubePlayerReady(playerId) {
             ytplayer = document.getElementById("ytvideo");
@@ -179,7 +202,9 @@
         }
         function showCreateModal(){
             try{
-                ytplayer.pauseVideo();
+                if(ytplayer){
+                    ytplayer.pauseVideo();
+                }
             }catch(ex){
                 console.log(ex);
             }
@@ -196,6 +221,21 @@
             });
 
         }
+        function animateCollectingText(state){
+            var texts = ['We are creating your momend',
+                'We are creating your momend.',
+                'We are creating your momend..',
+                'We are creating your momend...'];
+            if(!state || state===texts.length){
+                state = 0;
+            }
+            var obj = $('#collecting-text');
+            obj.text(texts[state]);
+            setTimeout(function(){
+                animateCollectingText(state+1);
+            },500);
+        }
+
         function onytplayerStateChange(newState) {
             if(newState==0){ //Video finished
                 $('#carousel').carousel('cycle');
@@ -213,20 +253,20 @@
             $('#'+previous_tab).removeClass('active');
             previous_tab = tab;
         }
-    function showDatePicker(_on_id){
-        var input = $('#'+_on_id);
-        input.datepicker({
-            onClose: function(dateText, inst) {
-                input.datepicker('destroy');
-            },
-            dateFormat: "d M, yy"
-        });
-        input.focus();
+        function showDatePicker(_on_id){
+            var input = $('#'+_on_id);
+            input.datepicker({
+                onClose: function(dateText, inst) {
+                    input.datepicker('destroy');
+                },
+                dateFormat: "d M, yy"
+            });
+            input.focus();
 
-    }
-    function deleteMomend(_momend){
-        $('#delete-'+_momend).preventDefault();
+        }
+        function deleteMomend(_momend){
+            $('#delete-'+_momend).preventDefault();
 
-    }
+        }
     </script>
 {% endblock scripts %}
