@@ -9,10 +9,10 @@ from os import environ
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
+        'PASSWORD': environ['MYSQL_PASSWORD'],
         'OPTIONS': {
             'host': environ['MYSQL_HOST'],
             'user': 'momends',
-            'passwd': environ['MYSQL_PASSWORD'],
             'db': environ['MYSQL_DB'],
             'use_unicode': 'True',
             },
@@ -80,7 +80,6 @@ LOGGING = {
     }
 }
 
-from os import environ
 AWS_STORAGE_BUCKET_NAME = environ['AWS_STORAGE_BUCKET_NAME']
 S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
 MOMEND_FILE_URL = S3_URL
