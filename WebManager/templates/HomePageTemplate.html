@@ -87,7 +87,7 @@
                                     <i class="icon-magic"></i>
                                     <!-- name -->
                                     <b class="project-name">{{ momend.name }}</b>
-                                    <a id="delete-{{ momend.id }}" class="icon-remove-sign pull-right delete-button" onclick="deleteMomend( {{ momend.id }} )"></a>
+                                    <a id="delete-{{ momend.id }}" class="icon-remove-sign pull-right delete-button" data-id="{{ momend.id }}"></a>
                                 </div>
                             </div>
 
@@ -168,7 +168,21 @@
         </div>
     </div>
 
-
+    <!-- Delete Modal -->
+    <div id="delete-modal" class="modal hide fade">
+        <div class="modal-header">
+            <a href="#" class="close">&times;</a>
+            <h3>Delete Momend</h3>
+        </div>
+        <div class="modal-body">
+            <p>You are about to delete your momend.</p>
+            <p>Do you want to proceed?</p>
+        </div>
+        <div class="modal-footer">
+            <a href="#" onclick="deleteMomend()" class="btn danger">Yes</a>
+            <a href="javascript:$('#delete-modal').modal('hide')" class="btn secondary">No</a>
+        </div>
+    </div>
 {% endblock content %}
 {% block scripts %}
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
@@ -192,6 +206,24 @@
                 $('#creating-dialog').fadeIn();
                 animateCollectingText();
             });
+
+            //Handle delete events
+            $('.delete-button').click(function(e) {
+                e.preventDefault();
+
+                var id = $(this).data('id');
+                $('#delete-modal').data('id', id).modal('show');
+            });
+            //Handle delete modal
+            $('#delete-modal').bind('show', function() {
+                var id = $(this).data('id');
+                var removeBtn = $(this).find('.danger');
+                removeBtn.click(function(e){
+                    e.preventDefault();
+                    deleteMomend(id);
+                    $('#delete-modal').modal('hide');
+                });
+            })
         });
         function onYouTubePlayerReady(playerId) {
             ytplayer = document.getElementById("ytvideo");
