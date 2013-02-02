@@ -89,6 +89,7 @@ function load_failed(){
         class : 'error',
         id : 'error'
     }).appendTo('body');
+    $('#loading-bg').hide();
 }
 function create_objects_from_data(load_callback){
     _load_callback = load_callback;
