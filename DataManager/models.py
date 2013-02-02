@@ -41,6 +41,28 @@ class Momend(BaseDataManagerModel):
     def toJSON(self):
         return simplejson.dumps(self.encode(), default=lambda obj: obj.isoformat() if isinstance(obj, datetime) else None)
 
+class DeletedMomend(BaseDataManagerModel):
+    #From Momend
+    owner = models.ForeignKey(User)
+    create_date = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(null=False, blank=False, max_length=255)
+    thumbnail = models.CharField(max_length=2000, null=True, blank=True)
+    momend_start_date = models.DateTimeField()
+    momend_end_date = models.DateTimeField()
+    privacy = models.IntegerField(choices=[[Momend.PRIVACY_CHOICES[key],key] for key in Momend.PRIVACY_CHOICES.keys()] , default=0)
+
+    play_count = models.IntegerField(default=0)
+    delete_date = models.DateTimeField(auto_now_add=True)
+
+    def set_momend_data(self, original):
+        self.owner = original.owner
+        self.create_date = original.create_date
+        self.name = original.name
+        self.thumbnail = original.thumbnail #TODO we may not need it
+        self.momend_start_date = original.momend_start_date
+        self.momend_end_date = original.momend_end_date
+        self.play_count = original.animationplaystat_set.count()
+
 class MomendScore(BaseDataManagerModel):
     momend = models.OneToOneField(Momend)
 
@@ -110,6 +132,7 @@ class RawData(BaseDataManagerModel):
 
     def __unicode__(self):
         return str(self.owner) + '_' + str(self.provider) + '_' + str(self.original_id)
+
 
 
 

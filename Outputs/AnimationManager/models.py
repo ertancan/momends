@@ -269,7 +269,8 @@ class UserInteractionAnimationGroup(BaseDataManagerModel):
         return resp
 
 class AnimationPlayStat(BaseDataManagerModel):
-    momend = models.ForeignKey('Momend')
+    momend = models.ForeignKey('Momend', null=True, blank=True)
+    interaction = models.ForeignKey('UserInteraction', null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, null=True, blank=True)
     redirect_url = models.CharField(max_length=500)
@@ -296,6 +297,18 @@ class UserInteraction(BaseDataManagerModel):
     def toJSON(self):
         return simplejson.dumps(self.encode(), default=lambda obj: obj.isoformat() if isinstance(obj, datetime) else None)
 
+class DeletedUserInteraction(BaseDataManagerModel):
+    momend_id = models.IntegerField() #Using id so as not to link with momend
+    date = models.DateTimeField()
+    creator_id = models.IntegerField() #Not to delete if creator deletes his profile
+
+    momend_owner_deleted = models.NullBooleanField(null=True, blank=True)
+    delete_time = models.DateTimeField(auto_now_add=True)
+
+    def set_interaction_data(self, interaction):
+        self.momend_id = interaction.momend_id
+        self.date = interaction.date
+        self.creator_id = interaction.creator_id
 
 def check_theme_data_path_callback(sender,instance,using,**kwargs):
     if not settings.THEME_DATA_PATH in instance.data_path and not '/' in instance.data_path:

@@ -84,8 +84,8 @@ label.modal-form-item{
     position: relative;
     left:3px;
 }
-#get-button.btn{
-    width: 180px;
+#get-button.button{
+    width: 200px;
 }
 .more-clickable{
     display: block;
@@ -93,6 +93,11 @@ label.modal-form-item{
 }
 a.upload-button{
     text-decoration: none;
+}
+a.delete-button{
+    top: 0 !important;
+    position: relative !important;
+    margin-right: 10px;
 }
 .delete-button{
     color: rgb(102, 102, 102);

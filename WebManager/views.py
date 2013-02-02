@@ -12,8 +12,10 @@ from WebManager.forms import CreateMomendForm
 from WebManager.forms import SettingsForm
 from DataManager.DataManager import DataManager
 from DataManager.models import Momend
+from DataManager.models import DeletedMomend
 from DataManager.models import RawData
 from Outputs.AnimationManager.models import UserInteraction
+from Outputs.AnimationManager.models import DeletedUserInteraction
 from Outputs.AnimationManager.models import OutData
 from Outputs.AnimationManager.models import AnimationPlayStat
 from Outputs.AnimationManager.models import Theme
@@ -64,7 +66,11 @@ class ShowMomendView(TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         play_stat = AnimationPlayStat()
-        play_stat.momend_id = kwargs['id']
+        if kwargs['type'] == 'm': #Whether it is momend or interaction
+            play_stat.momend_id = kwargs['id']
+        elif kwargs['type'] == 'i':
+            play_stat.interaction_id = kwargs['id']
+
         if 'HTTP_REFERER' in request.META:
             play_stat.redirect_url = request.META['HTTP_REFERER']
         else:
@@ -131,8 +137,8 @@ class GetMomendView(TemplateView):
 class SaveInteractionView(View):
     def post(self, request, *args, **kwargs): #TODO user check may be?
         if not request.user:
-            Log.error('Not authenticated interaction save request')
-            return HttpResponse('{"resp":"false","msg":"Please Login First"}')
+            Log.info('Not authenticated interaction save request')
+            return HttpResponse('{"resp":"false","msg":"Please Login First"}') #TODO collect error messages in some place?
         try:
             queue = request.POST['queue']
             momend_id = request.POST['id']
@@ -141,10 +147,63 @@ class SaveInteractionView(View):
             interaction.interaction = queue
             interaction.creator = request.user
             interaction.save()
+            Log.info('Interaction saved')
             return HttpResponse('{"resp":"true","url":"'+str(reverse_lazy('momends:show-momend',args=('i',interaction.pk)))+'"}')
         except Exception as e:
             Log.error('Error while saving interaction: '+str(e))
             return HttpResponse('{"resp":"false","msg":"Try Again"}') #TODO error message may be? (if it is not secret)
+
+class DeleteMomendView(View):
+    def get(self, request, *args, **kwargs):
+        if not request.user:
+            Log.error('Not authenticated delete request')
+            return HttpResponse('{"resp":"false","msg":"Please Login First"}')
+        if kwargs['type'] == 'm':
+            try:
+                momend = Momend.objects.get(pk = kwargs['id'])
+                if not momend.owner == request.user:
+                    Log.warn("Trying to delete someone else's momend")
+                    return HttpResponse('{"resp":"false","msg":"You cannot delete this momend"}')
+
+                stat_obj = DeletedMomend()
+                stat_obj.set_momend_data(momend)
+                stat_obj.save()
+
+                for interaction in momend.userinteraction_set.all():
+                    interaction_stat = DeletedUserInteraction()
+                    interaction_stat.set_interaction_data(interaction)
+                    interaction_stat.momend_owner_deleted = True
+                    interaction_stat.save()
+
+                momend.delete()
+                return HttpResponse('{"resp":"true"}')
+            except Exception as e:
+                Log.error('Cannot delete momend: '+str(e))
+                return HttpResponse('{"resp":"false","msg":"Try Again"}')
+
+        if kwargs['type'] == 'i':
+            try:
+                interaction = UserInteraction.objects.get(pk = kwargs['id'])
+                if not interaction.creator == request.user and not interaction.momend.owner == request.user:
+                    Log.warn("Trying to delete someone else's interaction")
+                    return HttpResponse('{"resp":"false","msg":"You cannot delete this interaction"}')
+
+                interaction_stat = DeletedUserInteraction()
+                interaction_stat.set_interaction_data(interaction)
+                interaction_stat.momend_owner_deleted = request.user == interaction.momend.owner
+                interaction_stat.save()
+
+                interaction.delete()
+
+                return HttpResponse('{"resp":"true"}')
+            except Exception as e:
+                Log.error('Cannot delete interaction: '+str(e))
+                return HttpResponse('{"resp":"false","msg":"Try Again"}')
+
+
+
+
+
 
 class SettingsFormView(FormView):
     form_class = SettingsForm
@@ -157,11 +216,11 @@ class SettingsFormView(FormView):
         return context
 
 class MainRedirectView(RedirectView):
-        def get_redirect_url(self, pk):
+        def get_redirect_url(self):
             if self.request.user.is_authenticated():
-                url = reverse('momends:home-screen',args=(pk))
+                url = reverse('momends:home-screen')
             else:
-                url = reverse('momends:main-screen',args=(pk))
+                url = reverse('momends:main-screen')
             return url
 
 
