@@ -4,6 +4,7 @@ __author__ = 'goktan'
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+from os import environ
 
 DATABASES = {
     'default': {
