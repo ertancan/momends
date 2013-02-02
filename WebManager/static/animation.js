@@ -355,8 +355,13 @@ function finish(){
     for(var i=0; i<animation_finish_observer.length; i++){
         animation_finish_observer[i]();
     }
-    _toggle_play_button(true);
     stopAllQueues();
+
+    //Change pause button to replay
+    var button = $('#play-toggle');
+    button.removeClass('icon-pause');
+    button.addClass('icon-repeat');
+    button.attr('onclick','location.reload()');
 
     for(var i = 0; i< currentAnimation.length; i++){ //Stop active animations (i.e. background)
         for(var j = 0; j<currentAnimation[i].length; j++){
