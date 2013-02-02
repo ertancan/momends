@@ -35,6 +35,9 @@ class AnimationPlayStatAdmin(admin.ModelAdmin):
 class UserInteractionAdmin(admin.ModelAdmin):
     list_display = ['momend', 'creator', 'date','interaction']
 
+class DeletedUserInteractionAdmin(admin.ModelAdmin):
+    list_display = ['momend_id', 'date', 'creator_id', 'momend_owner_deleted', 'delete_time']
+
 class PostEnhancementAdmin(admin.ModelAdmin):
     list_display = ['name','type','filepath','used_object_type']
 
@@ -51,6 +54,7 @@ admin.site.register(UserInteractionAnimationGroup, UserInteractionAnimationGroup
 admin.site.register(CoreAnimationData, CoreAnimationDataAdmin)
 admin.site.register(AnimationPlayStat, AnimationPlayStatAdmin)
 admin.site.register(UserInteraction, UserInteractionAdmin)
+admin.site.register(DeletedUserInteraction, DeletedUserInteractionAdmin)
 admin.site.register(PostEnhancement,PostEnhancementAdmin)
 admin.site.register(OutData, OutDataAdmin)
 admin.site.register(AppliedPostEnhancement,AppliedPostEnhancementAdmin)
