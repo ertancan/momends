@@ -216,11 +216,11 @@ class SettingsFormView(FormView):
         return context
 
 class MainRedirectView(RedirectView):
-        def get_redirect_url(self, pk):
+        def get_redirect_url(self):
             if self.request.user.is_authenticated():
-                url = reverse('momends:home-screen',args=(pk))
+                url = reverse('momends:home-screen')
             else:
-                url = reverse('momends:main-screen',args=(pk))
+                url = reverse('momends:main-screen')
             return url
 
 
