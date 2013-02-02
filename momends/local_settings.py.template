@@ -1,7 +1,7 @@
 __author__ = 'goktan'
 
 #This file stands for keeping environment related settings. Each environment should have its own additional_settings file
-
+from os import environ
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -15,7 +15,6 @@ DATABASES = {
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
 }
-
 # Additional locations of static files
 STATICFILES_DIRS = (
 # Put strings here, like "/home/html/static" or "C:/www/django/static".
@@ -78,10 +77,6 @@ LOGGING = {
     }
 }
 
-
-TWITTER_CONSUMER_KEY = 'xcQRbBLzNzS0eWrB1JRsw'
-TWITTER_CONSUMER_SECRET = 'GBmfSzXdkPWTkN2w7F533351kRChmP2RlUV1b1kX2w'
-
 if DEBUG:
     import settings
     INTERNAL_IPS = ('127.0.0.1',)
@@ -111,3 +106,7 @@ if DEBUG:
         'INTERCEPT_REDIRECTS': False,
         'SHOW_TEMPLATE_CONTEXT': True,
         }
+
+from settings import *
+MOMEND_FILE_URL = STATIC_URL
+TMP_FILE_PATH = 'operational_files/tmp/momends_tmp/'
