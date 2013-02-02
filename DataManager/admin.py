@@ -6,6 +6,10 @@ class MomendAdmin(admin.ModelAdmin):
     list_display = ('owner', 'name', 'thumbnail','create_date')
     list_display_links = ('owner', 'name',)
 
+class DeletedMomendAdmin(admin.ModelAdmin):
+    list_display = ('owner', 'name', 'thumbnail','create_date','delete_date','play_count')
+    list_display_links = ('owner', 'name',)
+
 class MomendScoreAdmin(admin.ModelAdmin):
     list_display = ('momend', 'provider_score')
 class RawDataAdmin(admin.ModelAdmin):
@@ -19,6 +23,7 @@ class AnimationLayerAdmin(admin.ModelAdmin):
     pass
 
 admin.site.register(Momend, MomendAdmin)
+admin.site.register(DeletedMomend, DeletedMomendAdmin)
 admin.site.register(MomendScore, MomendScoreAdmin)
 admin.site.register(RawData, RawDataAdmin)
 admin.site.register(Provider, ProviderAdmin)

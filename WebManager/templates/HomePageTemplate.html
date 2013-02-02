@@ -74,7 +74,7 @@
                     {% endfor %}
                     {% for momend in user_top_momends %}
                         <!-- portfolio item-->
-                        <article class="project {% cycle 'span6' 'span6' 'span4' 'span4' 'span4' 'span3' 'span3' 'span3' 'span3'%}" data-tags="user">
+                        <article id="momend-{{ momend.id }}" class="project {% cycle 'span6' 'span6' 'span4' 'span4' 'span4' 'span3' 'span3' 'span3' 'span3'%}" data-tags="user">
 
                             <div class="thumbnail link">
                                 <!-- image -->
@@ -87,7 +87,7 @@
                                     <i class="icon-magic"></i>
                                     <!-- name -->
                                     <b class="project-name">{{ momend.name }}</b>
-                                    <a id="delete-{{ momend.id }}" class="icon-remove-sign pull-right delete-button" href="#" onclick="deleteMomend({{ momend.id }})"></a>
+                                    <a id="delete-{{ momend.id }}" class="icon-remove-sign pull-right delete-button" onclick="deleteMomend( {{ momend.id }} )"></a>
                                 </div>
                             </div>
 
@@ -157,7 +157,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" id="get-button" type="submit">Get it!</button>
+                <button class="button orange" id="get-button" type="submit">Get it!</button>
             </div>
         </form>
         <div class="creating-dialog" id="creating-dialog">
@@ -265,7 +265,21 @@
 
         }
         function deleteMomend(_momend){
-            $('#delete-'+_momend).preventDefault();
+            var button = $('#delete-'+_momend);
+            button.removeClass('icon-remove-sign');
+            button.addClass('icon-spinner');
+            button.addClass('icon-spin');
+            var delete_url = '{% url 'momends:delete-momend' 'm' 0 %}'; //Get url for momend 0 then replace 0 with id
+            delete_url = delete_url.replace('0',_momend);
+            var item = $('#momend-'+_momend);
+            jQuery.getJSON(delete_url, function(data){
+                if(data['resp']==='true'){
+                    $('#portfolio-items').isotope('remove',item);
+                }else{
+                    //TODO handle delete error
+                    button.hide(); //Hiding because it probably won't fix without refreshing the page or logging in
+                }
+            });
 
         }
     </script>

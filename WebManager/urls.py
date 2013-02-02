@@ -11,6 +11,7 @@ from views import SaveInteractionView
 from views import UserProfileTemplateView
 from views import SettingsFormView
 from views import MomendPlayerView
+from views import DeleteMomendView
 from django.contrib.auth.decorators import login_required
 from registration.backends.default.urls import *
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
@@ -27,6 +28,7 @@ urlpatterns = patterns('',
     url(r'^show/(?P<type>\w{1})/(?P<id>\d+)/$', login_required(ShowMomendView.as_view()), name='show-momend'),
     url(r'^play/(?P<type>\w{1})/(?P<id>\d+)/$', login_required(MomendPlayerView.as_view()), name='play-momend'),
     url(r'^get/(?P<type>\w{1})/(?P<id>\d+)/$', login_required(GetMomendView.as_view()), name='get-momend'),
+    url(r'^delete/(?P<type>\w{1})/(?P<id>\d+)/$', login_required(DeleteMomendView.as_view()), name='delete-momend'),
     url(r'^postplay/(?P<id>\d+)/$', login_required(SaveInteractionView.as_view()), name='save-interaction'),
 )
 urlpatterns += staticfiles_urlpatterns()
