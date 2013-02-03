@@ -311,8 +311,8 @@ class DeletedUserInteraction(BaseDataManagerModel):
         self.creator_id = interaction.creator_id
 
 def check_theme_data_path_callback(sender,instance,using,**kwargs):
-    if not settings.THEME_DATA_PATH in instance.data_path and not '/' in instance.data_path:
+    if not '/' in instance.data_path:
         types = {ThemeData.THEME_DATA_TYPE[key]:key for key in ThemeData.THEME_DATA_TYPE}
-        instance.data_path = settings.THEME_DATA_PATH + instance.theme.name + '/' + types[instance.type].lower()+ '/' + instance.data_path
+        instance.data_path = instance.theme.name + '/' + types[instance.type].lower()+ '/' + instance.data_path
 
 pre_save.connect(check_theme_data_path_callback, ThemeData)

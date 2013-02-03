@@ -106,7 +106,9 @@ function create_objects_from_data(load_callback){
                 node['animation']['pre'] = _parse_string_to_dict(_pre);
             }
             var filepath = node['final_data_path'];
+            var theme_filepath;
             if(filepath && filepath.indexOf('http') != 0){
+                theme_filepath = MOMEND_FILE_URL + THEME_DATA_URL + filepath;
                 filepath = MOMEND_FILE_URL + filepath;
             }
             if(node['animation']['used_theme_data'] != null){
@@ -151,7 +153,7 @@ function create_objects_from_data(load_callback){
                         }).appendTo('.scene');
                         var created_pbj = jQuery('<img/>',{
                             class: 'background-image',
-                            src: filepath,
+                            src: theme_filepath,
                             ready : function(){
                                 _object_ready();
                             }
