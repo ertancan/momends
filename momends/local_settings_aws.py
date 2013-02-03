@@ -84,3 +84,11 @@ AWS_STORAGE_BUCKET_NAME = environ['AWS_STORAGE_BUCKET_NAME']
 S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
 MOMEND_FILE_URL = S3_URL
 TMP_FILE_PATH = '/tmp/momends_tmp/'
+
+#Settings for directories
+SAVE_PREFIX = 'operational_files/'
+ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scripts/'
+COLLECTED_FILE_PATH = 'userdata/collected/'
+THUMBNAIL_FILE_PATH = 'userdata/thumbnail/'
+ENHANCED_FILE_PATH = 'userdata/enhanced/'
+THEME_DATA_PATH =  'themedata/'
