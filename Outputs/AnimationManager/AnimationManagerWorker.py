@@ -7,6 +7,7 @@ from DataManager.models import Momend,RawData
 from Outputs.AnimationManager.models import Theme,CoreAnimationData
 from Outputs.AnimationManager.ThemeManager.ThemeManagerWorker import ThemeManagerWorker
 from LogManagers.Log import Log
+from DataManager.UserDataManager import UserDataManager
 
 class DataCountException(Exception):
     PHOTO_TYPE = 0
@@ -22,6 +23,7 @@ class AnimationManagerWorker(BaseOutputWorker):
     def __init__(self,momend):
         assert isinstance(momend, Momend)
         self.momend = momend
+        self.user_data_manager = None
 
     def generate_output(self, enriched_data, duration, theme=None, scenario=None):
         """
@@ -44,7 +46,8 @@ class AnimationManagerWorker(BaseOutputWorker):
             Log.error(e.message)
             return False
 
-        filled_scenario = self._fill_user_data(prepared_scenario['objects'], enriched_data)
+        self.user_data_manager = UserDataManager(enriched_data)
+        filled_scenario = self._fill_user_data(prepared_scenario['objects'])
         self._apply_theme(filled_scenario,theme,str(self.momend.pk))
 
         return filled_scenario, duration
@@ -61,23 +64,16 @@ class AnimationManagerWorker(BaseOutputWorker):
             raise DataCountException(DataCountException.BACKGROUND_TYPE)
         return True
 
-    def _fill_user_data(self,scenario,enriched_data):
-        keywords = CoreAnimationData.USER_DATA_TYPE
-        current_indexes = [-1 for i in range(0,len(keywords)/2)] # For -1 array?
+    def _fill_user_data(self,scenario):
         for object_layer in scenario:
             for outData in object_layer:
                 used_type = outData.animation.used_object_type
-                if used_type in keywords:
-                    index = keywords.index(used_type)
-                    obj_type = index/2
-                    should_increase = index % 2 == 1
-                    if (should_increase or current_indexes[obj_type] == -1) and\
-                       current_indexes[obj_type] < len(enriched_data[obj_type]) -1: #No one wanted a data in this type before. Actually a misuse.
-                        current_indexes[obj_type] += 1
-                    used_object = enriched_data[obj_type][current_indexes[obj_type]]
-                    outData.raw = used_object.raw
-                    outData.selection_criteria = used_object.criteria
-                    outData.priority = used_object.priority
+                if used_type in CoreAnimationData.USER_DATA_KEYWORDS:
+                    used_object = self.user_data_manager.get_data_for_keyword(used_type)
+                    if used_object:
+                        outData.raw = used_object.raw
+                        outData.selection_criteria = used_object.criteria
+                        outData.priority = used_object.priority
                 outData.save()
         return  scenario
 
@@ -88,7 +84,7 @@ class AnimationManagerWorker(BaseOutputWorker):
                 themeWorker.apply_theme(outdata,file_prefix=prefix)
 
 
-    def save_output(self): #TODO save to db
+    def save_output(self):
         pass
 
 

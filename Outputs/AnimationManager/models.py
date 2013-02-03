@@ -61,12 +61,12 @@ class CoreAnimationData(BaseDataManagerModel):
         verbose_name = 'CoreAnimationData'
         app_label = 'DataManager'
 
-    USER_DATA_TYPE = [
-        '{{USER_PHOTO}}', '{{NEXT_USER_PHOTO}}',
-        '{{USER_STATUS}}', '{{NEXT_USER_STATUS}}',
-        '{{USER_CHECKIN}}', '{{NEXT_USER_CHECKIN}}',
-        '{{USER_BACKGROUND}}', '{{NEXT_USER_BACKGROUND}}',
-        '{{USER_MUSIC}}', '{{NEXT_USER_MUSIC}}'
+    USER_DATA_KEYWORDS = [
+        '{{USER_PHOTO}}', '{{NEXT_USER_PHOTO}}','{{RAND_USER_PHOTO}}',
+        '{{USER_STATUS}}', '{{NEXT_USER_STATUS}}', '{{RAND_USER_STATUS}}',
+        '{{USER_CHECKIN}}', '{{NEXT_USER_CHECKIN}}', '{{RAND_USER_CHECKIN',
+        '{{USER_BACKGROUND}}', '{{NEXT_USER_BACKGROUND}}', '{{RAND_USER_BACKGROUND}}',
+        '{{USER_MUSIC}}', '{{NEXT_USER_MUSIC}}', '{{RAND_USER_MUSIC}}'
     ]
     ANIMATION_TYPE = [
         'animation',
