@@ -48,7 +48,7 @@ MEDIA_ROOT = ''
 MEDIA_URL = ''
 
 # URL prefix for static files.
-STATIC_URL = '/momends/static/'
+STATIC_URL = '/static/'
 
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
@@ -114,18 +114,10 @@ INSTALLED_APPS = (
     'registration',
 )
 
-#Settings for directories
 
-SAVE_PREFIX = 'operational_files/'
-ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scripts/'
-COLLECTED_FILE_PATH = 'userdata/collected/'
-THUMBNAIL_FILE_PATH = 'userdata/thumbnail/'
-ENHANCED_FILE_PATH = 'userdata/enhanced/'
-THEME_DATA_PATH =  'themedata/'
-
-LOGIN_URL = '/momends/main/'
+LOGIN_URL = '/main/'
 LOGIN_ERROR_URL = '/accounts/login-error/'
-LOGIN_REDIRECT_URL = '/momends/home/'
+LOGIN_REDIRECT_URL = '/home/'
 
 FACEBOOK_APP_ID = environ.get('FACEBOOK_APP_ID')
 FACEBOOK_API_SECRET = environ.get('FACEBOOK_API_SECRET')

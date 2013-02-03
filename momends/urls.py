@@ -16,7 +16,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
     #enable DataManager views as momend's main views
-    url(r'^momends/', include('WebManager.urls', namespace="momends")),
+    url(r'^', include('WebManager.urls', namespace="momends")),
 
     #enable social-auth urls
     url(r'', include('social_auth.urls')),
