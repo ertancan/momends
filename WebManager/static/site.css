@@ -9,8 +9,6 @@
     position: relative;
     top: -10px;
 }
-.modal-backdrop {background: none;}
-
 /* Home Page */
 div#create-modal-body.modal-body{
     overflow-x: hidden;
