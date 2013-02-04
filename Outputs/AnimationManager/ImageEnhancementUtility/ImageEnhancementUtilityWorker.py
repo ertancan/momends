@@ -5,6 +5,7 @@ import re
 from Outputs.AnimationManager.models import ImageEnhancement
 from Outputs.AnimationManager.models import ThemeData
 import shutil
+from LogManagers.Log import Log
 
 class ImageEnhancementUtility(object):
     @staticmethod
@@ -42,9 +43,14 @@ class ImageEnhancementUtility(object):
             if i > 0: #Delete file if it is not the very first downloaded raw data
                 os.remove(_tmp_filename)
             _tmp_filename = _enh_out_filename
+        Log.debug('_tmp_filename1:' + _tmp_filename)
         _current_filename =  _tmp_filename.replace(settings.TMP_FILE_PATH, settings.ENHANCED_FILE_PATH)
-        _save_file_name = settings.SAVE_PREFIX + _current_filename
-        shutil.move(_tmp_filename, _save_file_name)
+        _save_filename = settings.SAVE_PREFIX + _current_filename
+        Log.debug('_tmp_filename2 :' + _tmp_filename)
+        Log.debug('_save_filename :' + _save_filename)
+        Log.debug('_current_filename :' + _current_filename)
+
+        shutil.move(_tmp_filename, _save_filename)
         return _current_filename
 
     @staticmethod
