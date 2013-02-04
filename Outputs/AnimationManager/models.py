@@ -100,6 +100,7 @@ class CoreAnimationData(BaseDataManagerModel):
     name = models.CharField(max_length=255, null=True, blank=True) #Optional, descriptive, human readable name
     type = models.IntegerField(choices=_choices) #Type of the animation
     duration = models.IntegerField(verbose_name = 'Duration (ms)', default=0) #Duration of certain types
+    delay = models.IntegerField(verbose_name='Delay (ms)', default=0)
     pre = models.TextField(null=True, blank=True) #Precondition of the object to perform the animation
     anim = models.TextField(null=True, blank=True) #Steps to be performed if the type is 'animation'
     target = models.IntegerField(null=True, blank=True) #Animation layer to affect if inter-layer type like wait,block,unblock etc.

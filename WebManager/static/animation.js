@@ -93,7 +93,7 @@ function setAnimationQueue(_queue){
     }
 }
 /**
- * Creates an additional animation queue level for user interaction animations like click or hover.
+ * Creates an additional animation queue level for user interaction animations like click or hover and hiding animations
  * @param animations Click or hover animations of an object
  */
 function _addInteractionAnimationLayerForObject(animations){
@@ -192,6 +192,10 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
         _duration=_animation['duration'];
         console.log('animation duration: '+_duration);
     }
+    var _delay=0;
+    if('delay' in _animation){
+        _delay = _animation['delay'];
+    }
 
     if(_type==='animation'){
         currentAnimation[_level].push(_node);
@@ -236,7 +240,26 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
     else if(_type==='show'){
         _obj.show();
     }else if(_type==='hide'){
-        _obj.hide();
+        if(_duration > 0){
+            var _hideAnimation = [];
+            if(_delay > 0){ //Sleep first if hide animation has delay
+                _hideAnimation.push({'animation':{'type':'sleep', 'duration':_delay}});
+            }
+            _hideAnimation.push({'animation':{'type':'animation', 'duration':_duration, 'object':_obj}}); //Create an empty animation
+            if('pre' in _animation){ //Assign hide animation's pre and anim if they exists
+                _hideAnimation[1]['animation']['pre'] = _animation['pre'];
+            }
+            if('anim' in _animation){
+                _hideAnimation[1]['animation']['anim'] = _animation['anim'];
+            }
+            if(_animation['extended_animation']){
+                _hideAnimation[1]['animation']['extended_animation'] = true;
+            }
+            _hideAnimation.push({'animation':{'type':'hide', 'duration':0, 'object':_obj}}); //Insert an empty hide animation to hide the object after animation
+            _addInteractionAnimationLayerForObject(_hideAnimation);
+        }else{
+            _obj.hide();
+        }
     }else if(_type==='block'){
         var _target=_animation['target'];
         if(typeof _target != 'number'){
@@ -311,6 +334,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
     }
 }
 
+
 /**
  * Triggers the next animation in the queue
  * @param _level level of the queue
@@ -341,7 +365,7 @@ function nextAnimation(_level){
             nextAnimation(_level);
         }
     }catch(error){
-        console.log('Animation error : '+error);
+        console.log('Animation error on level:'+_level+' : '+error);
         console.dir(animationQueue[_level][0]);
     }
 }
