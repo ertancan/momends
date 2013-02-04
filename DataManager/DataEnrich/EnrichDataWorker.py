@@ -17,7 +17,7 @@ class EnrichDataWorker: #TODO keep this as base class and introduce different wo
             an array of ordered raw data (aka. enhanced data)
         """
         result = []
-        for i in range(0,len(CoreAnimationData.USER_DATA_TYPE)/2):
+        for i in range(0,len(CoreAnimationData.USER_DATA_KEYWORDS)/2):
             result.append([])
 
         for _raw in raw_data_arr:

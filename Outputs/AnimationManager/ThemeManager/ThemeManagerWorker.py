@@ -35,7 +35,7 @@ class ThemeManagerWorker:
             return outdata
         used_type = outdata.animation.used_object_type
         if used_type:
-            theme_data = self.data_manager.get_theme_data_for_keyword(used_type)
+            theme_data = self.data_manager.get_data_for_keyword(used_type)
             if theme_data:
                 outdata.final_data_path = theme_data.data_path
                 outdata.parameters = theme_data.parameters
@@ -87,7 +87,7 @@ class ThemeManagerWorker:
         if not outdata.raw:
             return outdata
         used_obj = outdata.animation.used_object_type
-        index = CoreAnimationData.USER_DATA_TYPE.index(used_obj)
+        index = CoreAnimationData.USER_DATA_KEYWORDS.index(used_obj)
         if index % 2 == 0: #Post enhancement already applied, since it is not NEXT_OBJECT
             return outdata
         rand_enhancement = self.theme.enhancement_groups.filter(post_enhancement=True).filter(applicable_to=outdata.raw.type).order_by('?')
@@ -109,7 +109,7 @@ class ThemeManagerWorker:
             if next_enh.filepath:
                 applied_enh.filepath = next_enh.filepath
             elif next_enh.used_object_type:
-                theme_data = self.data_manager.get_theme_data_for_keyword(next_enh.used_object_type)
+                theme_data = self.data_manager.get_data_for_keyword(next_enh.used_object_type)
                 applied_enh.filepath = theme_data.data_path
                 if not enh_parameter or len(enh_parameter) == 0:
                     enh_parameter = theme_data.parameters

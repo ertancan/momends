@@ -10,8 +10,6 @@
     top: -10px;
 }
 /* Home Page */
-.modal-backdrop {background: none;}
-
 div#create-modal-body.modal-body{
     overflow-x: hidden;
 }

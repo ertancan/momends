@@ -63,7 +63,7 @@ class ImageEnhancementUtility(object):
         regex_result =keyword_finder.search(parameter)
         while regex_result:
             matched_keyword = regex_result.group()
-            theme_data = theme_data_manager.get_theme_data_for_keyword(matched_keyword)
+            theme_data = theme_data_manager.get_data_for_keyword(matched_keyword)
             if theme_data:
                 parameter = parameter.replace(matched_keyword,theme_data.data_path)
             elif matched_keyword == ThemeData.THEME_DATA_PARAMETER_KEYWORD:

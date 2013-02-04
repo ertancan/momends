@@ -101,7 +101,7 @@
     </div>
 
     <!-- Create Modal -->
-    <div id="create-modal" class="modal hide fade span9" tabindex="-1" role="dialog" aria-labelledby="create-modal" aria-hidden="true">
+    <div id="create-modal" class="modal hide fade span9" tabindex="-1" role="dialog" aria-labelledby="create-modal" aria-hidden="true" data-backdrop="false">
         <form class="form-horizontal" id="create-form" method="post" action="">{% csrf_token %}
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -169,7 +169,7 @@
     </div>
 
     <!-- Delete Modal -->
-    <div id="delete-modal" class="modal hide fade">
+    <div id="delete-modal" class="modal hide fade" data-backdrop="false">
         <div class="modal-header">
             <a href="#" class="close">&times;</a>
             <h3>Delete Momend</h3>

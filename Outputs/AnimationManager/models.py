@@ -61,12 +61,12 @@ class CoreAnimationData(BaseDataManagerModel):
         verbose_name = 'CoreAnimationData'
         app_label = 'DataManager'
 
-    USER_DATA_TYPE = [
-        '{{USER_PHOTO}}', '{{NEXT_USER_PHOTO}}',
-        '{{USER_STATUS}}', '{{NEXT_USER_STATUS}}',
-        '{{USER_CHECKIN}}', '{{NEXT_USER_CHECKIN}}',
-        '{{USER_BACKGROUND}}', '{{NEXT_USER_BACKGROUND}}',
-        '{{USER_MUSIC}}', '{{NEXT_USER_MUSIC}}'
+    USER_DATA_KEYWORDS = [
+        '{{USER_PHOTO}}', '{{NEXT_USER_PHOTO}}','{{RAND_USER_PHOTO}}',
+        '{{USER_STATUS}}', '{{NEXT_USER_STATUS}}', '{{RAND_USER_STATUS}}',
+        '{{USER_CHECKIN}}', '{{NEXT_USER_CHECKIN}}', '{{RAND_USER_CHECKIN',
+        '{{USER_BACKGROUND}}', '{{NEXT_USER_BACKGROUND}}', '{{RAND_USER_BACKGROUND}}',
+        '{{USER_MUSIC}}', '{{NEXT_USER_MUSIC}}', '{{RAND_USER_MUSIC}}'
     ]
     ANIMATION_TYPE = [
         'animation',
@@ -100,6 +100,7 @@ class CoreAnimationData(BaseDataManagerModel):
     name = models.CharField(max_length=255, null=True, blank=True) #Optional, descriptive, human readable name
     type = models.IntegerField(choices=_choices) #Type of the animation
     duration = models.IntegerField(verbose_name = 'Duration (ms)', default=0) #Duration of certain types
+    delay = models.IntegerField(verbose_name='Delay (ms)', default=0)
     pre = models.TextField(null=True, blank=True) #Precondition of the object to perform the animation
     anim = models.TextField(null=True, blank=True) #Steps to be performed if the type is 'animation'
     target = models.IntegerField(null=True, blank=True) #Animation layer to affect if inter-layer type like wait,block,unblock etc.
@@ -311,8 +312,8 @@ class DeletedUserInteraction(BaseDataManagerModel):
         self.creator_id = interaction.creator_id
 
 def check_theme_data_path_callback(sender,instance,using,**kwargs):
-    if not settings.THEME_DATA_PATH in instance.data_path and not '/' in instance.data_path:
+    if not '/' in instance.data_path:
         types = {ThemeData.THEME_DATA_TYPE[key]:key for key in ThemeData.THEME_DATA_TYPE}
-        instance.data_path = settings.THEME_DATA_PATH + instance.theme.name + '/' + types[instance.type].lower()+ '/' + instance.data_path
+        instance.data_path = instance.theme.name + '/' + types[instance.type].lower()+ '/' + instance.data_path
 
 pre_save.connect(check_theme_data_path_callback, ThemeData)

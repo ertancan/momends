@@ -106,7 +106,9 @@ function create_objects_from_data(load_callback){
                 node['animation']['pre'] = _parse_string_to_dict(_pre);
             }
             var filepath = node['final_data_path'];
+            var theme_filepath;
             if(filepath && filepath.indexOf('http') != 0){
+                theme_filepath = MOMEND_FILE_URL + THEME_DATA_URL + filepath;
                 filepath = MOMEND_FILE_URL + filepath;
             }
             if(node['animation']['used_theme_data'] != null){
@@ -122,7 +124,7 @@ function create_objects_from_data(load_callback){
                     var created_obj = jQuery('<img/>',{
                         class: 'photo_image',
                         id: 'stub-image'+i+''+j,
-                        src: filepath,
+                        src: theme_filepath,
                         ready : function(){
                             _object_ready();
                         }
@@ -151,7 +153,7 @@ function create_objects_from_data(load_callback){
                         }).appendTo('.scene');
                         var created_pbj = jQuery('<img/>',{
                             class: 'background-image',
-                            src: filepath,
+                            src: theme_filepath,
                             ready : function(){
                                 _object_ready();
                             }
@@ -221,17 +223,18 @@ function create_objects_from_data(load_callback){
                         node['animation']['object'] = created_objects[hashCode(node['data'])];
                         break;
 
-
+                    case '{{NEXT_USER_MUSIC}}':
+                        var _is_user_music = true;
                     case '{{NEXT_THEME_MUSIC}}':
                     case '{{RAND_THEME_MUSIC}}':
-                    case '{{NEXT_USER_MUSIC}}':
+                        var music_path = _is_user_music?filepath:theme_filepath;
                         total_objects++; //Player should wait for item to load
                         jQuery('<div/>',{
                             id:'music'+i+''+j,
                             class:'jp-jplayer'
                         }).appendTo('.music');
                         var music_obj = $('#music'+i+''+j);
-                        music_obj[0]['filepath'] = filepath;
+                        music_obj[0]['filepath'] = music_path;
                         music_obj.jPlayer({
                             ready: function (event){
                                _object_ready();
