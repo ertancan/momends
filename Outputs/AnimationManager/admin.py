@@ -39,7 +39,7 @@ class DeletedUserInteractionAdmin(admin.ModelAdmin):
     list_display = ['momend_id', 'date', 'creator_id', 'momend_owner_deleted', 'delete_time']
 
 class PostEnhancementAdmin(admin.ModelAdmin):
-    list_display = ['name','type','filepath','used_object_type']
+    list_display = ['pk', 'name','type','filepath','used_object_type']
 
 class AppliedPostEnhancementAdmin(admin.ModelAdmin):
     list_display = ['type', 'filepath', 'parameters']

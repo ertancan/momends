@@ -7,8 +7,7 @@ import random
 
 class UserDataManager(DataManagerModel):
     def __init__(self, enriched_data):
-        super(UserDataManager,self).__init__(enriched_data)
-        self.keywords = CoreAnimationData.USER_DATA_KEYWORDS
+        super(UserDataManager,self).__init__(enriched_data, CoreAnimationData.USER_DATA_KEYWORDS)
 
 
     def get_data_for_keyword(self,keyword):

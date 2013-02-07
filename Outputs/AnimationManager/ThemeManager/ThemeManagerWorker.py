@@ -88,7 +88,7 @@ class ThemeManagerWorker:
             return outdata
         used_obj = outdata.animation.used_object_type
         index = CoreAnimationData.USER_DATA_KEYWORDS.index(used_obj)
-        if index % 2 == 0: #Post enhancement already applied, since it is not NEXT_OBJECT
+        if index % 3 == 0: #Post enhancement already applied, since it is not NEXT_OBJECT
             return outdata
         rand_enhancement = self.theme.enhancement_groups.filter(post_enhancement=True).filter(applicable_to=outdata.raw.type).order_by('?')
         if len(rand_enhancement) == 0:

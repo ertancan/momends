@@ -30,8 +30,8 @@
                     <ul class="used-media-list">
                         {% for media in used_media %}
                             <li class="used-media">
-                                <i class="icon-picture"></i>
-                                <i class="icon-facebook"></i>
+                                <i class="{{ media.type_icon }}"></i>
+                                <i class="icon-{{ media.provider }}"></i>
                                 <a href="#" onclick="modalShow('{{ media.data}}')" data-toggle="modal">{{ media.original_id }}</a>
                             </li>
                         {% endfor %}

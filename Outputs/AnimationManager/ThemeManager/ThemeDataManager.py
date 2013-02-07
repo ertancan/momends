@@ -7,8 +7,7 @@ import random
 class ThemeDataManager(DataManagerModel):
     def __init__(self, theme):
         theme_assets = ThemeData.objects.filter(theme=theme)
-        super(ThemeDataManager,self).__init__(self._group_theme_data(theme_assets))
-        self.keywords = ThemeData.THEME_DATA_TYPE_KEYWORDS
+        super(ThemeDataManager,self).__init__(self._group_theme_data(theme_assets),ThemeData.THEME_DATA_TYPE_KEYWORDS)
 
 
     def _group_theme_data(self,theme_data):

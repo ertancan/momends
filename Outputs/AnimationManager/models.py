@@ -205,7 +205,7 @@ class ThemeData(BaseDataManagerModel):
                                  ]
     THEME_DATA_PARAMETER_KEYWORD = '{{THEME_DATA_PARAMETER}}' # To be replaced while applying enhancements etc.
     type = models.IntegerField(choices=[[THEME_DATA_TYPE[key],key] for key in THEME_DATA_TYPE.keys()])
-    data_path = models.CharField(max_length=255)
+    data_path = models.TextField()
     parameters = models.TextField(null=True, blank=True)
 
     #TODO Different resolutions may be?

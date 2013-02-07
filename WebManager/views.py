@@ -96,6 +96,7 @@ class ShowMomendView(TemplateView):
         context['interactions'] = UserInteraction.objects.filter(momend = _momend)
         context['related_momends'] = EnrichDataWorker.get_related_momends(momend=_momend, max_count=10, get_private=True)
         _all_dis = OutData.objects.filter(owner_layer__momend=_momend).values('raw').distinct()
+        _icons = ['icon-picture', 'icon-comment', 'icon-pushpin', 'icon-desktop', ' icon-music']
         _used_media = []
         for _out_data in _all_dis:
             if _out_data['raw']:
@@ -104,6 +105,10 @@ class ShowMomendView(TemplateView):
                 _tmp['data'] = _obj.data
                 _tmp['thumb'] = _obj.thumbnail
                 _tmp['original_id'] = _obj.original_id
+                _tmp['provider'] = _obj.provider.name.lower()
+                _tmp['type'] = RawData.DATA_TYPE.keys()[_obj.type].lower()
+                _tmp['type_icon'] = _icons[_obj.type]
+                _tmp['original_path'] = _obj.original_path
                 _used_media.append(_tmp)
         context['used_media'] = _used_media
         return context
