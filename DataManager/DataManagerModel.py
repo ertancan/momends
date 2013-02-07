@@ -3,12 +3,12 @@ from models import RawData
 import abc
 
 class DataManagerModel(object):
-    def __init__(self, data):
+    def __init__(self, data, keywords):
         self.data = data
-        self.current_indexes = [-1 for i in range(0,len(RawData.DATA_TYPE))] # For -1 array?
-        self.random_indexes = [-1 for i in range(0,len(RawData.DATA_TYPE))]
+        self.current_indexes = [-1 for i in range(0,len(keywords)/3)] # For -1 array?
+        self.random_indexes = [-1 for i in range(0,len(keywords)/3)]
         self._last_obj = None
-        self.keywords = abc.abstractproperty
+        self.keywords = keywords
 
 
     def getLastResult(self):

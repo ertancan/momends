@@ -33,6 +33,7 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
                         _raw.type = RawData.DATA_TYPE['Status']
                         _raw.original_id = tweet.id_str
                         _raw.data = tweet.text
+                        _raw.original_path = 'twitter.com/' +user.social_auth.get(provider = 'twitter').uid + '/status/'+tweet.id_str
                         _raw.save()
                         Log.debug(_raw)
                     else:

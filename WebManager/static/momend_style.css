@@ -37,6 +37,10 @@ figure, figcaption{ /*add any other html5 elements you use*/
     display:none;
     position:absolute;
     padding: 6px 8px 10px 8px; /*size of the frame*/
+    user-select: none;
+    moz-user-select: none;
+    -webkit-user-select: none;
+
 }
 .status {
     display:none;
@@ -46,6 +50,7 @@ figure, figcaption{ /*add any other html5 elements you use*/
 .status-text{
     position:relative;
     padding:10px;
+    width: 75%;
 }
 
 .scene-background{
@@ -69,4 +74,7 @@ figure, figcaption{ /*add any other html5 elements you use*/
     height:100%;
     margin:3px;
     margin-left:0px;
+    user-select: none;
+    moz-user-select: none;
+    -webkit-user-select: none;
 }

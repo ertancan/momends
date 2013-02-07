@@ -18,6 +18,43 @@ function hashCode(str){
     }
     return hash;
 };
+/**
+ * Key enumeration function for not supported browsers
+ * Taken from: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/keys
+ */
+if (!Object.keys) {
+    Object.keys = (function () {
+        var hasOwnProperty = Object.prototype.hasOwnProperty,
+            hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
+            dontEnums = [
+                'toString',
+                'toLocaleString',
+                'valueOf',
+                'hasOwnProperty',
+                'isPrototypeOf',
+                'propertyIsEnumerable',
+                'constructor'
+            ],
+            dontEnumsLength = dontEnums.length;
+
+        return function (obj) {
+            if (typeof obj !== 'object' && typeof obj !== 'function' || obj === null) throw new TypeError('Object.keys called on non-object');
+
+            var result = [];
+
+            for (var prop in obj) {
+                if (hasOwnProperty.call(obj, prop)) result.push(prop);
+            }
+
+            if (hasDontEnumBug) {
+                for (var i=0; i < dontEnumsLength; i++) {
+                    if (hasOwnProperty.call(obj, dontEnums[i])) result.push(dontEnums[i]);
+                }
+            }
+            return result;
+        }
+    })()
+};
 
 function momend_arrived(){
     _calculate_dimensions(); //Since they may be needed while creating objects
@@ -227,24 +264,41 @@ function create_objects_from_data(load_callback){
                         var _is_user_music = true;
                     case '{{NEXT_THEME_MUSIC}}':
                     case '{{RAND_THEME_MUSIC}}':
-                        var music_path = _is_user_music?filepath:theme_filepath;
                         total_objects++; //Player should wait for item to load
                         jQuery('<div/>',{
                             id:'music'+i+''+j,
                             class:'jp-jplayer'
                         }).appendTo('.music');
                         var music_obj = $('#music'+i+''+j);
-                        music_obj[0]['filepath'] = music_path;
+                        music_obj[0]['filepath'] = node['final_data_path'];
+                        var _parsed_paths = _parse_music_sources(node['final_data_path']);
+                        console.log('parsed');
+                        console.dir(_parsed_paths);
+                        console.dir(Object.keys(_parsed_paths))
                         music_obj.jPlayer({
                             ready: function (event){
-                               _object_ready();
-                                $(this).jPlayer("setMedia",{
-                                    mp3:event.delegateTarget['filepath']
-                                });
+                                var paths = _parse_music_sources(event.delegateTarget['filepath']);
+                                console.log('parsed;');
+                                console.dir(paths);
+                                var _keys = Object.keys(paths);
+                                console.dir(_keys);
+                                for(var k = 0; k< _keys.length; k++){
+                                    var _type = _keys[k];
+                                    if(paths[_type].indexOf('http') == 0){
+                                        continue;
+                                    }
+                                    if(_is_user_music){
+                                        paths[_type] = MOMEND_FILE_URL + paths[_type];
+                                    }else{
+                                        paths[_type] = MOMEND_FILE_URL + THEME_DATA_URL + paths[_type];
+                                    }
+                                }
+                                $(this).jPlayer("setMedia",paths);
                                 _music_loaded($(this));
+                                _object_ready();
                             },
-                            swfPath: 'static',
-                            supplied: 'mp3',
+                            swfPath: STATIC_URL,
+                            supplied: Object.keys(_parsed_paths).toString(),
                             wmode: 'window',
                             volume: 0.1,
                             loop: true
@@ -274,20 +328,22 @@ function _apply_post_enhancements(created_obj, enhancements){
         var enh = enhancements[i];
         var path = enh['filepath'];
         if(path && path.indexOf('http') != 0){
-            path = MOMEND_FILE_URL + path;
+            path = MOMEND_FILE_URL + THEME_DATA_URL + path;
         }
-        console.log(enh['type']);
         if(enh['type'] === 'apply_font'){
+            console.log(path+'/stylesheet.css');
             jQuery('<link/>',{ //Include stylesheet to the html TODO:don't include twice maybe
-                rel:'stylesheet',
-                href:path,
-                type:'text/css',
-                charset:'utf-8'
+                rel : 'stylesheet',
+                href : path + '/stylesheet.css',
+                type : 'text/css',
+                charset : 'utf-8'
             }).appendTo('head');
 
             created_obj.css('font',enh['parameters']); //Then apply it to div
         }else if(enh['type'] === 'apply_bg'){
             created_obj.css('background-image','url("'+path+'")');
+            created_obj.css('background-size', '100% 100%');
+            created_obj.css('background-repeat', 'no-repeat');
             created_obj.css(_parse_string_to_dict(enh['parameters']));
         }
     }
@@ -314,6 +370,27 @@ function _parse_string_to_dict(_str,replaceKeywords){
         }else{
             resp[css_parts[0]] = css_parts[1];
         }
+    }
+    return resp;
+}
+
+/**
+ * Parses music sources to play in this format:
+ * source_type=uri/url,['\n']source_type=uri/url
+ * @param _str given music paths
+ * @return dictionary contains given values
+ * @private
+ */
+function _parse_music_sources(_str){
+    if(typeof _str !== 'string'){
+        return null;
+    }
+    var _trimmed = _str.replace(/\s/g, ''); //remove whitespaces
+    var resp = {};
+    var parts = _trimmed.split(',');
+    for(var i= 0; i<parts.length;i++){
+        var css_parts = parts[i].split('=');
+        resp[css_parts[0]] = css_parts[1];
     }
     return resp;
 }
