@@ -66,6 +66,19 @@
 
     {% endblock heading %}
 
+    {% block message %}
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}"{% endif %}>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endblock message %}
+
     {% block content %}
 
                 <!--> nothing on here, just template <-->
@@ -102,6 +115,11 @@
         <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.touchSwipe.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.hotkeys.min.js" charset='utf-8'></script>
         <script type="text/javascript" src="{{ STATIC_URL }}js/functions.min.js"></script>
+        <script type="text/javascript" src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
+        <script type="text/javascript">var RecaptchaOptions = {
+            "lang": "en",
+            "theme": "white"
+        }</script>
         <script>
             function showAuthModal(_url, title){
                 var modal =jQuery('<div/>',{
@@ -113,19 +131,19 @@
                     'aria-hidden' : 'true'
                 }).appendTo('body');
                 var header = jQuery('<div/>',{
-                    'class' : 'modal-header',
+                    'class' : 'modal-header'
                 }).appendTo(modal);
                 jQuery('<h3/>',{
                     'text' : title
                 }).appendTo(header);
                 var modal_body = jQuery('<div/>',{
-                    class : 'modal-body',
+                    class : 'modal-body'
                 }).appendTo(modal);
                 modal.ready(function(){
                     modal.modal({
                         'remote' : _url
                     });
-                })
+                });
                 modal.bind('hidden',function(){
                     $(this).remove();
                 });

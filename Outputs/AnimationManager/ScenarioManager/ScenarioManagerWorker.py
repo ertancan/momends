@@ -20,7 +20,7 @@ class ScenarioManagerWorker(object):
         :return: Dictionary{'layers':List<AnimationLayer>,'objects':List<AnimationObject>}, duration, used_bg_count, used_photo_count, used_status_count, used_checkin_count
         """
 
-        if not scenario:
+        if not scenario: #select random scenario if not given
             scenario = Scenario.objects.filter(compatible_themes=theme).order_by('?')[0]
 
         compatible_animation_groups = AnimationGroup.objects.filter(scenario=scenario)

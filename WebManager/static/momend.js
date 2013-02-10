@@ -104,7 +104,7 @@ function _sendUserInteractionToServer(url, callback){
         success: function(msg){
             var data = jQuery.parseJSON(msg);
             if(callback){
-                if(data.resp === "true"){
+                if(data.resp === true){
                     callback(true,data.url);
                 }else{
                     callback(false,data.msg);

@@ -34,8 +34,9 @@ class ImageEnhancementUtility(object):
             _enhancement_parameters = ImageEnhancementUtility._replace_parameter_keywords(enhance.parameters, theme_data_manager) #Replace keywords in parameters
             _enh_out_filename = settings.TMP_FILE_PATH + name_part +'_' + file_prefix + '_enh'+str(i)+ ext_part #name file as filename_enh1.ext etc.
             _params = settings.ENHANCEMENT_SCRIPT_DIR + enhance.script_path +' '
-            _params += _enhancement_parameters
-            _params += ' '
+            if _enhancement_parameters: #append parameters if exists
+                _params += _enhancement_parameters
+                _params += ' '
             _params += _tmp_filename
             _params += ' '
             _params += _enh_out_filename

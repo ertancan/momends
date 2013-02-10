@@ -6,17 +6,17 @@ var _layerWaitQueue; //Each array in this queue keeps the ids of other layers wa
 //If _layerWaitQueue[0] has 1 and 2 in it, layers 1 and 2 will be started when the current animation in layer 0 finishes
 var _layerBreakPointWaitQueue; //Same principle as _layerWaitQueue but this waits for an animation which has type 'breakpoint' to trigger otherlayers
 var _userInteractionQueue; //Keeps the action performed by user during play.
-var last_user_interaction = 0; //last time the user clicks on an item or mouse enters into the object boundaries.
+var lastUserInteraction = 0; //last time the user clicks on an item or mouse enters into the object boundaries.
 
 MUSIC_ANIMATION_INTERVAL = 100; //Defines number of milliseconds between music fade animations. (e.g. if you perform fade animation with duration=1000ms
 // the animation will be performed in 5 steps. (Can be changed according to smoothness of the animation
 var ready_music_count = 0; //How many of the remaining music are ready for playing.
 var node_waiting_to_play; //If the handle_node tried to play a music but it wasn't ready
-var music_layer; //Which layer belongs to music player
+var currentMusicLayer; //Which layer belongs to music player
 var soundAnimationInProcess = false;
 var currentMusicObj;
 
-var pause_time = 0; // Time that the user presses pause button, to calculate time between user interactions
+var pauseTime = 0; // Time that the user presses pause button, to calculate time between user interactions
 var pauseQueue; //Keeps the remaining animations that will be performed when un-paused
 var isPlaying = false;
 
@@ -70,7 +70,7 @@ function startAllQueues(){
     for (var i=0;i<animationQueue.length;i++){
         startQueue(i);
     }
-    last_user_interaction = new Date().getTime();
+    lastUserInteraction = new Date().getTime();
     isPlaying = true;
 }
 
@@ -237,12 +237,12 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
         }
 
     }
-    else if(_type==='show'){
+    else if(_type==='show'){ //Displays given object, it is like style display=block but handled by jquery
         _obj.show();
-    }else if(_type==='hide'){
+    }else if(_type==='hide'){ //Hide given object but perform the given animation if exists
         if(_duration > 0){
             var _hideAnimation = [];
-            if(_delay > 0){ //Sleep first if hide animation has delay
+            if(_delay > 0){ //Sleep first if hide animation has delay, to come back here after given delay, we add another animation object to the queue
                 _hideAnimation.push({'animation':{'type':'sleep', 'duration':_delay}});
             }
             _hideAnimation.push({'animation':{'type':'animation', 'duration':_duration, 'object':_obj}}); //Create an empty animation
@@ -299,7 +299,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
 
     //Music animations below
     else if(_type === 'music-play'){
-        music_layer = _level;
+        currentMusicLayer = _level;
         currentMusicObj = _obj;
         if(ready_music_count>0){ //If the music player object loaded and ready TODO check first music instead of loaded count
             _obj.jPlayer("play");
@@ -323,9 +323,11 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
     }
     else if(_type === 'music-fadein'){
         var currentVol = _obj.jPlayer("option","volume");
-        _musicFade(_obj,true,((volume_slider.val()/100)-currentVol)/(_duration/MUSIC_ANIMATION_INTERVAL));
+        _musicFade(_obj, true, ((volume_slider.val()/100)-currentVol)/(_duration/MUSIC_ANIMATION_INTERVAL), triggerNext);
+        triggerNext = false; //Do not trigger next before music fade animation finishes.
     }else if(_type === 'music-fadeout'){
-        _musicFade(_obj,false,1/(_duration/MUSIC_ANIMATION_INTERVAL));
+        _musicFade(_obj, false,1/(_duration/MUSIC_ANIMATION_INTERVAL), triggerNext);
+        triggerNext = false;
     }
 
     //Trigger next animation if needed
@@ -406,7 +408,7 @@ function finish(){
  */
 function pause(){
     console.log('Pause');
-    pause_time = new Date().getTime();
+    pauseTime = new Date().getTime();
     stopAllQueues();
     pauseQueue = [];
     for(var i = 0; i< currentAnimation.length; i++){
@@ -418,7 +420,7 @@ function pause(){
             }
             node = $.extend(node, {}, true);
 
-            var passed = pause_time - currentAnimation[i][j]['startTime'];
+            var passed = pauseTime - currentAnimation[i][j]['startTime'];
             node['duration'] = node['duration'] - passed; //Assign remaining time
 
             if('object' in node){
@@ -468,7 +470,17 @@ function resume(){
     _toggle_play_button(false);
 }
 
-function _musicFade(_obj,isFadeIn,step){
+/**
+ * Handles fade-in and fade-out animations of musics.
+ * USES: MUSIC_ANIMATION_INTERVAL from global variables
+ *      music_layer from global variables if trigger next flag is true
+ * @param _obj jPlayer object
+ * @param isFadeIn true if the animation is fade in, false otherwise
+ * @param step step value to be added or removed on every step of animation
+ * @param triggerNextAfterFinish trigger next animation on the music queue
+ * @private
+ */
+function _musicFade(_obj, isFadeIn, step, triggerNextAfterFinish){
     var currentVol = _obj.jPlayer("option","volume");
     if(isFadeIn){
         var targetVol = currentVol + step;
@@ -478,8 +490,11 @@ function _musicFade(_obj,isFadeIn,step){
     _obj.jPlayer("volume",targetVol);
     if((isFadeIn && targetVol + step  <=1 ) || (!isFadeIn && targetVol - step >=0)){
         setTimeout(function(){
-            _musicFade(_obj,isFadeIn,step);
+            _musicFade(_obj, isFadeIn, step, triggerNextAfterFinish);
         },MUSIC_ANIMATION_INTERVAL);
+    }else if(triggerNextAfterFinish){
+        console.log('Triggering next music animation');
+        nextAnimation(currentMusicLayer);
     }
 }
 function volumeSliderChanged(_val){
@@ -515,10 +530,10 @@ function handleClick(_obj){
     }
 
     //Add performed operations to the user interaction queue to be able to imitate it later
-    _userInteractionQueue.push({'animation':{'type':'sleep','duration':(click_time-last_user_interaction)}});
+    _userInteractionQueue.push({'animation':{'type':'sleep','duration':(click_time-lastUserInteraction)}});
     _userInteractionQueue.push({'animation':{'type':'click','object':_obj}});
     _addInteractionAnimationLayerForObject(jQuery.extend(true,[],click_animation['animations']))
-    last_user_interaction=click_time;
+    lastUserInteraction=click_time;
 }
 
 /**
@@ -549,10 +564,10 @@ function handleMouseEnter(_obj){
     }
 
     //Add performed operations to the user interaction queue to be able to imitate it later
-    _userInteractionQueue.push({'animation':{'type':'sleep','duration':(enter_time-last_user_interaction)}});
+    _userInteractionQueue.push({'animation':{'type':'sleep','duration':(enter_time-lastUserInteraction)}});
     _userInteractionQueue.push({'animation':{'type':'hover','object':_obj}});
     _addInteractionAnimationLayerForObject(jQuery.extend(true,[],enter_animation['animations']))
-    last_user_interaction=enter_time;
+    lastUserInteraction=enter_time;
 }
 
 /**
@@ -619,7 +634,7 @@ function _music_loaded(_loaded_obj){
     console.log('music loaded.');
     ready_music_count++;
     if(node_waiting_to_play){
-        _handleNode(node_waiting_to_play,music_layer);
+        _handleNode(node_waiting_to_play,currentMusicLayer);
     }
 }
 
