@@ -6,8 +6,8 @@ from captcha.fields import ReCaptchaField
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
-class RegistrationFormCaptcha(RegistrationFormUniqueEmail):
-    captcha = ReCaptchaField(attrs={'theme': 'white'})
+class RegistrationFormMomends(RegistrationFormUniqueEmail):
+    #captcha = ReCaptchaField(attrs={'theme': 'white'})
     username = forms.RegexField(regex=r'^[a-z A-Z]+[\w.@+-]+$',
         max_length=30,
         widget=forms.TextInput(attrs=attrs_dict),

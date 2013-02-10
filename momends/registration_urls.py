@@ -30,7 +30,7 @@ urlpatterns = patterns('',
     url(r'^register/$',
         register,
         {'backend': 'registration.backends.default.DefaultBackend',
-         'form_class': RegistrationFormCaptcha
+         'form_class': RegistrationFormMomends
         },
         name='registration_register'),
     url(r'^register/complete/$',
