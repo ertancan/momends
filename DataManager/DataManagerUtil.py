@@ -28,6 +28,15 @@ class DataManagerUtil:
         return _file_path
 
     @staticmethod
+    def download_raw_data(raw):
+        try:
+            _dot_index = raw.original_path.rindex('.')
+            _ext_part = raw.original_path[_dot_index:]
+        except ValueError:
+            _ext_part = '.jpg'
+        return DataManagerUtil.download_file(raw.original_path, str(raw)+_ext_part)
+
+    @staticmethod
     def create_photo_thumbnail(_file, _output_name):
         if not _file:
             Log.error('Error while creating thumbnail (No file given)')
