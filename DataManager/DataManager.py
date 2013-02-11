@@ -23,7 +23,7 @@ class DataManager:
     def get_last_status(self):
         return self.status
 
-    def create_momend(self, name, since, until, duration, #TODO check if dates has timezone information = tzinfo
+    def create_momend(self, name, since, until, duration,
                       privacy=Momend.PRIVACY_CHOICES['Private'], inc_photo=True, inc_status=True, inc_checkin=True,
                       enrichment_method=None, theme=None, scenario=None):
         raw_data = self.collect_user_data(since, until, inc_photo, inc_status, inc_checkin)
@@ -46,7 +46,7 @@ class DataManager:
             if UserSocialAuth.objects.filter(provider=str(_provider).lower()).filter(user=self.user).count()>0:
                 worker = self._instantiate_provider_worker(_provider)
                 if inc_photo and issubclass(worker.__class__,BasePhotoProviderWorker):
-                    _collected = worker.collect_photo(self.user, since, until)
+                    _collected = worker.collect_photo(self.user, since=since, until=until, is_date=True)
                     if not _collected:
                         self.status[str(_provider)+'_photo'] = 'Error'
                     else:
@@ -54,7 +54,7 @@ class DataManager:
                         _collect_count['photo'] = _collect_count.get('photo', 0) + len(_raw_data)
                         self.status[str(_provider)+'_photo'] = 'Success'
                 if inc_status and issubclass(worker.__class__,BaseStatusProviderWorker):
-                    _collected = worker.collect_status(self.user, since, until)
+                    _collected = worker.collect_status(self.user, since=since, until=until, is_date=True)
                     if not _collected:
                         self.status[str(_provider)+'_status'] = 'Error'
                     else:
@@ -62,7 +62,7 @@ class DataManager:
                         _collect_count['status'] = _collect_count.get('status', 0) + len(_raw_data)
                         self.status[str(_provider)+'_status'] = 'Success'
                 if inc_checkin and issubclass(worker.__class__,BaseLocationProviderWorker):
-                    _collected = worker.collect_checkin(self.user, since, until)
+                    _collected = worker.collect_checkin(self.user, since=since, until=until, is_date=True)
                     if not _collected:
                         self.status[str(_provider)+'_checkin'] = 'Error'
                     else:

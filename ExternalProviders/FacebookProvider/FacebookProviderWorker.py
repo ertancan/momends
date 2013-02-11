@@ -9,11 +9,17 @@ import facebook
 import pytz
 from LogManagers.Log import Log
 from social_auth.db.django_models import UserSocialAuth
-from DataManager.DataManagerUtil import DataManagerUtil
-from django.conf import settings
 
 class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker): #TODO not collecting location!
-    def collect_photo(self, user, since, until):
+
+    def collect_photo(self, user, **kwargs):
+        _return_data = []
+        if kwargs['is_date']:
+            _return_data += self._collect_photo_by_date(user, kwargs['since'], kwargs['until'])
+        #TODO continue here
+        return _return_data
+
+    def _collect_photo_by_date(self, user, since, until):
         access_token=self._get_access_token(user)
         api = facebook.GraphAPI(access_token)
         provider = self.getProvider()
@@ -22,7 +28,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 fields = 'likes.limit(500),comments.limit(500),source,name,sharedposts,images')
         except:
             return None
-        _return_data= []
+        _return_data = []
         for obj in result['data']:
             if not RawData.objects.filter(original_id=obj['id']).filter(provider=provider).exists():
                 _raw = RawData()
@@ -50,7 +56,13 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
 
         return _return_data
 
-    def collect_status(self, user, since, until):
+    def collect_status(self, user, **kwargs):
+        _return_data = []
+        if kwargs['is_date']:
+            _return_data += self._collect_status_by_date(user, kwargs['since'], kwargs['until'])
+        return _return_data
+
+    def _collect_status_by_date(self, user, since, until):
         access_token=self._get_access_token(user)
         api = facebook.GraphAPI(access_token)
         provider = self.getProvider()
@@ -81,7 +93,13 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 Log.debug( _raw.original_id + ' found in DB')
         return _return_data
 
-    def collect_checkin(self, user, since, until):
+    def collect_checkin(self, user, **kwargs):
+        _return_data = []
+        if kwargs['is_date']:
+            _return_data += self._collect_checkin_by_date(user, kwargs['since'], kwargs['until'])
+        return _return_data
+
+    def _collect_checkin_by_date(self, user, since, until):
         access_token=self._get_access_token(user)
         api = facebook.GraphAPI(access_token)
         try:

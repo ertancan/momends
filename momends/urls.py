@@ -23,4 +23,5 @@ urlpatterns = patterns('',
 
     #enable registration
     (r'^accounts/', include('momends.registration_urls')),
+
 )

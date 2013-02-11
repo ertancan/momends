@@ -3,6 +3,7 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
 from django.utils import simplejson
+import random
 # Create your models here.
 class BaseDataManagerModel(models.Model):
     class Meta:
@@ -133,6 +134,15 @@ class RawData(BaseDataManagerModel):
     def __unicode__(self):
         return str(self.owner) + '_' + str(self.provider) + '_' + str(self.original_id)
 
+    @property
+    def key_generate(self):
+        """returns a string based unique key with length 80 chars, used for raw data without unique id"""
+        while 1:
+            key = str(random.getrandbits(256))
+            try:
+                RawData.objects.get(original_id=key)
+            except:
+                return key
 
 
 

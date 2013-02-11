@@ -8,7 +8,15 @@ from social_auth.db.django_models import UserSocialAuth
 from LogManagers.Log import Log
 
 class TwitterProviderWorker(BaseStatusProviderWorker):
-    def collect_status(self, user, since, until):
+
+
+    def collect_status(self, user, **kwargs):
+        _return_data = []
+        if kwargs['is_date']:
+            _return_data += self._collect_status_by_date(user, kwargs['since'], kwargs['until'])
+        return _return_data
+
+    def _collect_status_by_date(self, user, since, until):
         provider = self.getProvider()
         consumer_key = settings.TWITTER_CONSUMER_KEY
         consumer_secret = settings.TWITTER_CONSUMER_SECRET
