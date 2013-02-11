@@ -1,6 +1,7 @@
 __author__ = 'ertan'
 from Outputs.AnimationManager.models import ThemeData,AppliedPostEnhancement,PostEnhancement
 from DataManager.models import RawData
+from DataManager.DataManagerUtil import DataManagerUtil
 from Outputs.AnimationManager.ImageEnhancementUtility.ImageEnhancementUtilityWorker import ImageEnhancementUtility
 from Outputs.AnimationManager.models import CoreAnimationData
 from Outputs.AnimationManager.ThemeManager.ThemeDataManager import ThemeDataManager
@@ -54,6 +55,12 @@ class ThemeManagerWorker:
         data_type = outdata.animation.used_object_type #Check if we need to apply enhancement on this data
         if not data_type in photo_keywords:
             return outdata
+
+        _raw = outdata.raw
+        if not _raw.data: #Download photo if not downloaded already
+            Log.debug('Downloading :'+str(_raw))
+            _raw.data = DataManagerUtil.download_raw_data(_raw)
+            _raw.save()
 
         rand_enhancement = self.theme.enhancement_groups.filter(post_enhancement=False).filter(applicable_to=RawData.DATA_TYPE['Photo']).order_by('?')
         if not rand_enhancement: #Check if there is a theme enhancement, set final data to raw data otherwise

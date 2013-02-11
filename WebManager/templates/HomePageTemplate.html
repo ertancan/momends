@@ -59,7 +59,7 @@
 
                             <div class="thumbnail link">
                                 <!-- image -->
-                                <a href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
+                                <a class="momend-thumb-link" href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
                                     <img alt="{{ momend.name }}" {% if momend.thumbnail %}src="{{ MOMEND_FILE_URL }}{{ momend.thumbnail }}" {% endif %} />
                                 </a>
                                 <!-- description -->
@@ -80,7 +80,7 @@
 
                             <div class="thumbnail link">
                                 <!-- image -->
-                                <a href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
+                                <a class="momend-thumb-link" href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
                                     <img alt="{{ momend.name }}" {% if momend.thumbnail %}src="{{ MOMEND_FILE_URL }}{{ momend.thumbnail }}" {% endif %} />
                                 </a>
                                 <!-- description -->
@@ -141,12 +141,10 @@
                                 {{ form.start_date.errors }}
                                 <label for="id_start_date" class="modal-form-item">From:</label>
                                 {{ form.start_date }}
-                                <a class="btn" style="vertical-align: top" href="#" onclick="showDatePicker('id_start_date')"><i class="icon-calendar"></i></a>
                                 <br/>
                                 {{ form.finish_date.errors }}
                                 <label for="id_finish_date" class="modal-form-item">To:</label>
                                 {{ form.finish_date }}
-                                <a class="btn" href="#" style="vertical-align: top" onclick="showDatePicker('id_finish_date')"><i class="icon-calendar"></i></a>
                                 <br/>
                                 <label for="id_with" class="modal-form-item">With:</label>
                                 <input id="id_with" type="text" class="modal-form-item-medium" value="" name="with">
@@ -193,7 +191,9 @@
         {% else %} false;
         {% endif %}
         $('body').ready(function(){
-            $('#portfolio-items').isotope({filter: '.user'}); //Filter thumbnails for .user
+            {% if user.is_authenticated %}
+                $('#portfolio-items').isotope({filter: '.user'}); //Filter thumbnails for .user
+            {% endif %}
             $('#carousel').carousel({interval: 15000}); //Activate carousel
             if(swfobject.hasFlashPlayerVersion("8")){ //Replace iframe video with swf object to control, pause
                 var params = { allowScriptAccess: "always" };
@@ -201,12 +201,25 @@
                     wmode:"transparent"};
                 swfobject.embedSWF("http://www.youtube.com/v/dVZpm0okAH8?showinfo=0&controls=0&rel=0&&enablejsapi=1", "video_container", "515", "306", "8",null,null,params,atts);
             }
+            if (navigator.userAgent.match(/iPad/i)) {
+               //TODO handle broken momend thumbnails on ipad
+            }
             if(form_has_errors){ //Show error messages if this page is response to create request
                 showCreateModal();
             }
-            $('#get-button').click(function(){
-                $('#creating-dialog').fadeIn();
-                animateCollectingText();
+            $('.modal-date-input').datepicker({
+                    changeMonth: true,
+                    changeYear: true,
+                    maxDate: "+0D",
+                    dateFormat: "d M, yy"
+                });;
+            $('#get-button').click(function(event){
+                event.preventDefault();
+                if(validateCreateForm()){
+                    $('#creating-dialog').fadeIn();
+                    animateCollectingText();
+                    $('#create-form').submit();
+                }
             });
 
             //Handle delete events
@@ -255,6 +268,65 @@
             });
 
         }
+        function validateCreateForm(){
+            var _valid = true;
+            var _name = $('#id_momend_name');
+            var _start = $('#id_start_date');
+            var _end = $('#id_finish_date');
+
+            if(_name.val().length < 4){
+                _valid = false;
+                _name.addClass('form-input-error');
+                _name.popover({
+                    title: 'Required Field',
+                    content: 'Name should be at least 4 characters',
+                    placement: 'left'
+                });
+               _name.popover('show');
+            }else{
+                _name.removeClass('form-input-error');
+            }
+
+            var _start_date = new Date(_start.val());
+            var _end_date = new Date(_end.val());
+
+            if(_start.val().length==0 || isNaN(_start_date.getDate())){
+                _valid = false;
+                _start.addClass('form-input-error');
+                _start.popover({
+                    title: 'Required Field',
+                    content: 'Please enter a valid date',
+                    placement: 'left'
+                });
+                _start.popover('show');
+            }else{
+                _start.removeClass('form-input-error');
+            }
+            if(_end.val().length==0 || isNaN(_end_date.getDate())){
+                _valid = false;
+                _end.addClass('form-input-error');
+                _end.popover({
+                    title: 'Required Field',
+                    content: 'Please enter a valid date',
+                    placement: 'left'
+                });
+                _end.popover('show');
+            }else{
+                if(!isNaN(_start_date.getDate()) && _end_date < _start_date){
+                    _valid = false;
+                    _end.addClass('form-input-error');
+                    _end.popover({
+                        title: 'Error',
+                        content: 'End Date should be later than Start Date',
+                        placement: 'left'
+                    });
+                    _end.popover('show');
+                }else{
+                    _end.removeClass('form-input-error');
+                }
+            }
+            return _valid;
+        }
         function animateCollectingText(state){
             var texts = ['While we are creating your momend',
                 'While we are creating your momend.',
@@ -287,17 +359,7 @@
             $('#'+previous_tab).removeClass('active');
             previous_tab = tab;
         }
-        function showDatePicker(_on_id){
-            var input = $('#'+_on_id);
-            input.datepicker({
-                onClose: function(dateText, inst) {
-                    input.datepicker('destroy');
-                },
-                dateFormat: "d M, yy"
-            });
-            input.focus();
 
-        }
         function deleteMomend(_momend){
             var button = $('#delete-'+_momend);
             button.removeClass('icon-remove-sign');

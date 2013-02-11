@@ -45,6 +45,12 @@ div#create-modal-body.modal-body{
 #create-form.form-horizontal{
     margin: 0;
 }
+.ui-datepicker-month{
+    display: inline-block;
+}
+.ui-datepicker-year{
+    display: inline-block;
+}
 .modal-nav-tabs{
     margin: 0;
 }
@@ -71,6 +77,9 @@ select.modal-form-item{
 label.modal-form-item{
     display: inline-block;
     width: 90px;
+}
+.form-input-error{
+    border-color: red !important;
 }
 .upload-button{
     position: absolute;

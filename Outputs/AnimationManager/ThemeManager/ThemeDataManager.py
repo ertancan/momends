@@ -65,7 +65,6 @@ class ThemeDataManager(DataManagerModel):
         self.current_indexes[type] += 1
         if self.current_indexes[type] == len(self.data[type]):
             self.current_indexes[type] = 0 #For circular theme data
-        Log.debug('Current index is: '+str(self.current_indexes[type])+' for '+str(type))
         self._last_obj = self.data[type][self.current_indexes[type]]
         return self._last_obj
 

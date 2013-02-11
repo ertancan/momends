@@ -41,12 +41,6 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                     _raw.comment_count = len(obj['comments'])
                 _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
                 #TODO error handling (goktan)
-                try:
-                    _dot_index = _raw.original_path.rindex('.')
-                    _ext_part = _raw.original_path[_dot_index:]
-                except ValueError:
-                    _ext_part = '.jpg'
-                _raw.data = DataManagerUtil.download_file(_raw.original_path, str(_raw)+_ext_part)
                 #_raw.thumbnail = DataManagerUtil.create_photo_thumbnail(settings.SAVE_PREFIX + _raw.data, str(_raw)+ '_thumb'+ _ext_part)
                 Log.debug(_raw)
             else:

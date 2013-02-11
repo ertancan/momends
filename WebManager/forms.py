@@ -14,9 +14,9 @@ class CreateMomendForm(forms.Form):
     date_formats = date_formats + ('%d %b, %Y','%d-%m-%Y')
     print date_formats
     momend_name = forms.CharField(max_length=255, min_length=4, required=True, label='Name', widget=forms.TextInput(attrs={'class':'modal-form-item-large'}))
-    start_date = forms.DateTimeField(input_formats=date_formats, widget=widgets.DateInput(format='%d %b, %Y', attrs={'class':'modal-form-item-small'}),
+    start_date = forms.DateTimeField(input_formats=date_formats, widget=widgets.DateInput(format='%d %b, %Y', attrs={'class':'modal-form-item-medium modal-date-input'}),
         required=True, initial=(date.today()-relativedelta(months = +1)))
-    finish_date = forms.DateTimeField(widget=widgets.DateInput(format='%d %b, %Y', attrs={'class':'modal-form-item-small'}), required=True,
+    finish_date = forms.DateTimeField(widget=widgets.DateInput(format='%d %b, %Y', attrs={'class':'modal-form-item-medium modal-date-input'}), required=True,
         input_formats=date_formats, initial=date.today())
     privacy_type = forms.ChoiceField(choices=[[Momend.PRIVACY_CHOICES[key],key]
                                               for key in Momend.PRIVACY_CHOICES.keys()], widget=forms.Select(attrs={'class':'modal-form-item'}))
