@@ -59,7 +59,7 @@
 
                             <div class="thumbnail link">
                                 <!-- image -->
-                                <a href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
+                                <a class="momend-thumb-link" href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
                                     <img alt="{{ momend.name }}" {% if momend.thumbnail %}src="{{ MOMEND_FILE_URL }}{{ momend.thumbnail }}" {% endif %} />
                                 </a>
                                 <!-- description -->
@@ -80,7 +80,7 @@
 
                             <div class="thumbnail link">
                                 <!-- image -->
-                                <a href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
+                                <a class="momend-thumb-link" href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
                                     <img alt="{{ momend.name }}" {% if momend.thumbnail %}src="{{ MOMEND_FILE_URL }}{{ momend.thumbnail }}" {% endif %} />
                                 </a>
                                 <!-- description -->
@@ -191,13 +191,18 @@
         {% else %} false;
         {% endif %}
         $('body').ready(function(){
-            $('#portfolio-items').isotope({filter: '.user'}); //Filter thumbnails for .user
+            {% if user.is_authenticated %}
+                $('#portfolio-items').isotope({filter: '.user'}); //Filter thumbnails for .user
+            {% endif %}
             $('#carousel').carousel({interval: 15000}); //Activate carousel
             if(swfobject.hasFlashPlayerVersion("8")){ //Replace iframe video with swf object to control, pause
                 var params = { allowScriptAccess: "always" };
                 var atts = { id: "ytvideo" ,
                     wmode:"transparent"};
                 swfobject.embedSWF("http://www.youtube.com/v/dVZpm0okAH8?showinfo=0&controls=0&rel=0&&enablejsapi=1", "video_container", "515", "306", "8",null,null,params,atts);
+            }
+            if (navigator.userAgent.match(/iPad/i)) {
+               //TODO handle broken momend thumbnails on ipad
             }
             if(form_has_errors){ //Show error messages if this page is response to create request
                 showCreateModal();
@@ -213,6 +218,7 @@
                 if(validateCreateForm()){
                     $('#creating-dialog').fadeIn();
                     animateCollectingText();
+                    $('#create-form').submit();
                 }
             });
 

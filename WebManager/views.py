@@ -93,8 +93,8 @@ class ShowMomendView(TemplateView):
             play_stat.redirect_url = request.META['HTTP_REFERER']
         else:
             play_stat.redirect_url = 'Direct'
-        if request.user:
-            play_stat.user = User.objects.get(pk=request.user.id)
+        if not request.user.is_anonymous():
+            play_stat.user = request.user
         play_stat.save()
 
         return super(ShowMomendView, self).dispatch(request, *args, **kwargs)
