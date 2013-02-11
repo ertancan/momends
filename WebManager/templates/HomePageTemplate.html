@@ -1,6 +1,8 @@
 {% extends "MainSite.html" %}
 {% load url from future %}
 
+{% block message %} {% endblock message %} <!-- Will show custom message -->
+
 {% block content %}
     <div class="lead-container" xmlns="http://www.w3.org/1999/html">
         <div class="container">
@@ -254,10 +256,10 @@
 
         }
         function animateCollectingText(state){
-            var texts = ['We are creating your momend',
-                'We are creating your momend.',
-                'We are creating your momend..',
-                'We are creating your momend...'];
+            var texts = ['While we are creating your momend',
+                'While we are creating your momend.',
+                'While we are creating your momend..',
+                'While we are creating your momend...'];
             if(!state || state===texts.length){
                 state = 0;
             }

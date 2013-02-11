@@ -24,6 +24,8 @@ from social_auth.db.django_models import UserSocialAuth
 from random import randint
 from django.core.exceptions import ObjectDoesNotExist
 from LogManagers.Log import Log
+from django.utils import simplejson
+from django.contrib import messages
 
 class HomePageLoggedFormView(FormView):
     form_class = CreateMomendForm
@@ -34,6 +36,7 @@ class HomePageLoggedFormView(FormView):
         context['public_top_momends'] = EnrichDataWorker.get_top_public_momends(max_count=20)
         return context
 
+
     def form_valid(self, form):
         Log.debug('Create momend form sent form')
         momend_name = form.cleaned_data['momend_name']
@@ -42,11 +45,26 @@ class HomePageLoggedFormView(FormView):
         privacy = form.cleaned_data['privacy_type']
         _user = User.objects.get(username=self.request.user)
         dm = DataManager(_user)
-        momend_id = dm.create_momend(name=momend_name, since=start_date,
-            until=finish_date, duration=30, privacy=privacy, theme=Theme.objects.get(pk=form.cleaned_data['momend_theme']))
+        try:
+            momend_id = dm.create_momend(name=momend_name, since=start_date,
+                until=finish_date, duration=30, privacy=privacy, theme=Theme.objects.get(pk=form.cleaned_data['momend_theme']))
+        except Exception as e:
+            Log.error('Error while creating the momend: '+str(e))
+            messages.error(self.request, 'Error while creating the momend')
+            self.success_url = reverse('momends:home-screen' ) #Redirect back to home screen in case of exception
+
         status = dm.get_last_status()
-        #TODO get status back to view
-        self.success_url = reverse('momends:show-momend', args = ('m', momend_id,) )
+        has_data = False
+        for key,value in status.iteritems():
+            if status[key] == 'Success':
+                has_data = True
+                break
+        if not has_data:
+            messages.warning(self.request, 'Could not collect any data')
+            self.success_url = reverse('momends:home-screen' )
+        else: #Collected some data and created momend, append status and redirect to show page
+            messages.info(self.request, status)
+            self.success_url = reverse('momends:show-momend', args = ('m', momend_id,) )
         return super(HomePageLoggedFormView,self).form_valid(form)
 
 class HomePageNotLoggedView(TemplateView):
@@ -140,10 +158,9 @@ class GetMomendView(TemplateView):
         return context
 
 class SaveInteractionView(View):
-    def post(self, request, *args, **kwargs): #TODO user check may be?
+    def post(self, request, *args, **kwargs):
         if not request.user:
-            Log.info('Not authenticated interaction save request')
-            return HttpResponse('{"resp":"false","msg":"Please Login First"}') #TODO collect error messages in some place?
+            return _generate_json_response(False, 'Not authenticated save interaction request', 'Please Login First')
         try:
             queue = request.POST['queue']
             momend_id = request.POST['id']
@@ -152,23 +169,20 @@ class SaveInteractionView(View):
             interaction.interaction = queue
             interaction.creator = request.user
             interaction.save()
-            Log.info('Interaction saved')
-            return HttpResponse('{"resp":"true","url":"'+str(reverse_lazy('momends:show-momend',args=('i',interaction.pk)))+'"}')
+            return _generate_json_response(True, 'Interaction Saved', url=str(reverse_lazy('momends:show-momend',args=('i',interaction.pk))))
         except Exception as e:
-            Log.error('Error while saving interaction: '+str(e))
-            return HttpResponse('{"resp":"false","msg":"Try Again"}') #TODO error message may be? (if it is not secret)
+            return _generate_json_response(False, 'Error while saving interaction: '+str(e), 'Try Again')
 
 class DeleteMomendView(View):
     def get(self, request, *args, **kwargs):
         if not request.user:
-            Log.error('Not authenticated delete request')
-            return HttpResponse('{"resp":"false","msg":"Please Login First"}')
+            return _generate_json_response(False, 'Not authenticated delete request', 'Please Login First')
         if kwargs['type'] == 'm':
             try:
                 momend = Momend.objects.get(pk = kwargs['id'])
                 if not momend.owner == request.user:
                     Log.warn("Trying to delete someone else's momend")
-                    return HttpResponse('{"resp":"false","msg":"You cannot delete this momend"}')
+                    return _generate_json_response(False, user_msg='You cannot delete this momend')
 
                 stat_obj = DeletedMomend()
                 stat_obj.set_momend_data(momend)
@@ -181,17 +195,16 @@ class DeleteMomendView(View):
                     interaction_stat.save()
 
                 momend.delete()
-                return HttpResponse('{"resp":"true"}')
+                return _generate_json_response(True)
             except Exception as e:
-                Log.error('Cannot delete momend: '+str(e))
-                return HttpResponse('{"resp":"false","msg":"Try Again"}')
+                return _generate_json_response(False, 'Cannot delete momend: '+str(e), 'Try Again')
 
         if kwargs['type'] == 'i':
             try:
                 interaction = UserInteraction.objects.get(pk = kwargs['id'])
                 if not interaction.creator == request.user and not interaction.momend.owner == request.user:
                     Log.warn("Trying to delete someone else's interaction")
-                    return HttpResponse('{"resp":"false","msg":"You cannot delete this interaction"}')
+                    return _generate_json_response(False, user_msg='You cannot delete this interaction')
 
                 interaction_stat = DeletedUserInteraction()
                 interaction_stat.set_interaction_data(interaction)
@@ -200,13 +213,9 @@ class DeleteMomendView(View):
 
                 interaction.delete()
 
-                return HttpResponse('{"resp":"true"}')
+                return _generate_json_response(True)
             except Exception as e:
-                Log.error('Cannot delete interaction: '+str(e))
-                return HttpResponse('{"resp":"false","msg":"Try Again"}')
-
-
-
+                return _generate_json_response(False, 'Cannot delete interaction: '+str(e), 'Try Again')
 
 
 
@@ -243,5 +252,17 @@ class UserProfileTemplateView(TemplateView):
         return context
 
 
+def _generate_json_response(success, log_message=None, user_msg=None, **kwargs):
+    if log_message:
+        if success:
+            Log.info(log_message)
+        else:
+            Log.error(log_message)
 
-
+    _response = dict()
+    _response['resp'] = success
+    _response['message'] = user_msg
+    for key, value in kwargs.iteritems():
+        _response[key] = value
+    json = simplejson.dumps(_response)
+    return HttpResponse(json)
