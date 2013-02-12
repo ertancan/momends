@@ -23,15 +23,18 @@ class DataManager:
     def get_last_status(self):
         return self.status
 
-    def create_momend(self, name, since, until, duration,
+    def create_momend(self, name, duration,
                       privacy=Momend.PRIVACY_CHOICES['Private'], inc_photo=True, inc_status=True, inc_checkin=True,
-                      enrichment_method=None, theme=None, scenario=None):
-        raw_data = self.collect_user_data(since, until, inc_photo, inc_status, inc_checkin)
+                      enrichment_method=None, theme=None, scenario=None, **kwargs):
+        raw_data = self.collect_user_data(inc_photo, inc_status, inc_checkin, **kwargs)
         enriched_data = self.enrich_user_data(raw_data, enrichment_method)
-        self.momend = Momend(owner=self.user, name=name, momend_start_date=since, momend_end_date=until, privacy=privacy)
+        self.momend = Momend(owner=self.user, name=name, privacy=privacy)
+        if(kwargs['is_date']):
+            self.momend.momend_start_date = kwargs['since']
+            self.momend.momend_end_date = kwargs['until']
         self.momend.save()
         animation_worker = AnimationManagerWorker(self.momend)
-        generated_layer, duration = animation_worker.generate_output(enriched_data, duration, theme, scenario) #TODO save the duration, to Momend table?
+        generated_layer, duration = animation_worker.generate_output(enriched_data, duration, theme, scenario)
         self._create_momend_thumbnail()
         self.momend.save()
 
@@ -39,14 +42,14 @@ class DataManager:
         score.save()
         return self.momend.id
 
-    def collect_user_data(self, since, until, inc_photo, inc_status, inc_checkin): #TODO concatenation fail if cannot connect to facebook or twitter (fixed on status)
+    def collect_user_data(self, inc_photo, inc_status, inc_checkin, **kwargs): #TODO concatenation fail if cannot connect to facebook or twitter (fixed on status)
         _raw_data = []
         _collect_count = dict()
         for _provider in Provider.objects.all():
             if UserSocialAuth.objects.filter(provider=str(_provider).lower()).filter(user=self.user).count()>0:
                 worker = self._instantiate_provider_worker(_provider)
                 if inc_photo and issubclass(worker.__class__,BasePhotoProviderWorker):
-                    _collected = worker.collect_photo(self.user, since=since, until=until, is_date=True)
+                    _collected = worker.collect_photo(self.user, **kwargs)
                     if not _collected:
                         self.status[str(_provider)+'_photo'] = 'Error'
                     else:
@@ -54,7 +57,7 @@ class DataManager:
                         _collect_count['photo'] = _collect_count.get('photo', 0) + len(_raw_data)
                         self.status[str(_provider)+'_photo'] = 'Success'
                 if inc_status and issubclass(worker.__class__,BaseStatusProviderWorker):
-                    _collected = worker.collect_status(self.user, since=since, until=until, is_date=True)
+                    _collected = worker.collect_status(self.user, **kwargs)
                     if not _collected:
                         self.status[str(_provider)+'_status'] = 'Error'
                     else:
@@ -62,7 +65,7 @@ class DataManager:
                         _collect_count['status'] = _collect_count.get('status', 0) + len(_raw_data)
                         self.status[str(_provider)+'_status'] = 'Success'
                 if inc_checkin and issubclass(worker.__class__,BaseLocationProviderWorker):
-                    _collected = worker.collect_checkin(self.user, since=since, until=until, is_date=True)
+                    _collected = worker.collect_checkin(self.user, **kwargs)
                     if not _collected:
                         self.status[str(_provider)+'_checkin'] = 'Error'
                     else:

@@ -17,8 +17,8 @@ class Momend(BaseDataManagerModel):
     thumbnail = models.CharField(max_length=2000, null=True, blank=True)
 
 
-    momend_start_date = models.DateTimeField()
-    momend_end_date = models.DateTimeField()
+    momend_start_date = models.DateTimeField(null=True)
+    momend_end_date = models.DateTimeField(null=True)
 
     #TODO stats
     PRIVACY_CHOICES = {

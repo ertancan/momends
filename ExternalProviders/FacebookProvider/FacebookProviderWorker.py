@@ -10,14 +10,56 @@ import pytz
 from LogManagers.Log import Log
 from social_auth.db.django_models import UserSocialAuth
 
-class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker): #TODO not collecting location!
+class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker):
 
     def collect_photo(self, user, **kwargs):
         _return_data = []
         if kwargs['is_date']:
             _return_data += self._collect_photo_by_date(user, kwargs['since'], kwargs['until'])
-        #TODO continue here
+        if kwargs.get('item_id', None):
+            _return_data += self._collect_photo_by_id(user, kwargs['item_id'])
+        if kwargs.get('albums', None):
+            _return_data += self._collect_photo_by_album(user, kwargs['albums'])
+        if kwargs.get('friends', None):
+            _return_data += self._collect_photo_with_friends(user, kwargs['friends'])
         return _return_data
+
+    def _collect_photo_by_album(self, user, albums):
+        """
+        :param user:
+        :param albums: photo albums array of user
+        :return: raw_data of album photos
+        TODO: implementation is needed
+        """
+        _return_data = []
+        if 1:
+            raise NotImplementedError()
+        return _return_data
+
+    def _collect_photo_by_id(self, user, photo_ids):
+        """
+        :param user:
+        :param photo_ids: photo_id's array of user
+        :return: raw_data of album photos
+        TODO: implementation is needed
+        """
+        _return_data = []
+        if 1:
+            raise NotImplementedError()
+        return _return_data
+
+    def _collect_photo_with_friends(self, user, friends):
+        """
+        :param user:
+        :param friends: friend list of user to get photos with
+        :return: raw_data of album photos
+        TODO: implementation is needed
+        """
+        _return_data = []
+        if 1:
+            raise NotImplementedError()
+        return _return_data
+
 
     def _collect_photo_by_date(self, user, since, until):
         access_token=self._get_access_token(user)
@@ -60,6 +102,12 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         _return_data = []
         if kwargs['is_date']:
             _return_data += self._collect_status_by_date(user, kwargs['since'], kwargs['until'])
+        if kwargs.get('keywords', None):
+            _return_data += self._collect_status_by_keywords(user, kwargs['keywords'])
+        if kwargs.get('item_id', None):
+            _return_data += self._collect_status_by_id(user, kwargs['item_id'])
+        if kwargs.get('friends', None):
+            _return_data += self._collect_status_with_friends(user, kwargs['friends'])
         return _return_data
 
     def _collect_status_by_date(self, user, since, until):
@@ -93,10 +141,51 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 Log.debug( _raw.original_id + ' found in DB')
         return _return_data
 
+
+    def _collect_status_by_id(self, user, status_ids):
+        """
+        :param user:
+        :param status_ids: status_id's array of user
+        :return: raw_data of album photos
+        TODO: implementation is needed
+        """
+        _return_data = []
+        if 1:
+            raise NotImplementedError()
+        return _return_data
+
+    def _collect_status_by_keywords(self, user, keywords):
+        """
+        :param user:
+        :param keywords: status_id's array of user
+        :return: raw_data of album photos
+        TODO: implementation is needed
+        """
+        _return_data = []
+        if 1:
+            raise NotImplementedError()
+        return _return_data
+
+    def _collect_status_with_friends(self, user, friends):
+        """
+        :param user:
+        :param friends: friend list of user to get photos with
+        :return: raw_data of album photos
+        TODO: implementation is needed
+        """
+        _return_data = []
+        if 1:
+            raise NotImplementedError()
+        return _return_data
+
+
+
     def collect_checkin(self, user, **kwargs):
         _return_data = []
         if kwargs['is_date']:
             _return_data += self._collect_checkin_by_date(user, kwargs['since'], kwargs['until'])
+        if kwargs.get('friends', None):
+            _return_data += self._collect_checkin_with_friends(user, kwargs['friends'])
         return _return_data
 
     def _collect_checkin_by_date(self, user, since, until):
@@ -134,3 +223,14 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         _instance = UserSocialAuth.objects.filter(provider='facebook').get(user=user)
         return  _instance.tokens['access_token']
 
+    def _collect_checkin_with_friends(self, user, friends):
+        """
+        :param user:
+        :param friends: friend list of user to get photos with
+        :return: raw_data of album photos
+        TODO: implementation is needed
+        """
+        _return_data = []
+        if 1:
+            raise NotImplementedError()
+        return _return_data

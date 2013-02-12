@@ -43,19 +43,24 @@ class HomePageLoggedFormView(FormView):
 
     def form_valid(self, form):
         Log.debug('Create momend form sent form')
-        momend_name = form.cleaned_data['momend_name']
-        start_date = form.cleaned_data['start_date']
-        finish_date = form.cleaned_data['finish_date']
-        privacy = form.cleaned_data['privacy_type']
+        _momend_name = form.cleaned_data['momend_name']
+        _start_date = form.cleaned_data['start_date']
+        _finish_date = form.cleaned_data['finish_date']
+        _privacy = form.cleaned_data['privacy_type']
         _user = User.objects.get(username=self.request.user)
         dm = DataManager(_user)
         try:
-            momend_id = dm.create_momend(name=momend_name, since=start_date,
-                until=finish_date, duration=30, privacy=privacy, theme=Theme.objects.get(pk=form.cleaned_data['momend_theme']))
-        except Exception as e:
+            _args = dict()
+            _args['is_date'] = True
+            _args['since'] = _start_date
+            _args['until'] = _finish_date
+            momend_id = dm.create_momend(name=_momend_name, duration=30, privacy=_privacy,
+                theme=Theme.objects.get(pk=form.cleaned_data['momend_theme']), **_args)
+        except NotImplementedError as e:
             Log.error('Error while creating the momend: '+str(e))
             messages.error(self.request, 'Error while creating the momend')
             self.success_url = reverse('momends:home-screen' ) #Redirect back to home screen in case of exception
+            return super(HomePageLoggedFormView,self).form_valid(form)
 
         status = dm.get_last_status()
         has_data = False
