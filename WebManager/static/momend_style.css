@@ -41,7 +41,6 @@ figure, figcaption{ /*add any other html5 elements you use*/
 .photo {
     display:none;
     position:absolute;
-    padding: 6px 8px 10px 8px; /*size of the frame*/
     user-select: none;
     moz-user-select: none;
     -webkit-user-select: none;
@@ -77,9 +76,10 @@ figure, figcaption{ /*add any other html5 elements you use*/
 
 .photo_image{
     position:relative;
+    display:block;
+    margin-left: auto;
+    margin-right: auto;
     height:100%;
-    margin:3px;
-    margin-left:0px;
     user-select: none;
     moz-user-select: none;
     -webkit-user-select: none;
