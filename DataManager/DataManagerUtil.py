@@ -16,13 +16,13 @@ class DataManagerUtil:
         Download file from an uri
         :param url: uri where content will be fetched
         :param name: name of file
-        :return:
+        :return: file path to local file
         """
         _url = urllib2.urlopen(url)
         _file_path = settings.COLLECTED_FILE_PATH + name
         _save_file_path = settings.SAVE_PREFIX + _file_path
 
-        with open(_save_file_path, 'wb') as _local_file:
+        with open(_save_file_path, 'wb+') as _local_file:
             _local_file.write(_url.read())
         _local_file.close()
         return _file_path
@@ -46,4 +46,20 @@ class DataManagerUtil:
         _save_file_path = settings.SAVE_PREFIX + _file_path
         s=["convert", _file, '-resize', '500x320^', '-gravity', 'center', '-extent', '500x320', _save_file_path]
         subprocess.Popen(s).wait()
+        return _file_path
+
+    @staticmethod
+    def create_file(content, name):
+        """
+        Save content to a file
+        :param content: content of file to save
+        :param name: name of file
+        :return: file path to local file
+        """
+        _file_path = settings.COLLECTED_FILE_PATH + name
+        _save_file_path = settings.SAVE_PREFIX + _file_path
+        with open(_save_file_path, 'wb+') as _local_file:
+            for chunk in content.chunks():
+                _local_file.write(chunk)
+            _local_file.close()
         return _file_path

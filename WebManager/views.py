@@ -26,6 +26,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from LogManagers.Log import Log
 from django.utils import simplejson
 from django.contrib import messages
+from django.core.files.uploadedfile import UploadedFile
+from sorl.thumbnail import get_thumbnail
+from DataManager.DataManagerUtil import DataManagerUtil
+from django.conf import settings
 
 class HomePageLoggedFormView(FormView):
     form_class = CreateMomendForm
@@ -39,19 +43,24 @@ class HomePageLoggedFormView(FormView):
 
     def form_valid(self, form):
         Log.debug('Create momend form sent form')
-        momend_name = form.cleaned_data['momend_name']
-        start_date = form.cleaned_data['start_date']
-        finish_date = form.cleaned_data['finish_date']
-        privacy = form.cleaned_data['privacy_type']
+        _momend_name = form.cleaned_data['momend_name']
+        _start_date = form.cleaned_data['start_date']
+        _finish_date = form.cleaned_data['finish_date']
+        _privacy = form.cleaned_data['privacy_type']
         _user = User.objects.get(username=self.request.user)
         dm = DataManager(_user)
         try:
-            momend_id = dm.create_momend(name=momend_name, since=start_date,
-                until=finish_date, duration=30, privacy=privacy, theme=Theme.objects.get(pk=form.cleaned_data['momend_theme']))
-        except Exception as e:
+            _args = dict()
+            _args['is_date'] = True
+            _args['since'] = _start_date
+            _args['until'] = _finish_date
+            momend_id = dm.create_momend(name=_momend_name, duration=30, privacy=_privacy,
+                theme=Theme.objects.get(pk=form.cleaned_data['momend_theme']), **_args)
+        except NotImplementedError as e:
             Log.error('Error while creating the momend: '+str(e))
             messages.error(self.request, 'Error while creating the momend')
             self.success_url = reverse('momends:home-screen' ) #Redirect back to home screen in case of exception
+            return super(HomePageLoggedFormView,self).form_valid(form)
 
         status = dm.get_last_status()
         has_data = False
@@ -251,6 +260,61 @@ class UserProfileTemplateView(TemplateView):
         context['profile_user'] = _user
         return context
 
+
+class FileUploadView(View):
+    def post(self, request, *args, **kwargs):
+        if request.FILES == None:
+            return _generate_json_response(False, 'Must have files attached: ', 'Try Again')
+        file = request.FILES[u'files[]']
+        wrapped_file = UploadedFile(file)
+        filename = wrapped_file.name
+        file_size = wrapped_file.file.size
+        Log.debug ('Got file: "%s"' % str(filename))
+        Log.debug('Content type: "$s" % file.content_type')
+
+        #writing file manually into model
+        #because we don't need form of any type.
+        _raw = RawData()
+        _raw.original_id = RawData.key_generate
+        _raw.owner = request.user
+        _raw.provider = 'Upload' #TODO change here
+        _raw.title =  str(filename)
+        _raw.data = DataManagerUtil.create_file(file, str(_raw))
+
+        _raw.type = RawData.DATA_TYPE['Photo']
+
+        #getting thumbnail url using sorl-thumbnail
+        if 'image' in file.content_type.lower():
+            _raw.thumbnail = DataManagerUtil.create_photo_thumbnail(settings.SAVE_PREFIX + _raw.data, str(_raw)+ '_thumb'+ 'jpg')
+
+        _raw.save()
+        Log.debug('Uploaded file saving done')
+        #settings imports
+        try:
+            #file_delete_url = settings.MULTI_FILE_DELETE_URL+'/'
+            file_url = ""#settings.MULTI_IMAGE_URL+'/'+image.key_data+'/'
+        except AttributeError:
+            file_delete_url = 'multi_delete/'
+            file_url = ""#'multi_image/'+image.key_data+'/'
+            #generating json response array
+        result = {
+            'files': [ {"name":filename,
+                        "size":file_size,
+                        "url":file_url,
+                        "thumbnail_url":_raw.thumbnail,
+                        "delete_url":'',
+                        "delete_type":"POST",}
+            ]
+        }
+        response_data = simplejson.dumps(result)
+
+        #checking for json data type
+        #big thanks to Guy Shapiro
+        if "application/json" in request.META['HTTP_ACCEPT_ENCODING']:
+            mimetype = 'application/json'
+        else:
+            mimetype = 'text/plain'
+        return HttpResponse(response_data, mimetype=mimetype)
 
 def _generate_json_response(success, log_message=None, user_msg=None, **kwargs):
     if log_message:
