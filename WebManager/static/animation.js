@@ -59,8 +59,11 @@ function __generateQueues(_level){
  * @param _level which level is going to start
  */
 function startQueue(_level){
+    if(queueOnAction[_level]){ //Already running
+        return;
+    }
     queueOnAction[_level]=true;
-    nextAnimation(_level);
+    nextAnimation(_level, 'start queue');
 }
 /**
  * Starts all animation queues
@@ -126,7 +129,7 @@ function addToQueue(_level,_node){
         animationQueue[_level].push(_node);
     }
     if(wasEmpty && queueOnAction[_level]){
-        nextAnimation(_level);
+        nextAnimation(_level, 'Add to running empty queue');
     }
 }
 /**
@@ -155,25 +158,37 @@ function addToQueue(_level,_node){
  *      breakpoint: Triggers the other layers which were waiting for current layer for a breakpoint
  *      click/hover: Performs click and hover animations on the object
  */
-function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.g., screenWidth, screenHeight
+function _handleNode(_node,_level, _caller){ //TODO should handle dynamic values also, e.g., screenWidth, screenHeight
     var _animation = _node;
     if('animation' in _node){
         _animation = _node['animation']
     }
     _node['startTime'] = new Date().getTime();
-    if(_level == 1){
+    //if(_level == 4){
         if(typeof _animation['name'] !=='undefined'){
-            console.log('starting:'+_animation['name']);
+            console.log('starting:'+_animation['name']+' on layer:'+_level+ ' called by:');
+            if(typeof _caller === "string"){
+                console.log(_caller)
+            }else{
+                console.dir(_caller);
+            }
         }else{
-            console.log('starting:'+_animation['type']);
+            console.log('starting:'+_animation['type']+' on layer:'+_level+  ' called by:');
+            if(typeof _caller === "string"){
+                console.log(_caller)
+            }else{
+                console.dir(_caller);
+            }
         }
         console.dir(_animation);
-    }
+    //}
     if(_animation['type']==='sleep'){
         currentAnimation[_level].push(_node);
+        console.log('Layer '+_level+' now sleeping for '+_animation['duration']);
         _animation['sleepTimer'] = setTimeout(function(){
+            console.log('Layer '+_level+ ' sleep finished');
             _remove_node_from_current_queue(_level,_node);
-            nextAnimation(_level);
+            nextAnimation(_level,_node);
         },_animation['duration']);
         return;
     }
@@ -234,14 +249,14 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
             _obj.transition(_animation['anim'], _duration, _easing, function(){
                 _remove_node_from_current_queue(_level,_node);
                 if(triggerNext){
-                    nextAnimation(_level);
+                    nextAnimation(_level, _node);
                 }
             });
         }else{
             _obj.animate(_animation['anim'],{duration:_duration, queue:false, easing:_easing, complete:function(){
                 _remove_node_from_current_queue(_level,_node);
                 if(triggerNext){
-                    nextAnimation(_level);
+                    nextAnimation(_level, _node);
                 }
             }});
         }
@@ -251,11 +266,13 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
         _obj.show();
     }else if(_type==='hide'){ //Hide given object but perform the given animation if exists
         if(_duration > 0){
+            console.log('hide with delay:'+_delay);
             var _hideAnimation = [];
             if(_delay > 0){ //Sleep first if hide animation has delay, to come back here after given delay, we add another animation object to the queue
-                _hideAnimation.push({'animation':{'type':'sleep', 'duration':_delay}});
+                console.log('god damn sleep')
+                _hideAnimation.push({'animation':{'type':'sleep', 'duration':_delay, 'name':'hide delay'}});
             }
-            _hideAnimation.push({'animation':{'type':'animation', 'duration':_duration, 'object':_obj}}); //Create an empty animation
+            _hideAnimation.push({'animation':{'type':'animation', 'duration':_duration, 'object':_obj, 'waitPrev':true, 'name': 'hide animation'}}); //Create an empty animation
             if('pre' in _animation){ //Assign hide animation's pre and anim if they exists
                 _hideAnimation[1]['animation']['pre'] = _animation['pre'];
             }
@@ -265,10 +282,15 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
             if(_animation['extended_animation']){
                 _hideAnimation[1]['animation']['extended_animation'] = true;
             }
-            _hideAnimation.push({'animation':{'type':'hide', 'duration':0, 'object':_obj, 'triggerNext': triggerNext, 'name':'Hide after delay'}}); //Insert an empty hide animation to hide the object after animation
+            _hideAnimation.push({'animation':{'type':'hide', 'duration':0, 'object':_obj, 'triggerNext': triggerNext, 'waitPrev':true, 'name':'Hide after delay'}}); //Insert an empty hide animation to hide the object after animation
             _addInteractionAnimationLayerForObject(_hideAnimation);
-            triggerNext = false; //Should trigger after animation finished, not now.
+            console.log('added hide animation:');
+            console.dir(_hideAnimation)
+            return;
         }else{
+            console.log('Hiding now!!!');
+            console.dir(_obj);
+            console.log('layer:'+_level);
             _obj.hide();
         }
     }else if(_type==='block'){
@@ -344,7 +366,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
 
     //Trigger next animation if needed
     if(_type!='animation' && triggerNext){
-        nextAnimation(_level);
+        nextAnimation(_level, _node);
     }
 }
 
@@ -353,7 +375,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
  * Triggers the next animation in the queue
  * @param _level level of the queue
  */
-function nextAnimation(_level){
+function nextAnimation(_level, _prev){
     if(currentAnimation.length!==animationQueue.length){
         console.log('INCONSISTENCY!!!');
     }
@@ -373,10 +395,10 @@ function nextAnimation(_level){
         }
     }
     var _node=animationQueue[_level].shift();
-    _handleNode(_node,_level);
+    _handleNode(_node,_level, _prev);
     try{
         if(animationQueue[_level].length!==0 && animationQueue[_level][0]['animation']['waitPrev']===false){
-            nextAnimation(_level);
+            nextAnimation(_level, 'Wait Prev False');
         }
     }catch(error){
         console.log('Animation error on level:'+_level+' : '+error);
@@ -478,7 +500,7 @@ function resume(){
             if('pre' in node){
                 node['pre'] = {}; //Clear pre-conditions, since they have already applied
             }
-            _handleNode(node,i);
+            _handleNode(node,i, 'Resume');
         }
     }
     currentMusicObj.jPlayer('play');
@@ -512,7 +534,7 @@ function _musicFade(_obj, isFadeIn, step, triggerNextAfterFinish){
         console.log('Triggering next music animation on layer:'+currentMusicLayer);
         setTimeout(function(){
             console.log('timeout');
-            nextAnimation(currentMusicLayer);
+            nextAnimation(currentMusicLayer, 'music fade');
         },1500);
         console.log('disari bura')
     }
