@@ -73,9 +73,11 @@ function start_animation(){
         duration: 500,
         complete: function(){
             $(this).hide();
-            startAllQueues();
         }
     });
+    setTimeout(function(){
+        startAllQueues();
+    },500);
 }
 /**
  * Send the queue generated while user interacts with the animation to the given url
@@ -272,16 +274,10 @@ function create_objects_from_data(load_callback){
                         var music_obj = $('#music'+i+''+j);
                         music_obj[0]['filepath'] = node['final_data_path'];
                         var _parsed_paths = _parse_music_sources(node['final_data_path']);
-                        console.log('parsed');
-                        console.dir(_parsed_paths);
-                        console.dir(Object.keys(_parsed_paths))
                         music_obj.jPlayer({
                             ready: function (event){
                                 var paths = _parse_music_sources(event.delegateTarget['filepath']);
-                                console.log('parsed;');
-                                console.dir(paths);
                                 var _keys = Object.keys(paths);
-                                console.dir(_keys);
                                 for(var k = 0; k< _keys.length; k++){
                                     var _type = _keys[k];
                                     if(paths[_type].indexOf('http') == 0){
@@ -313,14 +309,16 @@ function create_objects_from_data(load_callback){
             }
         }
     }
+    _check_if_ready();
 }
 function _object_ready(){
     loaded_objects++;
-    setTimeout(_check_if_ready,10);
 }
 function _check_if_ready(){
     if(loaded_objects === total_objects){
         _load_callback();
+    }else{
+        setTimeout(_check_if_ready,300);
     }
 }
 function _apply_post_enhancements(created_obj, enhancements){
@@ -331,7 +329,6 @@ function _apply_post_enhancements(created_obj, enhancements){
             path = MOMEND_FILE_URL + THEME_DATA_URL + path;
         }
         if(enh['type'] === 'apply_font'){
-            console.log(path+'/stylesheet.css');
             jQuery('<link/>',{ //Include stylesheet to the html TODO:don't include twice maybe
                 rel : 'stylesheet',
                 href : path + '/stylesheet.css',
@@ -344,7 +341,11 @@ function _apply_post_enhancements(created_obj, enhancements){
             created_obj.css('background-image','url("'+path+'")');
             created_obj.css('background-size', '100% 100%');
             created_obj.css('background-repeat', 'no-repeat');
-            created_obj.css(_parse_string_to_dict(enh['parameters']));
+            console.log(enh['parameters']);
+            var _cssParameters = _parse_string_to_dict(enh['parameters'],false);
+            console.dir(_cssParameters);
+            console.dir(created_obj.children());
+            $(created_obj.children()[0]).css(_cssParameters);
         }
     }
 }
@@ -396,12 +397,16 @@ function _parse_music_sources(_str){
 }
 function fullscreenToggle(){
     var _button = $('#button-fullscreen');
+    var _scene = $('#scene');
     if(fullscreen){ //Was on fullscreen mode
-        _button.removeClass('icon-resize-small')
+        _button.removeClass('icon-resize-small');
         _button.addClass('icon-fullscreen');
+        _scene.removeClass('fullscreen');
+
     }else{
-        _button.removeClass('icon-fullscreen')
+        _button.removeClass('icon-fullscreen');
         _button.addClass('icon-resize-small');
+        _scene.addClass('fullscreen');
     }
     fullscreen = !fullscreen;
 }

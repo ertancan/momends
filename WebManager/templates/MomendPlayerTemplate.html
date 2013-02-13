@@ -24,8 +24,8 @@
 {% block heading %} {% endblock heading %}
 {% block content %}
     <body onload="player_init()">
-    <div class="player" style="width:100%;height: 100%">
-        <div class="scene" style="height: 97%"></div>
+    <div class="player">
+        <div class="scene" id="scene"></div>
         <div class="music"></div>
         <div class="momend-player">
             <div class="momend-button-group">
@@ -64,6 +64,8 @@
 
     <script src="{{ STATIC_URL }}jquery.jplayer.min.js"></script>
     <script src="{{ STATIC_URL }}jquery.transit.min.js"></script>
+    <script src="{{ STATIC_URL }}jquery.easing.1.3.js"></script>
+    <script src="{{ STATIC_URL }}jquery.animate-shadow.min.js"></script>
     <script src="{{ STATIC_URL }}animation.js"></script>
     <script src="{{ STATIC_URL }}momend.js"></script>
 
@@ -111,6 +113,11 @@
         function player_init(){
             init_animation();
             fetch_momend_data();
+            if ( window.self === window.top ) {
+                $('#scene').addClass('fullscreen'); //Not in iframe
+            }
+
+
         }
     </script>
 {% endblock scripts %}

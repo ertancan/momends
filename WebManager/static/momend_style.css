@@ -19,8 +19,13 @@ body{
 .scene{
     margin:0 auto;
     width:100%;
+    height: 97%;
     overflow:hidden;
     position:relative;
+    font-size: 16px;
+}
+.scene.fullscreen{
+    font-size: 22px;
 }
 .error{
     position: absolute;
@@ -49,8 +54,9 @@ figure, figcaption{ /*add any other html5 elements you use*/
 
 .status-text{
     position:relative;
-    padding:10px;
     width: 75%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .scene-background{

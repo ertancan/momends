@@ -161,12 +161,14 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
         _animation = _node['animation']
     }
     _node['startTime'] = new Date().getTime();
-    if(typeof _animation['name'] !=='undefined'){
-        console.log('starting:'+_animation['name']);
-    }else{
-        console.log('starting:'+_animation['type']);
+    if(_level == 1){
+        if(typeof _animation['name'] !=='undefined'){
+            console.log('starting:'+_animation['name']);
+        }else{
+            console.log('starting:'+_animation['type']);
+        }
+        console.dir(_animation);
     }
-    console.dir(_animation);
     if(_animation['type']==='sleep'){
         currentAnimation[_level].push(_node);
         _animation['sleepTimer'] = setTimeout(function(){
@@ -190,7 +192,6 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
     var _duration=1;
     if('duration' in _animation){
         _duration=_animation['duration'];
-        console.log('animation duration: '+_duration);
     }
     var _delay=0;
     if('delay' in _animation){
@@ -209,7 +210,12 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
                 }
                 _animation['pre'][key] = _replace_object_keywords(_animation['pre'][key],_obj);
             }
-            _obj.css(_animation['pre']);
+            if(!_obj){
+                console.log('What kind of animation is this?');
+                console.dir(_node);
+            }else{
+                _obj.css(_animation['pre']);
+            }
         }
         for(var key in _animation['anim']){
             if(typeof _animation['anim'][key] === 'function'){
@@ -220,15 +226,19 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
             }
             _animation['anim'][key] = _replace_object_keywords(_animation['anim'][key],_obj);
         }
+        var _easing =  $.cssEase._default;
+        if('easing' in _animation){
+            _easing = _animation['easing'];
+        }
         if(_animation['extended_animation']){
-            _obj.transition(_animation['anim'],_duration,function(){
+            _obj.transition(_animation['anim'], _duration, _easing, function(){
                 _remove_node_from_current_queue(_level,_node);
                 if(triggerNext){
                     nextAnimation(_level);
                 }
             });
         }else{
-            _obj.animate(_animation['anim'],{duration:_duration,queue:false,complete:function(){
+            _obj.animate(_animation['anim'],{duration:_duration, queue:false, easing:_easing, complete:function(){
                 _remove_node_from_current_queue(_level,_node);
                 if(triggerNext){
                     nextAnimation(_level);
@@ -255,8 +265,9 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
             if(_animation['extended_animation']){
                 _hideAnimation[1]['animation']['extended_animation'] = true;
             }
-            _hideAnimation.push({'animation':{'type':'hide', 'duration':0, 'object':_obj}}); //Insert an empty hide animation to hide the object after animation
+            _hideAnimation.push({'animation':{'type':'hide', 'duration':0, 'object':_obj, 'triggerNext': triggerNext, 'name':'Hide after delay'}}); //Insert an empty hide animation to hide the object after animation
             _addInteractionAnimationLayerForObject(_hideAnimation);
+            triggerNext = false; //Should trigger after animation finished, not now.
         }else{
             _obj.hide();
         }
@@ -308,6 +319,7 @@ function _handleNode(_node,_level){ //TODO should handle dynamic values also, e.
         }else{
             console.log('Music not ready yet, waiting');
             node_waiting_to_play=_node;
+            pause();
             return;
         }
     }else if(_type === 'music-pause'){
@@ -377,7 +389,9 @@ function nextAnimation(_level){
  */
 function finish(){
     $('#finished-bg').show();
-    currentMusicObj.jPlayer('stop');
+    if(currentMusicObj){
+        currentMusicObj.jPlayer('stop');
+    }
     for(var i=0; i<animation_finish_observer.length; i++){
         animation_finish_observer[i]();
     }
@@ -396,7 +410,9 @@ function finish(){
                 var _animation = node['animation'];
                 if('object' in _animation){
                     var _obj=_animation['object'];
-                    _obj.stop();
+                    if(_obj){
+                        _obj.stop();
+                    }
                 }
             }
         }
@@ -429,7 +445,7 @@ function pause(){
                     _obj = $(_obj);
                 }
             }
-            if(node['type']==='animation'){
+            if(_obj && node['type']==='animation'){
                 _obj.stop();
                 pauseQueue[i].push(node);
             }
@@ -493,8 +509,12 @@ function _musicFade(_obj, isFadeIn, step, triggerNextAfterFinish){
             _musicFade(_obj, isFadeIn, step, triggerNextAfterFinish);
         },MUSIC_ANIMATION_INTERVAL);
     }else if(triggerNextAfterFinish){
-        console.log('Triggering next music animation');
-        nextAnimation(currentMusicLayer);
+        console.log('Triggering next music animation on layer:'+currentMusicLayer);
+        setTimeout(function(){
+            console.log('timeout');
+            nextAnimation(currentMusicLayer);
+        },1500);
+        console.log('disari bura')
     }
 }
 function volumeSliderChanged(_val){
@@ -631,10 +651,10 @@ function _convertLayerToJSON(_layer){
  * @private
  */
 function _music_loaded(_loaded_obj){
-    console.log('music loaded.');
+    console.log('loaded - isPlaying:'+isPlaying);
     ready_music_count++;
-    if(node_waiting_to_play){
-        _handleNode(node_waiting_to_play,currentMusicLayer);
+    if(node_waiting_to_play ){
+        resume();
     }
 }
 

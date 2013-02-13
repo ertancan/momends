@@ -101,6 +101,7 @@ class CoreAnimationData(BaseDataManagerModel):
     type = models.IntegerField(choices=_choices) #Type of the animation
     duration = models.IntegerField(verbose_name = 'Duration (ms)', default=0) #Duration of certain types
     delay = models.IntegerField(verbose_name='Delay (ms)', default=0)
+    easing = models.CharField(max_length=255, null=True, blank=True) #Easing functions (or cubic-bezier also supported in extended animation)  for default list: http://easings.net/
     pre = models.TextField(null=True, blank=True) #Precondition of the object to perform the animation
     anim = models.TextField(null=True, blank=True) #Steps to be performed if the type is 'animation'
     target = models.IntegerField(null=True, blank=True) #Animation layer to affect if inter-layer type like wait,block,unblock etc.
@@ -233,6 +234,7 @@ class AnimationGroup(BaseDataManagerModel):
         'Music': 1,
         'SceneChange': 2,
         'Normal': 3,
+        'UserInteraction': 4,
         }
     type = models.IntegerField(choices=[[ANIMATION_GROUP_TYPE[key],key] for key in ANIMATION_GROUP_TYPE.keys()])
 
