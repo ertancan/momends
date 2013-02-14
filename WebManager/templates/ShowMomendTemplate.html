@@ -99,9 +99,9 @@
         function frameLoaded(){
             player_frame = document.getElementById('momend-player-frame');
             $('#momend-player').css('background-color','rgba(51,51,51,0)');
-            player_frame.contentWindow.setFullscreenFunction(fullscreen);
-            player_frame.contentWindow.addFinishListenerFunction(finished);
-            player_frame.contentWindow.setRedirectFunction(redirectToPage);
+            player_frame.contentWindow.momendManager.setFullscreenFunction(fullscreen);
+            player_frame.contentWindow.momendManager.addFinishListenerFunction(finished);
+            player_frame.contentWindow.momendManager.setRedirectFunction(redirectToPage);
             //We may want to open in a new tab?
         }
         function finished(){
@@ -110,7 +110,7 @@
             }
         }
         function fullscreen(){
-            player_frame.contentWindow.fullscreenToggle();
+            player_frame.contentWindow.momendManager.fullscreenToggle();
             if(!fullscreen_on){
                 $('#momend-player').attr("class","player-fullscreen");
             }else{

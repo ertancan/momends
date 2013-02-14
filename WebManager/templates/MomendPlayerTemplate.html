@@ -29,7 +29,7 @@
         <div class="music"></div>
         <div class="momend-player">
             <div class="momend-button-group">
-                <button onclick="pause()" id="play-toggle" class="icon-pause player-button"></button>
+                <button id="play-toggle" class="icon-pause player-button"></button>
                 <input id="volume-slider" type="range" min="0" max="100" style="width: 80px">
             </div>
             <div class="momend-button-group right-group">
@@ -70,16 +70,16 @@
     <script src="{{ STATIC_URL }}momend.js"></script>
 
     <script type="text/javascript">
+        var momendManager;
         function fetchMomendData(){
             $.getJSON( '{% url 'momends:get-momend' params.type params.id %}', function(data) {
-                momend_data = data;
-                momendArrived();
+                momendManager.momendArrived(data);
 
-            }).error(function(){load_failed();});
+            }).error(function(){momendManager.loadFailed();});
         }
 
         function sendInteractionData(){
-            _sendUserInteractionToServer('{% url 'momends:save-interaction' params.id %}', sendInteractionCallback);
+            momendManager.sendUserInteractionToServer('{% url 'momends:save-interaction' params.id %}', sendInteractionCallback);
             var sendText = $('#send-interaction-text');
             var sendIcon = $('#send-interaction-icon');
             sendText.text('Sending..');
@@ -95,6 +95,7 @@
             if(success){
                 sendText.text('Play Interaction');
                 sendButton.unbind('click').click(function(){
+                    var page_redirect_function = momendManager.getRedirectFunction();
                     if(page_redirect_function){
                         page_redirect_function(msg); //Redirect to returned url to view the interaction
                     }else{
@@ -111,11 +112,14 @@
 
         }
         function playerInit(){
-            initAnimation();
+            momendManager = new Momend();
+            momendManager.init();
             fetchMomendData();
             if ( window.self === window.top ) {
                 $('#scene').addClass('fullscreen'); //Not in iframe
             }
+            var pauseButton = $('#play-toggle');
+            pauseButton.bind('click', momendManager.jsAnimate.pause);
 
 
         }
