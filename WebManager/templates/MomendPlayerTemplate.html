@@ -23,7 +23,7 @@
 <body>
 {% block heading %} {% endblock heading %}
 {% block content %}
-    <body onload="player_init()">
+    <body onload="playerInit()">
     <div class="player">
         <div class="scene" id="scene"></div>
         <div class="music"></div>
@@ -41,7 +41,7 @@
     </div>
     <div class="finished-modal-bg" id="finished-bg" style="display: none;">
         <div class="finished-modal" id="finished-modal">
-            <div id="send-interaction-button" onclick="send_interaction_data()" class="finished-modal-button">
+            <div id="send-interaction-button" onclick="sendInteractionData()" class="finished-modal-button">
                 <i class="icon-magic modal-icon" id="send-interaction-icon"></i>
                 <span id="send-interaction-text">Save Interaction</span>
             </div>
@@ -70,16 +70,16 @@
     <script src="{{ STATIC_URL }}momend.js"></script>
 
     <script type="text/javascript">
-        function fetch_momend_data(){
+        function fetchMomendData(){
             $.getJSON( '{% url 'momends:get-momend' params.type params.id %}', function(data) {
                 momend_data = data;
-                momend_arrived();
+                momendArrived();
 
             }).error(function(){load_failed();});
         }
 
-        function send_interaction_data(){
-            _sendUserInteractionToServer('{% url 'momends:save-interaction' params.id %}', send_interaction_callback);
+        function sendInteractionData(){
+            _sendUserInteractionToServer('{% url 'momends:save-interaction' params.id %}', sendInteractionCallback);
             var sendText = $('#send-interaction-text');
             var sendIcon = $('#send-interaction-icon');
             sendText.text('Sending..');
@@ -88,7 +88,7 @@
             sendIcon.addClass('icon-spinner')
         }
 
-        function send_interaction_callback(success, msg){
+        function sendInteractionCallback(success, msg){
             var sendButton = $('#send-interaction-button');
             var sendText = $('#send-interaction-text');
             var sendIcon = $('#send-interaction-icon');
@@ -110,9 +110,9 @@
             sendIcon.removeClass('icon-spinner');
 
         }
-        function player_init(){
-            init_animation();
-            fetch_momend_data();
+        function playerInit(){
+            initAnimation();
+            fetchMomendData();
             if ( window.self === window.top ) {
                 $('#scene').addClass('fullscreen'); //Not in iframe
             }

@@ -24,10 +24,10 @@ var keywordLookupTable; //Keeps the latest values of keyword related values like
 
 var animation_finish_observer = [];
 
-function init_animation(){
+function initAnimation(){
     $.cssEase._default = 'linear';
     $(window).resize(function(){
-        _calculate_dimensions();
+        _reCalculateDimensions();
     });
     volume_slider = $('#volume-slider');
     volume_slider.val(100);
@@ -136,6 +136,7 @@ function addToQueue(_level,_node){
  * Handles a single node's animations
  * @param _node Whether the node itself or an object containing the node in 'animation' key
  * @param _level which level does the node belong to. (In order to trigger next animation)
+ * @param _caller is whether the node or the describing string for debugging purposes
  *
  * main keys in the animation dictionary;
  *  object:(jQuery object) to perform operations on
@@ -187,7 +188,7 @@ function _handleNode(_node,_level, _caller){ //TODO should handle dynamic values
         console.log('Layer '+_level+' now sleeping for '+_animation['duration']);
         _animation['sleepTimer'] = setTimeout(function(){
             console.log('Layer '+_level+ ' sleep finished');
-            _remove_node_from_current_queue(_level,_node);
+            _removeNodeFromCurrentQueue(_level,_node);
             nextAnimation(_level,_node);
         },_animation['duration']);
         return;
@@ -223,7 +224,7 @@ function _handleNode(_node,_level, _caller){ //TODO should handle dynamic values
                 if(_animation['pre'][key] in keywordLookupTable){
                     _animation['pre'][key]=keywordLookupTable[_animation['pre'][key]];
                 }
-                _animation['pre'][key] = _replace_object_keywords(_animation['pre'][key],_obj);
+                _animation['pre'][key] = _replaceObjectKeywords(_animation['pre'][key],_obj);
             }
             if(!_obj){
                 console.log('What kind of animation is this?');
@@ -239,7 +240,7 @@ function _handleNode(_node,_level, _caller){ //TODO should handle dynamic values
             if(_animation['anim'][key] in keywordLookupTable){
                 _animation['anim'][key]=keywordLookupTable[_animation['anim'][key]];
             }
-            _animation['anim'][key] = _replace_object_keywords(_animation['anim'][key],_obj);
+            _animation['anim'][key] = _replaceObjectKeywords(_animation['anim'][key],_obj);
         }
         var _easing =  $.cssEase._default;
         if('easing' in _animation){
@@ -247,14 +248,14 @@ function _handleNode(_node,_level, _caller){ //TODO should handle dynamic values
         }
         if(_animation['extended_animation']){
             _obj.transition(_animation['anim'], _duration, _easing, function(){
-                _remove_node_from_current_queue(_level,_node);
+                _removeNodeFromCurrentQueue(_level,_node);
                 if(triggerNext){
                     nextAnimation(_level, _node);
                 }
             });
         }else{
             _obj.animate(_animation['anim'],{duration:_duration, queue:false, easing:_easing, complete:function(){
-                _remove_node_from_current_queue(_level,_node);
+                _removeNodeFromCurrentQueue(_level,_node);
                 if(triggerNext){
                     nextAnimation(_level, _node);
                 }
@@ -483,7 +484,7 @@ function pause(){
     }
     currentMusicObj.jPlayer('pause');
     isPlaying = false;
-    _toggle_play_button(true);
+    _togglePlayButton(true);
 
 }
 
@@ -505,7 +506,7 @@ function resume(){
     }
     currentMusicObj.jPlayer('play');
     isPlaying = true;
-    _toggle_play_button(false);
+    _togglePlayButton(false);
 }
 
 /**
@@ -526,19 +527,20 @@ function _musicFade(_obj, isFadeIn, step, triggerNextAfterFinish){
         var targetVol = currentVol - step;
     }
     _obj.jPlayer("volume",targetVol);
-    if((isFadeIn && targetVol + step  <=1 ) || (!isFadeIn && targetVol - step >=0)){
+    if((isFadeIn && targetVol + step  <= (volume_slider.val()/100) ) //Fade-in animation and not completed yet
+            || (!isFadeIn && targetVol - step >=0)){ //Fade-out animation and not completed yet
         setTimeout(function(){
             _musicFade(_obj, isFadeIn, step, triggerNextAfterFinish);
         },MUSIC_ANIMATION_INTERVAL);
-    }else if(triggerNextAfterFinish){
+    }else if(triggerNextAfterFinish){ //Fade animation completed and should trigger next music animation
         console.log('Triggering next music animation on layer:'+currentMusicLayer);
-        setTimeout(function(){
-            console.log('timeout');
-            nextAnimation(currentMusicLayer, 'music fade');
-        },1500);
-        console.log('disari bura')
+        nextAnimation(currentMusicLayer, 'music fade');
     }
 }
+/**
+ * Volume slider's listener function, sets the volume if music player in steady mode (not animating)
+ * @param _val Current value of the slider
+ */
 function volumeSliderChanged(_val){
     if(!soundAnimationInProcess){
         currentMusicObj.jPlayer('volume',volume_slider.val()/100);
@@ -556,8 +558,8 @@ function handleClick(_obj){
     var _node = _findObjectNode(_obj);
     var click_animation = _node['animation']['click_animation'];
     for (var i = 0; i<click_animation['animations'].length;i++){
-        click_animation['animations'][i]['anim'] = _parse_string_to_dict(click_animation['animations'][i]['anim']);
-        click_animation['animations'][i]['pre'] = _parse_string_to_dict(click_animation['animations'][i]['pre']);
+        click_animation['animations'][i]['anim'] = _parseStringToDict(click_animation['animations'][i]['anim']);
+        click_animation['animations'][i]['pre'] = _parseStringToDict(click_animation['animations'][i]['pre']);
         click_animation['animations'][i]['object'] = _node['animation']['object'];
     }
     if(click_animation['stop_current_animation']){
@@ -590,8 +592,8 @@ function handleMouseEnter(_obj){
     var _node = _findObjectNode(_obj);
     var enter_animation = _node['animation']['hover_animation'];
     for (var i = 0; i<enter_animation['animations'].length;i++){
-        enter_animation['animations'][i]['anim'] = _parse_string_to_dict(enter_animation['animations'][i]['anim']);
-        enter_animation['animations'][i]['pre'] = _parse_string_to_dict(enter_animation['animations'][i]['pre']);
+        enter_animation['animations'][i]['anim'] = _parseStringToDict(enter_animation['animations'][i]['anim']);
+        enter_animation['animations'][i]['pre'] = _parseStringToDict(enter_animation['animations'][i]['pre']);
         enter_animation['animations'][i]['object'] = _node['animation']['object'];
     }
     if(enter_animation['stop_current_animation']){
@@ -613,7 +615,7 @@ function handleMouseEnter(_obj){
 }
 
 /**
- * Clears all! upcoming animations of the given objects from ever queue
+ * Clears all! upcoming animations of the given objects from every queue
  * Call before adding the interaction animations to the animation queue, since this will remove new animations from queue, too
  * @param _obj
  * @private
@@ -657,6 +659,12 @@ function _findObjectNode(_obj){
     console.log('Node not found in:'+(finishTime-time));
 }
 
+/**
+ * Converts any given layer into JSON format, currently its intended use is for user animations
+ * @param _layer number of the layer
+ * @return JSON string
+ * @private
+ */
 function _convertLayerToJSON(_layer){
     var layerCopy = jQuery.extend(true,[],_layer);
     for (var i=0; i<layerCopy.length;i++){
@@ -672,7 +680,7 @@ function _convertLayerToJSON(_layer){
  * @param _loaded_obj which track loaded
  * @private
  */
-function _music_loaded(_loaded_obj){
+function _musicLoaded(_loaded_obj){
     console.log('loaded - isPlaying:'+isPlaying);
     ready_music_count++;
     if(node_waiting_to_play ){
@@ -680,7 +688,12 @@ function _music_loaded(_loaded_obj){
     }
 }
 
-function _calculate_dimensions(){
+/**
+ * Saves the screen dimensions to use them parameter replacing
+ * --Currently this function is also the callback of body's resize--
+ * @private
+ */
+function _reCalculateDimensions(){
     var screen = $('.scene');
     keywordLookupTable = {
         '{{SCREEN_WIDTH}}' : screen.outerWidth(),
@@ -688,7 +701,7 @@ function _calculate_dimensions(){
     }
 }
 
-function _replace_object_keywords(_str, _obj){
+function _replaceObjectKeywords(_str, _obj){
     if(typeof _str !='string'){
         return null;
     }
@@ -703,14 +716,14 @@ function _replace_object_keywords(_str, _obj){
  * @param _node to search
  * @private
  */
-function _remove_node_from_current_queue(_level,_node){
+function _removeNodeFromCurrentQueue(_level,_node){
     currentAnimation[_level] = $.grep(currentAnimation[_level], function(obj){
         return obj['id'] !== _node['id'];
     });
     finishedAnimationQueue[_level].push(_node);
 }
 
-function _toggle_play_button(toPlay){
+function _togglePlayButton(toPlay){
     var button = $('#play-toggle');
 
     if(toPlay){

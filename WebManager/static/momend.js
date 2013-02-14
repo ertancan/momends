@@ -56,15 +56,15 @@ if (!Object.keys) {
     })()
 };
 
-function momend_arrived(){
-    _calculate_dimensions(); //Since they may be needed while creating objects
+function momendArrived(){
+    _reCalculateDimensions(); //Since they may be needed while creating objects
     if(!momend_data || momend_data.length == 0 || momend_data['error']){
         load_failed();
-        return;
+    }else{
+        createObjectsFromData(startAnimation); //start animation as create objects callback
     }
-    create_objects_from_data(start_animation); //start animation as create objects callback
 }
-function start_animation(){
+function startAnimation(){
     setAnimationQueue(momend_data['animation_layers']);
     $('#loading-bg').animate({
         'top':'-100%',
@@ -130,7 +130,7 @@ function load_failed(){
     }).appendTo('body');
     $('#loading-bg').hide();
 }
-function create_objects_from_data(load_callback){
+function createObjectsFromData(load_callback){
     _load_callback = load_callback;
     created_objects = {};
     for(var i = 0;i<momend_data['animation_layers'].length;i++){
@@ -138,11 +138,11 @@ function create_objects_from_data(load_callback){
             var node = momend_data['animation_layers'][i][j];
             var _anim = node['animation']['anim'];
             if(_anim && _anim.length > 0){
-                node['animation']['anim'] = _parse_string_to_dict(_anim);
+                node['animation']['anim'] = _parseStringToDict(_anim);
             }
             var _pre = node['animation']['pre'];
             if(_pre && _pre.length > 0){
-                node['animation']['pre'] = _parse_string_to_dict(_pre);
+                node['animation']['pre'] = _parseStringToDict(_pre);
             }
             var filepath = node['final_data_path'];
             var theme_filepath;
@@ -165,7 +165,7 @@ function create_objects_from_data(load_callback){
                         id: 'stub-image'+i+''+j,
                         src: theme_filepath,
                         ready : function(){
-                            _object_ready();
+                            _objectReady();
                         }
                     }).appendTo(created_div);
                     if(typeof node['animation']['click_animation'] !== 'undefined'){
@@ -194,7 +194,7 @@ function create_objects_from_data(load_callback){
                             class: 'background-image',
                             src: theme_filepath,
                             ready : function(){
-                                _object_ready();
+                                _objectReady();
                             }
                         }).appendTo(created_div);
                         created_objects[node['final_data_path']] = $('#bg'+i+''+j);
@@ -214,7 +214,7 @@ function create_objects_from_data(load_callback){
                             id: 'photo_image'+i+''+j,
                             src: filepath,
                             ready : function(){
-                                _object_ready();
+                                _objectReady();
                             }
                         }).appendTo(created_div);
                         if(typeof node['animation']['click_animation'] !== 'undefined'){
@@ -254,7 +254,7 @@ function create_objects_from_data(load_callback){
                             });
                         }
                         if(node['post_enhancements']){
-                            _apply_post_enhancements(created_div,node['post_enhancements']);
+                            _applyPostEnhancements(created_div,node['post_enhancements']);
                         }
                         created_objects[hashCode(node['data'])] = created_div;
 
@@ -273,10 +273,10 @@ function create_objects_from_data(load_callback){
                         }).appendTo('.music');
                         var music_obj = $('#music'+i+''+j);
                         music_obj[0]['filepath'] = node['final_data_path'];
-                        var _parsed_paths = _parse_music_sources(node['final_data_path']);
+                        var _parsed_paths = _parseMusicSources(node['final_data_path']);
                         music_obj.jPlayer({
                             ready: function (event){
-                                var paths = _parse_music_sources(event.delegateTarget['filepath']);
+                                var paths = _parseMusicSources(event.delegateTarget['filepath']);
                                 var _keys = Object.keys(paths);
                                 for(var k = 0; k< _keys.length; k++){
                                     var _type = _keys[k];
@@ -290,8 +290,8 @@ function create_objects_from_data(load_callback){
                                     }
                                 }
                                 $(this).jPlayer("setMedia",paths);
-                                _music_loaded($(this));
-                                _object_ready();
+                                _musicLoaded($(this));
+                                _objectReady();
                             },
                             swfPath: STATIC_URL,
                             supplied: Object.keys(_parsed_paths).toString(),
@@ -309,19 +309,19 @@ function create_objects_from_data(load_callback){
             }
         }
     }
-    _check_if_ready();
+    _checkIfReady();
 }
-function _object_ready(){
+function _objectReady(){
     loaded_objects++;
 }
-function _check_if_ready(){
+function _checkIfReady(){
     if(loaded_objects === total_objects){
         _load_callback();
     }else{
-        setTimeout(_check_if_ready,300);
+        setTimeout(_checkIfReady,300);
     }
 }
-function _apply_post_enhancements(created_obj, enhancements){
+function _applyPostEnhancements(created_obj, enhancements){
     for(var i=0; i<enhancements.length; i++){
         var enh = enhancements[i];
         var path = enh['filepath'];
@@ -341,10 +341,7 @@ function _apply_post_enhancements(created_obj, enhancements){
             created_obj.css('background-image','url("'+path+'")');
             created_obj.css('background-size', '100% 100%');
             created_obj.css('background-repeat', 'no-repeat');
-            console.log(enh['parameters']);
-            var _cssParameters = _parse_string_to_dict(enh['parameters'],false);
-            console.dir(_cssParameters);
-            console.dir(created_obj.children());
+            var _cssParameters = _parseStringToDict(enh['parameters'],false);
             $(created_obj.children()[0]).css(_cssParameters);
         }
     }
@@ -358,7 +355,7 @@ function _apply_post_enhancements(created_obj, enhancements){
  * @return {*} dictionary {"left":"200px","top":"300px"}
  * @private
  */
-function _parse_string_to_dict(_str,replaceKeywords){
+function _parseStringToDict(_str,replaceKeywords){
     if(typeof _str !== 'string'){
         return _str;
     }
@@ -382,7 +379,7 @@ function _parse_string_to_dict(_str,replaceKeywords){
  * @return dictionary contains given values
  * @private
  */
-function _parse_music_sources(_str){
+function _parseMusicSources(_str){
     if(typeof _str !== 'string'){
         return null;
     }
