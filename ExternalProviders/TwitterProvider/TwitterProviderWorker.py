@@ -9,7 +9,6 @@ from LogManagers.Log import Log
 
 class TwitterProviderWorker(BaseStatusProviderWorker):
 
-
     def collect_status(self, user, **kwargs):
         _return_data = []
         if kwargs['is_date']:
