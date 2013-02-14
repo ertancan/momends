@@ -118,9 +118,10 @@ class ThemeManagerWorker:
             elif next_enh.used_object_type:
                 theme_data = self.data_manager.get_data_for_keyword(next_enh.used_object_type)
                 applied_enh.filepath = theme_data.data_path
-                if not enh_parameter or len(enh_parameter) == 0:
+                if not enh_parameter or len(enh_parameter) == 0: #Override theme_data's parameters here
                     enh_parameter = theme_data.parameters
 
+            enh_parameter = self.data_manager.replace_parameter_keywords(enh_parameter) #Replace used keywords like {{THEME_DATA_PARAMETER}} here
             applied_enh.parameters = enh_parameter
             applied_enh.save()
 
