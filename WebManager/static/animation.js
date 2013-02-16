@@ -1,5 +1,9 @@
 var JSAnimate = (function(){
+    var screen = $('.scene');
+
     var animationQueue; // Keeps layers of animation data
+    var _originalAnimationQueue; //Keeps the initial state of animationQueue since animationQueue changes during animations
+    var shadowData; //Keeps shadow information of the objects
     var queueOnAction; // Boolean array indicates the given layer is active or not (e.g. queueOnAction[0] will be true if layer 0 started and working now)
     var currentAnimation; //Keeps the animations which are being processed right now
     var finishedAnimationQueue; //Keeps finished animation nodes in finishing order
@@ -11,32 +15,28 @@ var JSAnimate = (function(){
 
     var MUSIC_ANIMATION_INTERVAL = 100; //Defines number of milliseconds between music fade animations. (e.g. if you perform fade animation with duration=1000ms
     // the animation will be performed in 5 steps. (Can be changed according to smoothness of the animation
-    var ready_music_count = 0; //How many of the remaining music are ready for playing.
-    var node_waiting_to_play; //If the handle_node tried to play a music but it wasn't ready
+    var readyMusicCount = 0; //How many of the remaining music are ready for playing.
+    var nodeWaitingToPlay; //If the handle_node tried to play a music but it wasn't ready
     var currentMusicLayer; //Which layer belongs to music player
     var soundAnimationInProcess = false;
     var currentMusicObj;
 
     var pauseTime = 0; // Time that the user presses pause button, to calculate time between user interactions
     var pauseQueue; //Keeps the remaining animations that will be performed when un-paused
-    var isPlaying = false;
+    var _isPlaying = false;
 
     var keywordLookupTable; //Keeps the latest values of keyword related values like {{SCREEN_WIDTH}}
 
-    var animation_finish_observer = [];
+    var animationFinishObserver = [];
 
-    var volume_slider; //Volume slider of the player
+    var volume;
 
     function _initAnimation(){
         $.cssEase._default = 'linear';
         $(window).resize(function(){
             _reCalculateDimensions();
         });
-        volume_slider = $('#volume-slider');
-        if(volume_slider){
-            volume_slider.val(100);
-            volume_slider.change(function(){_volumeSliderChanged(volume_slider.val())});
-        }
+        volume = 100; //TODO read from cookie
     }
     /**
      * Instantiates global variables according to number of levels needed.
@@ -44,6 +44,7 @@ var JSAnimate = (function(){
      */
     function __generateQueues(_level){
         animationQueue = [];
+        _originalAnimationQueue = [];
         queueOnAction = [];
         currentAnimation = [];
         finishedAnimationQueue = [];
@@ -52,9 +53,10 @@ var JSAnimate = (function(){
         _userInteractionQueue = [];
         for(var i=0;i<_level;i++){
             animationQueue.push([]);
+            _originalAnimationQueue.push([]);
             queueOnAction.push(false);
             currentAnimation.push([]);
-            finishedAnimationQueue.push([])
+            finishedAnimationQueue.push([]);
             _layerWaitQueue.push([]);
             _layerBreakPointWaitQueue.push([]);
         }
@@ -79,7 +81,7 @@ var JSAnimate = (function(){
             _startQueue(i);
         }
         lastUserInteraction = new Date().getTime();
-        isPlaying = true;
+        _isPlaying = true;
     }
 
     function _stopAllQueues(){
@@ -99,6 +101,28 @@ var JSAnimate = (function(){
                 animationQueue[i][j]['id'] = i+'-'+j;
             }
         }
+        _originalAnimationQueue = jQuery.extend(true,[],animationQueue);
+    }
+
+    /**
+     * Adds a dynamic shadow animation for given object
+     * @param _obj jQuery dom object
+     * @param _shadow animation dictionary containing keys: max_x, max_y, blur, spread, color(str), inset(bool)
+     * @private
+     */
+    function _setShadowForObject(_obj, _shadow){
+        if(!shadowData){
+            shadowData = {};
+        }
+        shadowData[_obj.id] = _shadow;
+    }
+
+    /**
+     * Sets the dynamic shadow animations of objects
+     * @param _shadow_data dynamic shadow animation array
+     */
+    function _setShadowData(_shadow_data){
+        shadowData = _shadow_data;
     }
     /**
      * Creates an additional animation queue level for user interaction animations like click or hover and hiding animations
@@ -128,10 +152,12 @@ var JSAnimate = (function(){
             for(var i=0;i<_node.length;i++){
                 _node[i]['id'] = _level+'-'+animationQueue[_level].length;
                 animationQueue[_level].push(_node[i]);
+                _originalAnimationQueue[_level].push($.extend(_node, {}, true));
             }
         }else{ //Adding just one item
             _node['id'] = _level+'-'+animationQueue[_level].length;
             animationQueue[_level].push(_node);
+            _originalAnimationQueue[_level].push($.extend(_node, {}, true));
         }
         if(wasEmpty && queueOnAction[_level]){
             _nextAnimation(_level, 'Add to running empty queue');
@@ -220,6 +246,7 @@ var JSAnimate = (function(){
         }
 
         if(_type==='animation'){
+            var _shadow = shadowData[_obj[0].id];
             currentAnimation[_level].push(_node);
             if('pre' in _animation){
                 for(var key in _animation['pre']){
@@ -231,11 +258,10 @@ var JSAnimate = (function(){
                     }
                     _animation['pre'][key] = __replaceObjectKeywords(_animation['pre'][key],_obj);
                 }
-                if(!_obj){
-                    console.log('What kind of animation is this?');
-                    console.dir(_node);
-                }else{
-                    _obj.css(_animation['pre']);
+                _obj.css(_animation['pre']);
+                if(_shadow){
+                    var _shadowStr = __generateShadowStr(_obj, _shadow, null, null);
+                    $(_obj[0].lastChild).css('box-shadow', _shadowStr); //Apply to image directly not to the div
                 }
             }
             for(var key in _animation['anim']){
@@ -250,6 +276,35 @@ var JSAnimate = (function(){
             var _easing =  $.cssEase._default;
             if('easing' in _animation){
                 _easing = _animation['easing'];
+            }
+            if(_shadow){
+                var _x = null, _y = null;
+                if(_animation['anim']['left']){ //If animating on x axis
+                    _x = _animation['anim']['left'];
+                }else if(_animation['anim']['right']){ //Convert it to pixels if it is not left
+                    var _right = _animation['anim']['right'];
+                    if(_right.indexOf('px')>0){
+                        _x = screen.outerWidth() - parseInt(_right.replace('px',''));
+                    }else if(_right.indexOf('%') > 0){
+                        _x = screen.outerWidth() * (100 - parseFloat(_right.replace('%','')))/100;
+                    }
+                }
+
+                if(_animation['anim']['top']){
+                    _y = _animation['anim']['top'];
+                }else if(_animation['anim']['bottom']){
+                    var _bottom = _animation['anim']['bottom'];
+                    if(_bottom.indexOf('px')>0){
+                        _y = screen.outerHeight() - parseInt(_bottom.replace('px',''));
+                    }else if(_bottom.indexOf('%') > 0){
+                        _y = screen.outerHeight() * (100 - parseFloat(_bottom.replace('%','')))/100;
+                    }
+                }
+                if(_x || _y){ //If one of them animating
+                    var _shadowStr = __generateShadowStr(_obj, _shadow, _x, _y);
+                    console.log('shadow animation for moving obj:'+_shadowStr);
+                    $(_obj[0].lastChild).animate({'box-shadow': _shadowStr},{duration:_duration, queue:false, easing:_easing}); //Apply to image directly not to the div
+                }
             }
             if(_animation['extended_animation']){
                 _obj.transition(_animation['anim'], _duration, _easing, function(){
@@ -340,13 +395,16 @@ var JSAnimate = (function(){
         else if(_type === 'music-play'){
             currentMusicLayer = _level;
             currentMusicObj = _obj;
-            if(ready_music_count>0){ //If the music player object loaded and ready TODO check first music instead of loaded count
+            if(readyMusicCount>0){ //If the music player object loaded and ready TODO check first music instead of loaded count
                 _obj.jPlayer("play");
-                node_waiting_to_play=null;
-                ready_music_count--;
+                nodeWaitingToPlay=null;
+                readyMusicCount--;
+                if(volume === 0){
+                    _obj.jPlayer('volume', 0);
+                }
             }else{
                 console.log('Music not ready yet, waiting');
-                node_waiting_to_play=_node;
+                nodeWaitingToPlay=_node;
                 _pause();
                 return;
             }
@@ -358,13 +416,15 @@ var JSAnimate = (function(){
             var _target = _animation['target'];
             var vol = parseFloat(_target);
             if(!isNaN(vol)){
-                _obj.jPlayer("volume",vol*(volume_slider.val()/100)); //proportional to the volume slider's current value
+                _obj.jPlayer("volume",vol*(volume/100)); //proportional to the volume slider's current value
             }
         }
         else if(_type === 'music-fadein'){
-            var currentVol = _obj.jPlayer("option","volume");
-            __musicFade(_obj, true, ((volume_slider.val()/100)-currentVol)/(_duration/MUSIC_ANIMATION_INTERVAL), triggerNext);
-            triggerNext = false; //Do not trigger next before music fade animation finishes.
+            if(volume!== 0){
+                var currentVol = _obj.jPlayer("option","volume");
+                __musicFade(_obj, true, ((volume/100)-currentVol)/(_duration/MUSIC_ANIMATION_INTERVAL), triggerNext);
+                triggerNext = false; //Do not trigger next before music fade animation finishes.
+            }
         }else if(_type === 'music-fadeout'){
             __musicFade(_obj, false,1/(_duration/MUSIC_ANIMATION_INTERVAL), triggerNext);
             triggerNext = false;
@@ -421,8 +481,8 @@ var JSAnimate = (function(){
         if(currentMusicObj){
             currentMusicObj.jPlayer('stop');
         }
-        for(var i=0; i<animation_finish_observer.length; i++){
-            animation_finish_observer[i]();
+        for(var i=0; i<animationFinishObserver.length; i++){
+            animationFinishObserver[i]();
         }
         _stopAllQueues();
 
@@ -431,7 +491,7 @@ var JSAnimate = (function(){
         button.removeClass('icon-pause');
         button.addClass('icon-repeat');
         button.unbind('click');
-        button.bind('click', location.reload);
+        button.bind('click', function(){location.reload()});
 
         for(var i = 0; i< currentAnimation.length; i++){ //Stop active animations (i.e. background)
             for(var j = 0; j<currentAnimation[i].length; j++){
@@ -453,7 +513,9 @@ var JSAnimate = (function(){
      * Pauses the current animation and saves the current states of animations to be able to resume
      */
     function _pause(){
-        console.log('Pause');
+        if(!_isPlaying){
+            return;
+        }
         pauseTime = new Date().getTime();
         _stopAllQueues();
         pauseQueue = [];
@@ -478,6 +540,7 @@ var JSAnimate = (function(){
                 if(_obj && node['type']==='animation'){
                     _obj.stop();
                     pauseQueue[i].push(node);
+                    $(_obj[0].lastChild).stop();
                 }
                 if(node['type']==='sleep'){
                     clearTimeout(node['sleepTimer']);
@@ -490,7 +553,7 @@ var JSAnimate = (function(){
             currentAnimation.push([]);
         }
         currentMusicObj.jPlayer('pause');
-        isPlaying = false;
+        _isPlaying = false;
         _togglePlayButton(true);
 
     }
@@ -512,7 +575,7 @@ var JSAnimate = (function(){
             }
         }
         currentMusicObj.jPlayer('play');
-        isPlaying = true;
+        _isPlaying = true;
         _togglePlayButton(false);
     }
 
@@ -534,7 +597,7 @@ var JSAnimate = (function(){
             var targetVol = currentVol - step;
         }
         _obj.jPlayer("volume",targetVol);
-        if((isFadeIn && targetVol + step  <= (volume_slider.val()/100) ) //Fade-in animation and not completed yet
+        if((isFadeIn && targetVol + step  <= (volume/100) ) //Fade-in animation and not completed yet
             || (!isFadeIn && targetVol - step >=0)){ //Fade-out animation and not completed yet
             setTimeout(function(){
                 __musicFade(_obj, isFadeIn, step, triggerNextAfterFinish);
@@ -550,19 +613,21 @@ var JSAnimate = (function(){
      */
     function _volumeSliderChanged(_val){
         if(!soundAnimationInProcess){
-            currentMusicObj.jPlayer('volume',volume_slider.val()/100);
+            currentMusicObj.jPlayer('volume',_val/100);
         }
+        volume = _val;
     }
     /**
      * Gets the click animation of the clicked object, creates a new animation layer for it and plays
      * @param _obj clicked object
      */
     function _handleClick(_obj){
-        if(!isPlaying){ //Don't let interactions if paused
+        if(!_isPlaying){ //Don't let interactions if paused
             return;
         }
         var click_time = new Date().getTime();
         var _node = __findObjectNode(_obj);
+        console.dir(_node);
         var click_animation = _node['animation']['click_animation'];
         for (var i = 0; i<click_animation['animations'].length;i++){
             click_animation['animations'][i]['anim'] = _parseStringToDict(click_animation['animations'][i]['anim']);
@@ -592,7 +657,7 @@ var JSAnimate = (function(){
      * @param _obj clicked object
      */
     function _handleMouseEnter(_obj){
-        if(!isPlaying){ //Don't let interactions if paused
+        if(!_isPlaying){ //Don't let interactions if paused
             return;
         }
         var enter_time = new Date().getTime();
@@ -641,24 +706,24 @@ var JSAnimate = (function(){
     }
 
     /**
-     * Finds the clicked object in the momend_data
+     * Finds the clicked object in the animationQueue
      * @param _obj dom object
-     * @return {*} node from momend_data
+     * @return {*} node from animationQueue
      * @private
      */
     function __findObjectNode(_obj){
         console.log('Looking for:');
         console.log(_obj[0].id);
         var time = new Date().getTime();
-        for(var i=0;i<momend_data['animation_layers'].length;i++){
-            for(var j=0;j<momend_data['animation_layers'][i].length;j++){
-                if(!momend_data['animation_layers'][i][j]['animation']['object']){
+        for(var i=0;i<_originalAnimationQueue.length;i++){
+            for(var j=0;j<_originalAnimationQueue[i].length;j++){
+                if(!_originalAnimationQueue[i][j]['animation']['object']){
                     continue;
                 }
-                if(momend_data['animation_layers'][i][j]['animation']['object'][0].children[0].id ===_obj[0].id){
+                if(_originalAnimationQueue[i][j]['animation']['object'][0].children[0].id ===_obj[0].id){
                     var foundTime=new Date().getTime()
                     console.log('Found in:'+(foundTime-time));
-                    return momend_data['animation_layers'][i][j];
+                    return _originalAnimationQueue[i][j];
                 }
             }
         }
@@ -692,9 +757,8 @@ var JSAnimate = (function(){
      * @private
      */
     function _musicLoaded(_loaded_obj){
-        console.log('loaded - isPlaying:'+isPlaying);
-        ready_music_count++;
-        if(node_waiting_to_play ){
+        readyMusicCount++;
+        if(nodeWaitingToPlay ){
             _resume();
         }
     }
@@ -705,7 +769,6 @@ var JSAnimate = (function(){
      * @private
      */
     function _reCalculateDimensions(){
-        var screen = $('.scene');
         keywordLookupTable = {
             '{{SCREEN_WIDTH}}' : screen.outerWidth(),
             '{{SCREEN_HEIGHT}}' : screen.outerHeight()
@@ -719,6 +782,67 @@ var JSAnimate = (function(){
         var _child = _obj.children()[0];
         return _str.replace('{{OBJECT_WIDTH}}',100*(_child.width/keywordLookupTable['{{SCREEN_WIDTH}}'])+'%'). //Replace with percent value instead of px
             replace('{{OBJECT_HEIGHT}}',100*(_child.height/keywordLookupTable['{{SCREEN_HEIGHT}}'])+'%');
+    }
+
+    /**
+     * Generates parameter for box-shadow property according to shadow object given
+     * @param _obj div that contains element to which will have the shadow
+     * @param _shadow shadow object from shadowData
+     * @param _targetX targeting x position if animating, null otherwise
+     * @param _targetY targeting y position if animation, null otherwise
+     * @return {String} to be given to css function as box-shadow value
+     * @private
+     */
+    function __generateShadowStr(_obj, _shadow, _targetX, _targetY){
+        var _x;
+        var _y;
+        var _photoObj = _obj[0].lastChild;
+        if(!_targetX){
+            _x = _photoObj.x;
+        }else{
+            if(typeof _targetX == 'number'){
+                _x = _targetX;
+            }else if(_targetX.indexOf('px')>0){ //Value is in pixels
+                _x = parseFloat(_targetX.replace('px',''));
+            }else if(_targetX.indexOf('%')>0){ //Value is in pixels
+                _x = parseFloat(_targetX.replace('%','')) * screen.outerWidth() / 100; //Change % into px
+            }else{
+                console.log('Not supported metric, expecting:int, px or %');
+                return '';
+            }
+        }
+        if(!_targetY){
+            _y = _photoObj.y;
+        }else{
+            if(typeof _targetY == 'number'){
+                _y = _targetY;
+            }else if(_targetY.indexOf('px')>0){ //Value is in pixels
+                _y = parseFloat(_targetY.replace('px',''));
+            }else if(_targetY.indexOf('%')>0){ //Value is in pixels
+                _y = parseFloat(_targetY.replace('%','')) * screen.outerHeight() / 100; //Change % into px
+            }else{
+                console.log('Not supported metric, expecting:int, px or %');
+                return '';
+            }
+        }
+        _x += _photoObj.width/2;
+        _y += _photoObj.height/2;
+        var _placeX = _x / screen.outerWidth();
+        var _placeY = _y / screen.outerHeight();
+        _placeX -= 0.5; //Light is at the center of the screen
+        _placeY -= 0.5;
+        var _shadowStr = Math.ceil(_shadow['max_x'] * _placeX) +'px '+Math.ceil(_shadow['max_y'] * _placeY) +'px';
+        if(_shadow['blur'] > 0){
+            _shadowStr += ' '+_shadow['blur']+'px';
+        }
+        if(_shadow['spread'] > 0){
+            _shadowStr += ' '+_shadow['blur']+'px';
+        }
+        _shadowStr += ' '+_shadow['color'];
+        if(_shadow['inset']){
+            _shadowStr += ' inset';
+        }
+        return _shadowStr;
     }
 
     /**
@@ -751,7 +875,7 @@ var JSAnimate = (function(){
         }
     }
     function _addFinishListenerFunction(_func){
-        animation_finish_observer.push(_func);
+        animationFinishObserver.push(_func);
     }
     return {
         initAnimation : _initAnimation,
@@ -770,6 +894,9 @@ var JSAnimate = (function(){
         convertUserInteractionLayerToJSON : _convertUserInteractionLayerToJSON,
         musicLoaded : _musicLoaded,
         reCalculateDimensions : _reCalculateDimensions,
-        addFinishListenerFunction : _addFinishListenerFunction
+        addFinishListenerFunction : _addFinishListenerFunction,
+        setShadowForObject : _setShadowForObject,
+        setShadowData : _setShadowData,
+        isPlaying : _isPlaying,
     }
 });
