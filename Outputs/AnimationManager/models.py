@@ -111,18 +111,39 @@ class CoreAnimationData(BaseDataManagerModel):
 
     click_animation = models.ForeignKey('UserInteractionAnimationGroup', null=True, blank=True, related_name='click_animation')
     hover_animation = models.ForeignKey('UserInteractionAnimationGroup', null=True, blank=True, related_name='hover_animation')
+    shadow = models.ForeignKey('DynamicShadow', null=True, blank=True)
 
     def __unicode__(self):
         return str(self.group)+'-'+str(self.used_object_type)
 
     def encode(self):
-        enc = model_to_dict(self,exclude=['group','click_animation','hover_animation','used_object_id','order_in_group','type'])
+        enc = model_to_dict(self,exclude=['group','click_animation','hover_animation','used_object_id','order_in_group','type', 'shadow'])
         enc['type'] = CoreAnimationData.ANIMATION_TYPE[self.type]
         if self.click_animation:
             enc['click_animation'] = self.click_animation.encode()
         if self.hover_animation:
             enc['hover_animation'] = self.hover_animation.encode()
+        if self.shadow:
+            enc['shadow'] = self.shadow.encode()
         return enc
+
+class DynamicShadow(BaseDataManagerModel):
+    name = models.CharField(max_length=255)
+    max_x = models.IntegerField(default=0)
+    max_y = models.IntegerField(default=0)
+    blur = models.IntegerField(default=0)
+    spread = models.IntegerField(default=0)
+    color = models.CharField(max_length=50, default="rgba(0, 0, 0, 0.8)")
+    inset = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        _str = self.name+'-'+str(self.blur)+'px, '+str(self.spread)+'px, '+self.color
+        if self.inset:
+            _str += ' inset'
+        return _str
+
+    def encode(self):
+        return model_to_dict(self, exclude='name')
 
 class ImageEnhancement(BaseDataManagerModel):
     name = models.CharField(max_length=255)
@@ -232,7 +253,7 @@ class AnimationGroup(BaseDataManagerModel):
     ANIMATION_GROUP_TYPE = {
         'Background': 0,
         'Music': 1,
-        'SceneChange': 2,
+        'Stub': 2,
         'Normal': 3,
         'UserInteraction': 4,
         }
