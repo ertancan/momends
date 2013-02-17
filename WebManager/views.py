@@ -10,6 +10,7 @@ from django.views.generic.base import RedirectView
 from django.http import HttpResponse
 from WebManager.forms import CreateMomendForm
 from WebManager.forms import SettingsForm
+from WebManager.forms import DocumentForm
 from DataManager.DataManager import DataManager
 from DataManager.models import Momend
 from DataManager.models import DeletedMomend
@@ -27,7 +28,6 @@ from LogManagers.Log import Log
 from django.utils import simplejson
 from django.contrib import messages
 from django.core.files.uploadedfile import UploadedFile
-from sorl.thumbnail import get_thumbnail
 from DataManager.DataManagerUtil import DataManagerUtil
 from django.conf import settings
 
@@ -260,61 +260,54 @@ class UserProfileTemplateView(TemplateView):
         context['profile_user'] = _user
         return context
 
+class UploadFormView(FormView):
+    form_class = DocumentForm
+    template_name = 'UploadTest.html'
+    success_url = reverse_lazy('momends:home-screen')
 
 class FileUploadView(View):
     def post(self, request, *args, **kwargs):
         if request.FILES == None:
             return _generate_json_response(False, 'Must have files attached: ', 'Try Again')
-        file = request.FILES[u'files[]']
-        wrapped_file = UploadedFile(file)
-        filename = wrapped_file.name
-        file_size = wrapped_file.file.size
-        Log.debug ('Got file: "%s"' % str(filename))
-        Log.debug('Content type: "$s" % file.content_type')
+        _files = request.FILES[u'files[]']
+        result = []
+        for _file in _files:
+            wrapped_file = UploadedFile(_file)
+            _filename = wrapped_file.name
+            file_size = wrapped_file.file.size
+            Log.debug ('Got file: "%s"' % str(_filename))
+            Log.debug('Content type: "$s" % file.content_type')
 
-        #writing file manually into model
-        #because we don't need form of any type.
-        _raw = RawData()
-        _raw.original_id = RawData.key_generate
-        _raw.owner = request.user
-        _raw.provider = 'Upload' #TODO change here
-        _raw.title =  str(filename)
-        _raw.data = DataManagerUtil.create_file(file, str(_raw))
+            _file_url  = DataManagerUtil.create_file(_file, _filename)
+            Log.debug("Created file " + _filename)
+            Log.debug('Uploaded file saving done')
+            #settings imports
 
-        _raw.type = RawData.DATA_TYPE['Photo']
+            _file_delete_url = ""#settings.MULTI_FILE_DELETE_URL+'/'
+            #getting thumbnail url using sorl-thumbnail
+            _thumbnail = DataManagerUtil.create_photo_thumbnail(settings.SAVE_PREFIX + _filename, _filename+'_thumb.jpg')
 
-        #getting thumbnail url using sorl-thumbnail
-        if 'image' in file.content_type.lower():
-            _raw.thumbnail = DataManagerUtil.create_photo_thumbnail(settings.SAVE_PREFIX + _raw.data, str(_raw)+ '_thumb'+ 'jpg')
 
-        _raw.save()
-        Log.debug('Uploaded file saving done')
-        #settings imports
-        try:
-            #file_delete_url = settings.MULTI_FILE_DELETE_URL+'/'
-            file_url = ""#settings.MULTI_IMAGE_URL+'/'+image.key_data+'/'
-        except AttributeError:
-            file_delete_url = 'multi_delete/'
-            file_url = ""#'multi_image/'+image.key_data+'/'
-            #generating json response array
-        result = {
-            'files': [ {"name":filename,
-                        "size":file_size,
-                        "url":file_url,
-                        "thumbnail_url":_raw.thumbnail,
-                        "delete_url":'',
-                        "delete_type":"POST",}
-            ]
+            result.append({"name":_filename,
+                       "size":file_size,
+                       "url":_file_url,
+                       "thumbnail_url":_thumbnail,
+                       "delete_url":_file_delete_url,
+                       "delete_type":"POST",} )
+
+        total_result = {
+            'files': result
         }
-        response_data = simplejson.dumps(result)
+
 
         #checking for json data type
         #big thanks to Guy Shapiro
+        _response_data = simplejson.dumps(total_result)
         if "application/json" in request.META['HTTP_ACCEPT_ENCODING']:
             mimetype = 'application/json'
         else:
             mimetype = 'text/plain'
-        return HttpResponse(response_data, mimetype=mimetype)
+        return HttpResponse(_response_data, mimetype=mimetype)
 
 def _generate_json_response(success, log_message=None, user_msg=None, **kwargs):
     if log_message:

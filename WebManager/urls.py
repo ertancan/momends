@@ -10,7 +10,9 @@ from views import GetMomendView
 from views import SaveInteractionView
 from views import UserProfileTemplateView
 from views import SettingsFormView
+from views import UploadFormView
 from views import MomendPlayerView
+from views import FileUploadView
 from views import DeleteMomendView
 from django.contrib.auth.decorators import login_required
 from registration.backends.default.urls import *
@@ -30,5 +32,7 @@ urlpatterns = patterns('',
     url(r'^get/(?P<type>\w{1})/(?P<id>\d+)/$', GetMomendView.as_view(), name='get-momend'),
     url(r'^delete/(?P<type>\w{1})/(?P<id>\d+)/$', login_required(DeleteMomendView.as_view()), name='delete-momend'),
     url(r'^postplay/(?P<id>\d+)/$', login_required(SaveInteractionView.as_view()), name='save-interaction'),
+    url(r'^fileupload/$', login_required(FileUploadView.as_view()), name='file-upload'),
+    url(r'^upload/$', login_required(UploadFormView.as_view()), name='upload'),
 )
 urlpatterns += staticfiles_urlpatterns()
