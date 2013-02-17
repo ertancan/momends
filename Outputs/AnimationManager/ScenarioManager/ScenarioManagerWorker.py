@@ -2,6 +2,7 @@ __author__ = 'ertan'
 from DataManager.models import AnimationLayer
 from Outputs.AnimationManager.models import OutData
 from Outputs.AnimationManager.models import AnimationGroup,Scenario,CoreAnimationData
+from django.db.models import Q
 from LogManagers.Log import Log
 class ScenarioManagerWorker(object):
     def prepare_scenario(self, momend, duration, theme, scenario=None, selection='basic', max_photo=0, max_bg=0, max_status=0, max_checkin=0):
@@ -53,7 +54,7 @@ class ScenarioManagerWorker(object):
 
 
         bgGroup = compatible_animation_groups.filter(type=AnimationGroup.ANIMATION_GROUP_TYPE['Background'])
-        frontGroup = compatible_animation_groups.filter(type=AnimationGroup.ANIMATION_GROUP_TYPE['Normal']) #TODO use screen change,too
+        frontGroup = compatible_animation_groups.filter(Q(type=AnimationGroup.ANIMATION_GROUP_TYPE['Normal']) | Q(type=AnimationGroup.ANIMATION_GROUP_TYPE['Stub']))
         musicGroup = compatible_animation_groups.filter(type=AnimationGroup.ANIMATION_GROUP_TYPE['Music'])
 
         used_photo = 0
@@ -76,17 +77,29 @@ class ScenarioManagerWorker(object):
                 if bg_duration == duration:
                     break
 
+        groups_before_stub = 2 #There must be at least 2 other groups at the front of the queue to place a stub
         for anim in frontGroup:
-            if front_duration + anim.duration <= duration:
-                if used_photo + anim.needed_photo <= max_photo and used_checkin + anim.needed_location <= max_checkin and used_status + anim.needed_status <= max_status:
+            if front_duration + anim.duration <= duration: #We have enough time left for this animation group
+                is_stub = anim.type == AnimationGroup.ANIMATION_GROUP_TYPE['Stub']
+                if is_stub:
+                    if groups_before_stub > 0:
+                        continue
+                if used_photo + anim.needed_photo <= max_photo and used_checkin + anim.needed_location <= max_checkin and used_status + anim.needed_status <= max_status: #We have enough data
                     used_photo += anim.needed_photo
                     used_checkin += anim.needed_location
                     used_status += anim.needed_status
                     front_duration += anim.duration
                     used_front_groups.append(anim)
+                    if is_stub:
+                        groups_before_stub = 2
+                    else:
+                        groups_before_stub -= 1
 
                 if front_duration == duration:
                     break
+
+                if duration - front_duration <= 5:
+                    groups_before_stub = 10000 #some big integer not to use stubs on last 5 second.(I didn't want to import sys to use maxint)
 
         for musicAnim in musicGroup:
             if music_duration + musicAnim.duration <= duration:
