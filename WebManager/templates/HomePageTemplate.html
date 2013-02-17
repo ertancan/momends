@@ -361,15 +361,20 @@
         }
 
         function deleteMomend(_momend){
+            if(!_momend){
+                return;
+            }
             var button = $('#delete-'+_momend);
             button.removeClass('icon-remove-sign');
             button.addClass('icon-spinner');
             button.addClass('icon-spin');
             var delete_url = '{% url 'momends:delete-momend' 'm' 0 %}'; //Get url for momend 0 then replace 0 with id
             delete_url = delete_url.replace('0',_momend);
+            console.log('Delete url:'+delete_url);
             var item = $('#momend-'+_momend);
             jQuery.getJSON(delete_url, function(data){
-                if(data['resp']==='true'){
+                console.log(data);
+                if(data['resp']===true){
                     $('#portfolio-items').isotope('remove',item);
                 }else{
                     //TODO handle delete error
