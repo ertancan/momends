@@ -84,11 +84,20 @@
     <script>
         player_loaded = null;
         fullscreen_on = false;
+        var resumeAfterModalClose;
+        var momendManager;
         function pausePlayer(){
-            player_frame.contentWindow.pause();
+            if(momendManager.isPlaying){
+                momendManager.jsAnimate.pause();
+                resumeAfterModalClose = true;
+            }else{
+                resumeAfterModalClose = false;
+            }
         }
         function resumePlayer(){
-            player_frame.contentWindow.resume();
+            if(resumeAfterModalClose){
+                momendManager.jsAnimate.resume();
+            }
         }
         function modalShow(media){
             pausePlayer();
@@ -98,10 +107,11 @@
         }
         function frameLoaded(){
             player_frame = document.getElementById('momend-player-frame');
+            momendManager = player_frame.contentWindow.momendManager;
             $('#momend-player').css('background-color','rgba(51,51,51,0)');
-            player_frame.contentWindow.momendManager.setFullscreenFunction(fullscreen);
-            player_frame.contentWindow.momendManager.addFinishListenerFunction(finished);
-            player_frame.contentWindow.momendManager.setRedirectFunction(redirectToPage);
+            momendManager.setFullscreenFunction(fullscreen);
+            momendManager.addFinishListenerFunction(finished);
+            momendManager.setRedirectFunction(redirectToPage);
             //We may want to open in a new tab?
         }
         function finished(){
@@ -110,7 +120,7 @@
             }
         }
         function fullscreen(){
-            player_frame.contentWindow.momendManager.fullscreenToggle();
+            momendManager.fullscreenToggle();
             if(!fullscreen_on){
                 $('#momend-player').attr("class","player-fullscreen");
             }else{

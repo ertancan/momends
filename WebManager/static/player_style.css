@@ -16,16 +16,21 @@
     margin: 0;
     bottom: 3px;
 }
+.ui-widget-content { border: 1px solid rgba(50, 50, 50, 0.8); background: rgb(185,31,31) 50% 50% repeat-x; color: rgb(185,31,31); }
+
 .right-group{
     right: 5px;
 }
-input[type='range'] {
-    -webkit-appearance: none !important;
-    background-color : rgb(185, 31, 31);
+#volume-slider {
     height:5px;
+    width: 80px;
     position: absolute;
-    top: 6px;
+    top: 7px;
     left: 50px;
+}
+.ui-slider .ui-slider-handle{
+    width: 13px;
+    height: 13px;
 }
 .loading-bg{
     position: fixed;

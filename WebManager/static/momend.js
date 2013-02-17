@@ -1,28 +1,29 @@
 var Momend = (function(){
     var _jsAnimate = new JSAnimate();
-    var _momend_data;
-    var created_objects;
+    var _momendData;
+    var _shadowData;
     var fullscreen = false;
-    var page_redirect_function;
-    var _interaction_sent = false;
-    var total_objects = 0;
-    var loaded_objects = 0;
-    var _load_callback;
+    var pageRedirectFunction;
+    var _interactionSent = false;
+    var totalObjects = 0;
+    var loadedObjects = 0;
+    var _loadCallback;
 
     function init(){
         _jsAnimate.initAnimation();
     }
     function _momendArrived(momend_data){
-        _momend_data = momend_data;
+        _momendData = $.extend(momend_data, {}, true);
         _jsAnimate.reCalculateDimensions(); //Since they may be needed while creating objects
-        if(!_momend_data || _momend_data.length == 0 || _momend_data['error']){
+        if(!_momendData || _momendData.length == 0 || _momendData['error']){
             _loadFailed();
         }else{
             _createObjectsFromData(_startAnimation); //start animation as create objects callback
         }
     }
     function _startAnimation(){
-        _jsAnimate.setAnimationQueue(_momend_data['animation_layers']);
+        _jsAnimate.setAnimationQueue(_momendData['animation_layers']);
+        _jsAnimate.setShadowData(_shadowData);
         $('#loading-bg').animate({
             'top':'-100%',
             'opacity' : '0.5'
@@ -45,13 +46,13 @@ var Momend = (function(){
      * @private
      */
     function _sendUserInteractionToServer(url, callback){
-        if(_interaction_sent){
+        if(_interactionSent){
             return;
         }
         console.log('sending')
         var json = _jsAnimate.convertUserInteractionLayerToJSON();
         var token = $('[name="csrfmiddlewaretoken"]')[0].value;
-        var momend_id = _momend_data['id'];
+        var momend_id = _momendData['id'];
         $.ajax({
             type: 'POST',
             url: url,
@@ -69,7 +70,7 @@ var Momend = (function(){
                         callback(false,data.msg);
                     }
                 }
-                _interaction_sent = true;
+                _interactionSent = true;
             },
             error: function(msg){
                 var data = jQuery.parseJSON(msg);
@@ -88,11 +89,12 @@ var Momend = (function(){
         $('#loading-bg').hide();
     }
     function _createObjectsFromData(load_callback){
-        _load_callback = load_callback;
-        created_objects = {};
-        for(var i = 0;i<_momend_data['animation_layers'].length;i++){
-            for(var j = 0;j < _momend_data['animation_layers'][i].length;j++){
-                var node = _momend_data['animation_layers'][i][j];
+        _loadCallback = load_callback;
+        var created_objects = {};
+        _shadowData = {};
+        for(var i = 0;i<_momendData['animation_layers'].length;i++){
+            for(var j = 0;j < _momendData['animation_layers'][i].length;j++){
+                var node = _momendData['animation_layers'][i][j];
                 var _anim = node['animation']['anim'];
                 if(_anim && _anim.length > 0){
                     node['animation']['anim'] = _parseStringToDict(_anim);
@@ -111,9 +113,10 @@ var Momend = (function(){
                     if(created_objects[node['final_data_path']]){
                         node['animation']['object'] = created_objects[node['final_data_path']];
                     }else{
-                        total_objects++; //Player should wait for item to load
+                        totalObjects++; //Player should wait for item to load
+                        var _id = 'stub'+i+''+j;
                         jQuery('<div/>',{
-                            id: 'stub'+i+''+j,
+                            id: _id,
                             class: 'photo'
                         }).appendTo('.scene');
                         var created_div = $('#stub'+i+''+j);
@@ -127,13 +130,16 @@ var Momend = (function(){
                         }).appendTo(created_div);
                         if(typeof node['animation']['click_animation'] !== 'undefined'){
                             created_obj.click(function(){
-                                handleClick($(this));
+                                _jsAnimate.handleClick($(this));
                             });
                         }
                         if(typeof node['animation']['hover_animation'] !== 'undefined'){
                             created_obj.mouseenter(function(){
-                                handleMouseEnter($(this));
+                                _jsAnimate.handleMouseEnter($(this));
                             });
+                        }
+                        if(typeof node['animation']['shadow'] !== 'undefined'){
+                             _shadowData[_id] = node['animation']['shadow'];
                         }
                         created_objects[node['final_data_path']] = created_div;
                         node['animation']['object'] = created_objects[node['final_data_path']];
@@ -142,9 +148,10 @@ var Momend = (function(){
                     switch(node['animation']['used_object_type']){
                         case '{{NEXT_THEME_BG}}':
                         case '{{RAND_THEME_BG}}':
-                            total_objects++; //Player should wait for item to load
+                            totalObjects++; //Player should wait for item to load
+                            var _id = 'bg'+i+''+j;
                             var created_div = jQuery('<div/>',{
-                                id: 'bg'+i+''+j,
+                                id: _id,
                                 class: 'scene-background'
                             }).appendTo('.scene');
                             var created_pbj = jQuery('<img/>',{
@@ -160,9 +167,10 @@ var Momend = (function(){
                             break;
                         case '{{NEXT_USER_PHOTO}}':
                         case '{{RAND_USER_PHOTO}}':
-                            total_objects++; //Player should wait for item to load
+                            totalObjects++; //Player should wait for item to load
+                            var _id = 'photo'+i+''+j;
                             jQuery('<div/>',{
-                                id: 'photo'+i+''+j,
+                                id: _id,
                                 class: 'photo'
                             }).appendTo('.scene');
                             var created_div = $('#photo'+i+''+j);
@@ -176,13 +184,16 @@ var Momend = (function(){
                             }).appendTo(created_div);
                             if(typeof node['animation']['click_animation'] !== 'undefined'){
                                 created_obj.click(function(){
-                                    handleClick($(this));
+                                    _jsAnimate.handleClick($(this));
                                 });
                             }
                             if(typeof node['animation']['hover_animation'] !== 'undefined'){
                                 created_obj.mouseenter(function(){
-                                    handleMouseEnter($(this));
+                                    _jsAnimate.handleMouseEnter($(this));
                                 });
+                            }
+                            if(typeof node['animation']['shadow'] !== 'undefined'){
+                                _shadowData[_id] = node['animation']['shadow'];
                             }
                             created_objects[node['final_data_path']] = created_div;
                         case '{{USER_PHOTO}}':
@@ -191,8 +202,9 @@ var Momend = (function(){
 
                         case '{{NEXT_USER_STATUS}}':
                         case '{{RAND_USER_STATUS}}':
+                            var _id = 'status'+i+''+j;
                             jQuery('<div/>',{
-                                id: 'status'+i+''+j,
+                                id: _id,
                                 class: 'status'
                             }).appendTo('.scene');
                             var created_div = $('#status'+i+''+j);
@@ -202,13 +214,16 @@ var Momend = (function(){
                             }).appendTo(created_div);
                             if(typeof node['animation']['click_animation'] !== 'undefined'){
                                 created_div.click(function(){
-                                    handleClick($(this));
+                                    _jsAnimate.handleClick($(this));
                                 });
                             }
                             if(typeof node['animation']['hover_animation'] !== 'undefined'){
                                 created_div.mouseenter(function(){
-                                    handleMouseEnter($(this));
+                                    _jsAnimate.handleMouseEnter($(this));
                                 });
+                            }
+                            if(typeof node['animation']['shadow'] !== 'undefined'){
+                                _shadowData[_id] = node['animation']['shadow'];
                             }
                             if(node['post_enhancements']){
                                 __applyPostEnhancements(created_div,node['post_enhancements']);
@@ -223,9 +238,10 @@ var Momend = (function(){
                             var _is_user_music = true;
                         case '{{NEXT_THEME_MUSIC}}':
                         case '{{RAND_THEME_MUSIC}}':
-                            total_objects++; //Player should wait for item to load
+                            totalObjects++; //Player should wait for item to load
+                            var _id = 'music'+i+''+j;
                             jQuery('<div/>',{
-                                id:'music'+i+''+j,
+                                id: _id,
                                 class:'jp-jplayer'
                             }).appendTo('.music');
                             var music_obj = $('#music'+i+''+j);
@@ -269,11 +285,11 @@ var Momend = (function(){
         __checkIfReady();
     }
     function __objectReady(){
-        loaded_objects++;
+        loadedObjects++;
     }
     function __checkIfReady(){
-        if(loaded_objects === total_objects){
-            _load_callback();
+        if(loadedObjects === totalObjects){
+            _loadCallback();
         }else{
             setTimeout(__checkIfReady,300);
         }
@@ -364,11 +380,15 @@ var Momend = (function(){
      * @param _func in signature; func(url:String)
      */
     function _setRedirectFunction(_func){
-        page_redirect_function = _func;
+        pageRedirectFunction = _func;
     }
 
     function _getRedirectFunction(){
-        return page_redirect_function;
+        return pageRedirectFunction;
+    }
+
+    function _getMomendData(){
+        return _momendData;
     }
 
     return{
@@ -383,8 +403,9 @@ var Momend = (function(){
         addFinishListenerFunction : _addFinishListenerFunction,
         setRedirectFunction :_setRedirectFunction,
         getRedirectFunction : _getRedirectFunction,
-        momend_data : _momend_data,
-        jsAnimate : _jsAnimate
+        getMomendData : _getMomendData,
+        jsAnimate : _jsAnimate,
+        isPlaying : _jsAnimate.isPlaying
     }
 });
 // !! UTILITY !!
