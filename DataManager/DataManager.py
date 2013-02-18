@@ -40,7 +40,7 @@ class DataManager:
 
         score = MomendScore(momend = self.momend, provider_score = self._calculate_provider_score())
         score.save()
-        return self.momend.id
+        return self.momend.cryptic_id
 
     def collect_user_data(self, inc_photo, inc_status, inc_checkin, **kwargs): #TODO concatenation fail if cannot connect to facebook or twitter (fixed on status)
         _raw_data = []

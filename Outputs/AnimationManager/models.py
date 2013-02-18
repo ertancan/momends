@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
 from DataManager.models import RawData
+from DataManager.models import encode_id
 from django.utils import simplejson
 from datetime import datetime
 from django.conf import settings
@@ -307,6 +308,11 @@ class UserInteraction(BaseDataManagerModel):
     date = models.DateTimeField(auto_now_add=True)
     interaction = models.TextField()
     creator = models.ForeignKey(User)
+    cryptic_id = models.CharField(max_length=255)
+
+    def __init__(self, *args, **kwargs):
+        super(UserInteraction, self).__init__(*args, **kwargs)
+        self.cryptic_id = encode_id(self.pk)
 
     def __unicode__(self):
         return str(self.momend)+'-'+str(self.creator)+':'+str(self.date)

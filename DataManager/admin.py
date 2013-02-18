@@ -3,7 +3,7 @@ from django.contrib import admin
 from models import *
 
 class MomendAdmin(admin.ModelAdmin):
-    list_display = ('owner', 'name', 'thumbnail','create_date')
+    list_display = ('owner', 'name', 'thumbnail','create_date', 'cryptic_id')
     list_display_links = ('owner', 'name',)
 
 class DeletedMomendAdmin(admin.ModelAdmin):

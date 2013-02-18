@@ -2,7 +2,11 @@
 
 {% load url from future %}
 {% block meta %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta property="og:type" content="article"/>
+    <meta property="og:image" content="{{ momend.thumbnail}}"/>
+    <meta property="og:title" content="{{ momend.name }}"/>
+    <meta property="og:description" content="You can now re-experience your precious momends!"/>
 {% endblock meta %}
 {% block content %}
     <section id="content" class="container">
@@ -19,7 +23,7 @@
                         {% for interaction in interactions %}
                         <li class="interaction">
                             <i class="icon-magic"></i>
-                            <a href="{% url 'momends:show-momend' 'i' interaction.id %}">
+                            <a href="{% url 'momends:show-momend' 'i' interaction.cryptic_id %}">
                                 Interaction {{ forloop.counter }} : {{ interaction.date|date:"j M Y" }}
                             </a>
                         </li>

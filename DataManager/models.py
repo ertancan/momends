@@ -3,6 +3,12 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
 from django.utils import simplejson
+from Crypto.Cipher import AES
+from django.conf import settings
+import string
+from LogManagers.Log import Log
+
+import base64
 import random
 # Create your models here.
 class BaseDataManagerModel(models.Model):
@@ -15,7 +21,7 @@ class Momend(BaseDataManagerModel):
     create_date = models.DateTimeField(auto_now_add=True)
     name = models.CharField(null=False, blank=False, max_length=255)
     thumbnail = models.CharField(max_length=2000, null=True, blank=True)
-
+    cryptic_id = models.CharField(max_length=255)
 
     momend_start_date = models.DateTimeField(null=True)
     momend_end_date = models.DateTimeField(null=True)
@@ -26,6 +32,10 @@ class Momend(BaseDataManagerModel):
         'Public': 1,
         }
     privacy = models.IntegerField(choices=[[PRIVACY_CHOICES[key],key] for key in PRIVACY_CHOICES.keys()] , default=0)
+
+    def __init__(self, *args, **kwargs):
+        super(Momend, self).__init__(*args, **kwargs)
+        self.cryptic_id = encode_id(self.id) #Generate a semi random identifier when object created
 
     def __unicode__(self):
         return str(self.pk) + ' : ' + str(self.owner) + ':'+str(self.momend_start_date)+' - '+str(self.momend_end_date)
@@ -41,6 +51,7 @@ class Momend(BaseDataManagerModel):
 
     def toJSON(self):
         return simplejson.dumps(self.encode(), default=lambda obj: obj.isoformat() if isinstance(obj, datetime) else None)
+
 
 class DeletedMomend(BaseDataManagerModel):
     #From Momend
@@ -144,6 +155,33 @@ class RawData(BaseDataManagerModel):
             except:
                 return key
 
+def encode_id(id):
+    pad = lambda s: s + (16 - len(s) % 16 ) * '}' #append '}'s to make the length a multiple of 8 (Block size)
+    _cipher = AES.new(settings.SECRET_KEY[:16])
+    _plain = ''.join(random.choice(string.ascii_lowercase + string.digits) for x in range(5)) + str(id) #generate fixed length (5) random nonce and append the id as text
+    #This will result a string like XXXXX6 where X's are random letters or digits and 6 is id. Fixed length is important to be able to decode it later
+    _encrypted = _cipher.encrypt(pad(_plain))
+    return base64.urlsafe_b64encode(_encrypted) #returning as base64 string to use as url parameter
+
+def decode_id(cryptic_id):
+    Log.debug('Decode this: '+cryptic_id)
+    _cipher = AES.new(settings.SECRET_KEY[:16])
+    try:
+        _encrypted = base64.urlsafe_b64decode(cryptic_id.encode('utf-8'))
+    except TypeError as te:
+        Log.warn('Invalid base64 on url:'+str(te))
+        return None
+    try:
+        _plain = _cipher.decrypt(_encrypted).rstrip('}') #Decrypt and remove the padding ('}')
+    except ValueError:
+        Log.warn('Invalid cipher text')
+        return None
+    try:
+        _id = _plain[5:] #Take the part after the fixed length nonce
+        return int(_id)
+    except ValueError:
+        Log.fatal('Someone tried to forge an id')
+        return None
 
 
 

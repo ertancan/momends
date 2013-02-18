@@ -1,6 +1,11 @@
 {% extends "MainSite.html" %}
 {% load url from future %}
-
+{% block meta %}
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="{{ request.get_host }}{{ STATIC_URL }}img/momends-icon.png"/>
+    <meta property="og:title" content="Momends"/>
+    <meta property="og:description" content="You can now re-experience your precious momends!"/>
+{% endblock meta %}
 {% block message %} {% endblock message %} <!-- Will show custom message -->
 
 {% block content %}
@@ -59,7 +64,7 @@
 
                             <div class="thumbnail link">
                                 <!-- image -->
-                                <a class="momend-thumb-link" href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
+                                <a class="momend-thumb-link" href="{% url 'momends:show-momend' 'm' momend.cryptic_id %}" title="{{ momend.name }}">
                                     <img alt="{{ momend.name }}" {% if momend.thumbnail %}src="{{ MOMEND_FILE_URL }}{{ momend.thumbnail }}" {% endif %} />
                                 </a>
                                 <!-- description -->
@@ -80,7 +85,7 @@
 
                             <div class="thumbnail link">
                                 <!-- image -->
-                                <a class="momend-thumb-link" href="{% url 'momends:show-momend' 'm' momend.id %}" title="{{ momend.name }}">
+                                <a class="momend-thumb-link" href="{% url 'momends:show-momend' 'm' momend.cryptic_id %}" title="{{ momend.name }}">
                                     <img alt="{{ momend.name }}" {% if momend.thumbnail %}src="{{ MOMEND_FILE_URL }}{{ momend.thumbnail }}" {% endif %} />
                                 </a>
                                 <!-- description -->
@@ -89,7 +94,7 @@
                                     <i class="icon-magic"></i>
                                     <!-- name -->
                                     <b class="project-name">{{ momend.name }}</b>
-                                    <a id="delete-{{ momend.id }}" class="icon-remove-sign pull-right delete-button" data-id="{{ momend.id }}"></a>
+                                    <a id="delete-{{ momend.id }}" class="icon-remove-sign pull-right delete-button" data-id="{{ momend.id }}" data-cid="{{ momend.cryptic_id }}"></a>
                                 </div>
                             </div>
 
@@ -227,15 +232,17 @@
                 e.preventDefault();
 
                 var id = $(this).data('id');
-                $('#delete-modal').data('id', id).modal('show');
+                var cid = $(this).data('cid');
+                $('#delete-modal').data({'id': id, 'cid': cid}).modal('show');
             });
             //Handle delete modal
             $('#delete-modal').bind('show', function() {
                 var id = $(this).data('id');
+                var cid = $(this).data('cid');
                 var removeBtn = $(this).find('.danger');
                 removeBtn.click(function(e){
                     e.preventDefault();
-                    deleteMomend(id);
+                    deleteMomend(id, cid);
                     $('#delete-modal').modal('hide');
                 });
             })
@@ -360,18 +367,18 @@
             previous_tab = tab;
         }
 
-        function deleteMomend(_momend){
-            if(!_momend){
+        function deleteMomend(_id, momend){
+            if(!_id){
                 return;
             }
-            var button = $('#delete-'+_momend);
+            var button = $('#delete-'+_id);
             button.removeClass('icon-remove-sign');
             button.addClass('icon-spinner');
             button.addClass('icon-spin');
             var delete_url = '{% url 'momends:delete-momend' 'm' 0 %}'; //Get url for momend 0 then replace 0 with id
-            delete_url = delete_url.replace('0',_momend);
+            delete_url = delete_url.replace('0',momend);
             console.log('Delete url:'+delete_url);
-            var item = $('#momend-'+_momend);
+            var item = $('#momend-'+_id);
             jQuery.getJSON(delete_url, function(data){
                 console.log(data);
                 if(data['resp']===true){
