@@ -583,6 +583,7 @@ var JSAnimate = (function(){
      * Handles fade-in and fade-out animations of musics.
      * USES: MUSIC_ANIMATION_INTERVAL from global variables
      *      music_layer from global variables if trigger next flag is true
+     * CAUTION: stops the music animation if animation is fade out
      * @param _obj jPlayer object
      * @param isFadeIn true if the animation is fade in, false otherwise
      * @param step step value to be added or removed on every step of animation
@@ -602,9 +603,13 @@ var JSAnimate = (function(){
             setTimeout(function(){
                 __musicFade(_obj, isFadeIn, step, triggerNextAfterFinish);
             },MUSIC_ANIMATION_INTERVAL);
-        }else if(triggerNextAfterFinish){ //Fade animation completed and should trigger next music animation
-            console.log('Triggering next music animation on layer:'+currentMusicLayer);
-            _nextAnimation(currentMusicLayer, 'music fade');
+        }else{
+            if(triggerNextAfterFinish){ //Fade animation completed and should trigger next music animation
+                _nextAnimation(currentMusicLayer, 'music fade');
+            }
+            if(!isFadeIn){ //Fade out animation finished, we are going to stop the music
+                _obj.jPlayer('stop');
+            }
         }
     }
     /**
@@ -897,6 +902,6 @@ var JSAnimate = (function(){
         addFinishListenerFunction : _addFinishListenerFunction,
         setShadowForObject : _setShadowForObject,
         setShadowData : _setShadowData,
-        isPlaying : _isPlaying,
+        isPlaying : _isPlaying
     }
 });
