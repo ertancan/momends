@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <!-- If you delete this meta tag, Half Life 3 will never be released. -->
+    <meta name="viewport" content="width=device-width" />
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>momends</title>
+
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}email.css" />
+
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<!-- HEADER -->
+<table class="head-wrap" bgcolor="#999999">
+    <tr>
+        <td></td>
+        <td class="header container" >
+
+            <div class="content">
+                <table bgcolor="#999999">
+                    <tr>
+                        <td><img src="{{ STATIC_URL }}img/logo-uzun.png" /></td>
+                    </tr>
+                </table>
+            </div>
+
+        </td>
+        <td></td>
+    </tr>
+</table><!-- /HEADER -->
+
+
+<!-- BODY -->
+<table class="body-wrap">
+    <tr>
+        <td></td>
+        <td class="container" bgcolor="#FFFFFF">
+
+            <div class="content">
+                <table>
+                    <tr>
+                        <td>
+                            <h3>Hi, {{ user.name }} {{ user.surname }} </h3>
+                            <p class="lead">As you requested, we are here to collect your precious data and provide it back as a unique momend of your life. While reaching it with the following link below, never forget your memories makes more sense when you share them with your beloved ones.</p>
+                            <!-- Callout Panel -->
+                            <p class="callout"><a href="{[ momend_url }}">Click  and go to your momend&raquo;</a>
+                            </p><!-- /Callout Panel -->
+
+                            <!-- social & contact -->
+                            <table class="social" width="100%">
+                                <tr>
+                                    <td>
+
+                                        <!-- column 1 -->
+                                        <table align="left" class="column">
+                                            <tr>
+                                                <td>
+
+                                                    <h5 class="">Connect with us:</h5>
+                                                    <p class=""><a href="facebook.com/momends" class="soc-btn fb">Facebook</a> <a href="twitter.com/momends" class="soc-btn tw">Twitter</a> </p>
+
+
+                                                </td>
+                                            </tr>
+                                        </table><!-- /column 1 -->
+
+                                        <!-- column 2 --><!-- /column 2 -->
+
+                                        <span class="clear"></span>
+
+                                    </td>
+                                </tr>
+                            </table><!-- /social & contact -->
+
+                        </td>
+                    </tr>
+                </table>
+            </div><!-- /content -->
+
+        </td>
+        <td></td>
+    </tr>
+</table><!-- /BODY -->
+
+<!-- FOOTER -->
+<table class="footer-wrap">
+    <tr>
+        <td></td>
+        <td class="container">
+
+            <!-- content -->
+            <div class="content">
+
+            </div><!-- /content -->
+
+        </td>
+        <td></td>
+    </tr>
+</table><!-- /FOOTER -->
+
+</body>
+</html>

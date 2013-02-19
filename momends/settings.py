@@ -174,13 +174,6 @@ RECAPTCHA_PUBLIC_KEY = environ.get('RECAPTCHA_PUBLIC_KEY')
 RECAPTCHA_PRIVATE_KEY = environ.get('RECAPTCHA_PRIVATE_KEY')
 #RECAPTCHA_USE_SSL = True
 
-EMAIL_HOST = 'smtp.momends.com'
-EMAIL_HOST_USER = 'info@momends.com'
-EMAIL_HOST_PASSWORD = environ['EMAIL_HOST_PASSWORD']
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-SERVER_EMAIL = 'info@momends.com'
-DEFAULT_FROM_EMAIL = 'info@momends.com'
 
 DATABASE_OPTIONS = {
     'use_unicode': True,
