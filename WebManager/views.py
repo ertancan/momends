@@ -34,9 +34,10 @@ from django.conf import settings
 
 class HomePageLoggedFormView(FormView):
     form_class = CreateMomendForm
-    template_name = 'HomePageTemplate.html'
+    template_name = 'BasicMainPageTemplate.html'
     def get_context_data(self, **kwargs):
         context =  super(HomePageLoggedFormView,self).get_context_data(**kwargs)
+        context['user'] = self.request.user
         context['user_top_momends'] = EnrichDataWorker.get_top_user_momends(user=self.request.user, max_count=10)
         context['public_top_momends'] = EnrichDataWorker.get_top_public_momends(max_count=20)
         return context
@@ -78,10 +79,8 @@ class HomePageLoggedFormView(FormView):
         return super(HomePageLoggedFormView,self).form_valid(form)
 
 class HomePageNotLoggedView(TemplateView):
-    template_name = 'HomePageTemplate.html'
+    template_name = 'BasicMainPageTemplate.html'
     def get_context_data(self, *args, **kwargs):
-        if randint(0,1) == 0:
-            self.template_name = 'BasicMainPageTemplate.html' #basic random selection for main page! just for fun
         context = super(HomePageNotLoggedView, self).get_context_data(**kwargs)
         context['public_top_momends'] = EnrichDataWorker.get_top_public_momends(max_count=20)
         return context
@@ -198,7 +197,7 @@ class GetMomendView(TemplateView):
 
 class SaveInteractionView(View):
     def post(self, request, *args, **kwargs):
-        if not request.user:
+        if request.user.is_anonymous():
             return _generate_json_response(False, 'Not authenticated save interaction request', 'Please Login First')
         try:
             queue = request.POST['queue']
@@ -215,7 +214,7 @@ class SaveInteractionView(View):
 
 class DeleteMomendView(View):
     def get(self, request, *args, **kwargs):
-        if not request.user:
+        if request.user.is_anonymous():
             return _generate_json_response(False, 'Not authenticated delete request', 'Please Login First')
         decoded_id = decode_id(kwargs['id'])
         if not decoded_id:
