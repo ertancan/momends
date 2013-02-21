@@ -17,14 +17,17 @@ var Momend = (function(){
         _jsAnimate.reCalculateDimensions(); //Since they may be needed while creating objects
         if(!_momendData || _momendData.length == 0 || _momendData['error']){
             _loadFailed();
+            _gaq.push(['_trackEvent', 'Player', 'Load', 'Failed']);
         }else{
-            _createObjectsFromData(_startAnimation); //start animation as create objects callback
+            _createObjectsFromData(_loadSuccessful); //start animation as create objects callback
+            _gaq.push(['_trackEvent', 'Player', 'Load', 'Successful']);
         }
     }
     function _startAnimation(){
+        _gaq.push(['_trackEvent', 'Player', 'Action', 'Start']);
         _jsAnimate.setAnimationQueue(_momendData['animation_layers']);
         _jsAnimate.setShadowData(_shadowData);
-        $('#loading-bg').animate({
+        $('#load-modal').animate({
             'top':'-100%',
             'opacity' : '0.5'
         },{
@@ -52,7 +55,7 @@ var Momend = (function(){
         console.log('sending')
         var json = _jsAnimate.convertUserInteractionLayerToJSON();
         var token = $('[name="csrfmiddlewaretoken"]')[0].value;
-        var momend_id = _momendData['id'];
+        var momend_id = _momendData['cryptic_id'];
         $.ajax({
             type: 'POST',
             url: url,
@@ -86,7 +89,12 @@ var Momend = (function(){
             class : 'error',
             id : 'error'
         }).appendTo('body');
-        $('#loading-bg').hide();
+        $('#load-modal').hide();
+    }
+
+    function _loadSuccessful(){
+        $('#loading-main').hide();
+        $('#loaded-main').show();
     }
     function _createObjectsFromData(load_callback){
         _loadCallback = load_callback;

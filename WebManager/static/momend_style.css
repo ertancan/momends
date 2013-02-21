@@ -23,6 +23,7 @@ body{
     overflow:hidden;
     position:relative;
     font-size: 16px;
+    background-color: rgb(200,200,200);
 }
 .scene.fullscreen{
     font-size: 22px;

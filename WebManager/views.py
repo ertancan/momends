@@ -23,7 +23,8 @@ from Outputs.AnimationManager.models import AnimationPlayStat
 from Outputs.AnimationManager.models import Theme
 from DataManager.DataEnrich.EnrichDataWorker import EnrichDataWorker
 from social_auth.db.django_models import UserSocialAuth
-from random import randint
+from datetime import datetime
+import pytz
 from django.core.exceptions import ObjectDoesNotExist
 from LogManagers.Log import Log
 from django.utils import simplejson
@@ -31,6 +32,7 @@ from django.contrib import messages
 from django.core.files.uploadedfile import UploadedFile
 from DataManager.DataManagerUtil import DataManagerUtil
 from django.conf import settings
+import traceback
 
 class HomePageLoggedFormView(FormView):
     form_class = CreateMomendForm
@@ -40,6 +42,9 @@ class HomePageLoggedFormView(FormView):
         context['user'] = self.request.user
         context['user_top_momends'] = EnrichDataWorker.get_top_user_momends(user=self.request.user, max_count=10)
         context['public_top_momends'] = EnrichDataWorker.get_top_public_momends(max_count=20)
+        context['should_create_automatically'] = False
+        providers = UserSocialAuth.objects.filter(user=self.request.user)
+        context['providers'] = [pr.provider for pr in providers]
         return context
 
 
@@ -83,6 +88,14 @@ class HomePageNotLoggedView(TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super(HomePageNotLoggedView, self).get_context_data(**kwargs)
         context['public_top_momends'] = EnrichDataWorker.get_top_public_momends(max_count=20)
+        context['should_create_automatically'] = False
+        return context
+
+class NewUserLoggedView(TemplateView):
+    template_name = 'BasicMainPageTemplate.html'
+    def get_context_data(self, **kwargs):
+        context = super(NewUserLoggedView, self).get_context_data(**kwargs)
+        context['should_create_automatically'] = True
         return context
 
 class MomendPlayerView(TemplateView):
@@ -107,7 +120,7 @@ class MomendPlayerView(TemplateView):
         return context
 
 class ShowMomendView(TemplateView):
-    template_name = 'ShowMomendTemplate.html'
+    template_name = 'BasicMainPageTemplate.html'
 
     def dispatch(self, request, *args, **kwargs):
         decoded_id = decode_id(kwargs['id'])
@@ -161,6 +174,9 @@ class ShowMomendView(TemplateView):
                     _tmp['original_path'] = _obj.original_path
                     _used_media.append(_tmp)
             context['used_media'] = _used_media
+
+            providers = UserSocialAuth.objects.filter(user=self.request.user)
+            context['providers'] = [pr.provider for pr in providers]
         else:
             context['error'] = 2
         return context
@@ -179,14 +195,14 @@ class GetMomendView(TemplateView):
                 obj = Momend.objects.get(pk = decoded_id)
                 if obj.privacy == Momend.PRIVACY_CHOICES['Private']:
                     if obj.owner != self.request.user:
-                        context['momend'] = '{"error":"not authorised"}'
+                        context['momend'] = '{"error":"not authorized"}'
                         return context
                 context['momend'] = obj.toJSON()
             elif kwargs['type'] =='i':
                 obj = UserInteraction.objects.get(pk = decoded_id)
                 if obj.momend.privacy == Momend.PRIVACY_CHOICES['Private']:
                     if obj.momend.owner != self.request.user:
-                        context['momend'] = '{"error":"not authorised"}'
+                        context['momend'] = '{"error":"not authorized"}'
                         return context
                 context['momend'] = obj.toJSON()
             else:
@@ -197,8 +213,6 @@ class GetMomendView(TemplateView):
 
 class SaveInteractionView(View):
     def post(self, request, *args, **kwargs):
-        if request.user.is_anonymous():
-            return _generate_json_response(False, 'Not authenticated save interaction request', 'Please Login First')
         try:
             queue = request.POST['queue']
             encoded_id = request.POST['id']
@@ -212,10 +226,37 @@ class SaveInteractionView(View):
         except Exception as e:
             return _generate_json_response(False, 'Error while saving interaction: '+str(e), 'Try Again')
 
+class CreateMomendView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            _momend_name = request.POST['momend_name']
+            _start_date =  datetime.strptime(request.POST['start_date'], '%d %b, %Y').replace(tzinfo= pytz.UTC)
+            _finish_date = datetime.strptime(request.POST['finish_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
+            _privacy = request.POST['privacy_type']
+            _user = self.request.user
+            _theme = request.POST['momend_theme']
+            _theme = 1 #TODO remove after showing theme selection combo
+            dm = DataManager(_user)
+            try:
+                _args = dict()
+                _args['is_date'] = True
+                _args['since'] = _start_date
+                _args['until'] = _finish_date
+                momend_cryptic_id = dm.create_momend(name=_momend_name, duration=30, privacy=_privacy,
+                    theme=Theme.objects.get(pk= _theme), **_args)
+                return _generate_json_response(True, 'Created momend', cid=momend_cryptic_id)
+            except Exception as e:
+                Log.error(traceback.format_exc())
+                return _generate_json_response(False, 'Error while creating momend: '+str(e), 'An error occurred. Please try again') #Could be any error
+        except KeyError as e:
+            Log.error(traceback.format_exc())
+            return _generate_json_response(False, 'Error while creating momend: '+str(e), str(e)) #One of the parameters is missing
+        except Exception as e:
+            Log.error(traceback.format_exc())
+            return _generate_json_response(False, 'Error while creating momend (impossible): '+str(e), 'An error occurred. Please try again after a while')
+
 class DeleteMomendView(View):
     def get(self, request, *args, **kwargs):
-        if request.user.is_anonymous():
-            return _generate_json_response(False, 'Not authenticated delete request', 'Please Login First')
         decoded_id = decode_id(kwargs['id'])
         if not decoded_id:
             return _generate_json_response(False, 'Invalid id on delete', 'Invalid Id')

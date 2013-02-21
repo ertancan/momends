@@ -7,6 +7,8 @@ from Crypto.Cipher import AES
 from django.conf import settings
 import string
 from LogManagers.Log import Log
+from django.db.models.signals import pre_save
+
 
 import base64
 import random
@@ -33,10 +35,6 @@ class Momend(BaseDataManagerModel):
         }
     privacy = models.IntegerField(choices=[[PRIVACY_CHOICES[key],key] for key in PRIVACY_CHOICES.keys()] , default=0)
 
-    def __init__(self, *args, **kwargs):
-        super(Momend, self).__init__(*args, **kwargs)
-        self.cryptic_id = encode_id(self.id) #Generate a semi random identifier when object created
-
     def __unicode__(self):
         return str(self.pk) + ' : ' + str(self.owner) + ':'+str(self.momend_start_date)+' - '+str(self.momend_end_date)
 
@@ -52,6 +50,11 @@ class Momend(BaseDataManagerModel):
     def toJSON(self):
         return simplejson.dumps(self.encode(), default=lambda obj: obj.isoformat() if isinstance(obj, datetime) else None)
 
+def generate_cryptic_id_for_momend(sender,instance,using,**kwargs):
+    if not instance.cryptic_id:
+        instance.cryptic_id = encode_id(instance.pk)
+
+pre_save.connect(generate_cryptic_id_for_momend, Momend)
 
 class DeletedMomend(BaseDataManagerModel):
     #From Momend
@@ -156,6 +159,8 @@ class RawData(BaseDataManagerModel):
                 return key
 
 def encode_id(id):
+    if not id:
+        return None
     pad = lambda s: s + (16 - len(s) % 16 ) * '}' #append '}'s to make the length a multiple of 8 (Block size)
     _cipher = AES.new(settings.SECRET_KEY[:16])
     _plain = ''.join(random.choice(string.ascii_lowercase + string.digits) for x in range(5)) + str(id) #generate fixed length (5) random nonce and append the id as text

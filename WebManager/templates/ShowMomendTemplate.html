@@ -112,7 +112,6 @@
         function frameLoaded(){
             player_frame = document.getElementById('momend-player-frame');
             momendManager = player_frame.contentWindow.momendManager;
-            $('#momend-player').css('background-color','rgba(51,51,51,0)');
             momendManager.setFullscreenFunction(fullscreen);
             momendManager.addFinishListenerFunction(finished);
             momendManager.setRedirectFunction(redirectToPage);

@@ -310,10 +310,6 @@ class UserInteraction(BaseDataManagerModel):
     creator = models.ForeignKey(User)
     cryptic_id = models.CharField(max_length=255)
 
-    def __init__(self, *args, **kwargs):
-        super(UserInteraction, self).__init__(*args, **kwargs)
-        self.cryptic_id = encode_id(self.pk)
-
     def __unicode__(self):
         return str(self.momend)+'-'+str(self.creator)+':'+str(self.date)
 
@@ -326,6 +322,12 @@ class UserInteraction(BaseDataManagerModel):
 
     def toJSON(self):
         return simplejson.dumps(self.encode(), default=lambda obj: obj.isoformat() if isinstance(obj, datetime) else None)
+
+def generate_cryptic_id_for_interaction(sender,instance,using,**kwargs):
+    if not instance.cryptic_id:
+        instance.cryptic_id = encode_id(instance.pk)
+
+pre_save.connect(generate_cryptic_id_for_interaction, UserInteraction)
 
 class DeletedUserInteraction(BaseDataManagerModel):
     momend_id = models.IntegerField() #Using id so as not to link with momend

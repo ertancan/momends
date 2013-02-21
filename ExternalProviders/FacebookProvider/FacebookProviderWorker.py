@@ -13,7 +13,7 @@ from social_auth.db.django_models import UserSocialAuth
 class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker):
 
     def collect_photo(self, user, **kwargs):
-        _return_data = []
+        _return_data = [] #TODO exceptions here if cannot connect to facebook
         if kwargs['is_date']:
             _return_data += self._collect_photo_by_date(user, kwargs['since'], kwargs['until'])
         if kwargs.get('item_id', None):
