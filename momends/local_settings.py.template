@@ -110,3 +110,12 @@ if DEBUG:
 from settings import *
 MOMEND_FILE_URL = STATIC_URL
 TMP_FILE_PATH = 'operational_files/tmp/momends_tmp/'
+
+
+EMAIL_HOST = 'smtp.momends.com'
+EMAIL_HOST_USER = 'info@momends.com'
+EMAIL_HOST_PASSWORD = environ['EMAIL_HOST_PASSWORD']
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+SERVER_EMAIL = 'info@momends.com'
+DEFAULT_FROM_EMAIL = 'info@momends.com'
