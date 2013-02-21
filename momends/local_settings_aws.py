@@ -92,3 +92,11 @@ COLLECTED_FILE_PATH = 'userdata/collected/'
 THUMBNAIL_FILE_PATH = 'userdata/thumbnail/'
 ENHANCED_FILE_PATH = 'userdata/enhanced/'
 THEME_DATA_PATH =  'themedata/'
+
+EMAIL_HOST = 'email-smtp.us-east-1.amazonaws.com'
+EMAIL_HOST_USER = 'AKIAJ2PX3PDGRRI25NFA'
+EMAIL_HOST_PASSWORD = environ['EMAIL_HOST_PASSWORD']
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+SERVER_EMAIL = 'info@momends.com'
+DEFAULT_FROM_EMAIL = 'info@momends.com'
