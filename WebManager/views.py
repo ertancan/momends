@@ -10,10 +10,12 @@ from django.views.generic.base import RedirectView
 from django.http import HttpResponse
 from WebManager.forms import CreateMomendForm
 from WebManager.forms import SettingsForm
+from WebManager.forms import DocumentForm
 from DataManager.DataManager import DataManager
 from DataManager.models import Momend
 from DataManager.models import DeletedMomend
 from DataManager.models import RawData
+from DataManager.models import encode_id, decode_id
 from Outputs.AnimationManager.models import UserInteraction
 from Outputs.AnimationManager.models import DeletedUserInteraction
 from Outputs.AnimationManager.models import OutData
@@ -21,37 +23,51 @@ from Outputs.AnimationManager.models import AnimationPlayStat
 from Outputs.AnimationManager.models import Theme
 from DataManager.DataEnrich.EnrichDataWorker import EnrichDataWorker
 from social_auth.db.django_models import UserSocialAuth
-from random import randint
+from datetime import datetime
+import pytz
 from django.core.exceptions import ObjectDoesNotExist
 from LogManagers.Log import Log
 from django.utils import simplejson
 from django.contrib import messages
+from django.core.files.uploadedfile import UploadedFile
+from DataManager.DataManagerUtil import DataManagerUtil
+from django.conf import settings
+import traceback
 
 class HomePageLoggedFormView(FormView):
     form_class = CreateMomendForm
-    template_name = 'HomePageTemplate.html'
+    template_name = 'BasicMainPageTemplate.html'
     def get_context_data(self, **kwargs):
         context =  super(HomePageLoggedFormView,self).get_context_data(**kwargs)
+        context['user'] = self.request.user
         context['user_top_momends'] = EnrichDataWorker.get_top_user_momends(user=self.request.user, max_count=10)
         context['public_top_momends'] = EnrichDataWorker.get_top_public_momends(max_count=20)
+        context['should_create_automatically'] = False
+        providers = UserSocialAuth.objects.filter(user=self.request.user)
+        context['providers'] = [pr.provider for pr in providers]
         return context
 
 
     def form_valid(self, form):
         Log.debug('Create momend form sent form')
-        momend_name = form.cleaned_data['momend_name']
-        start_date = form.cleaned_data['start_date']
-        finish_date = form.cleaned_data['finish_date']
-        privacy = form.cleaned_data['privacy_type']
+        _momend_name = form.cleaned_data['momend_name']
+        _start_date = form.cleaned_data['start_date']
+        _finish_date = form.cleaned_data['finish_date']
+        _privacy = form.cleaned_data['privacy_type']
         _user = User.objects.get(username=self.request.user)
         dm = DataManager(_user)
         try:
-            momend_id = dm.create_momend(name=momend_name, since=start_date,
-                until=finish_date, duration=30, privacy=privacy, theme=Theme.objects.get(pk=form.cleaned_data['momend_theme']))
-        except Exception as e:
+            _args = dict()
+            _args['is_date'] = True
+            _args['since'] = _start_date
+            _args['until'] = _finish_date
+            momend_cryptic_id = dm.create_momend(name=_momend_name, duration=30, privacy=_privacy,
+                theme=Theme.objects.get(pk=form.cleaned_data['momend_theme']), **_args)
+        except NotImplementedError as e:
             Log.error('Error while creating the momend: '+str(e))
             messages.error(self.request, 'Error while creating the momend')
             self.success_url = reverse('momends:home-screen' ) #Redirect back to home screen in case of exception
+            return super(HomePageLoggedFormView,self).form_valid(form)
 
         status = dm.get_last_status()
         has_data = False
@@ -64,71 +80,105 @@ class HomePageLoggedFormView(FormView):
             self.success_url = reverse('momends:home-screen' )
         else: #Collected some data and created momend, append status and redirect to show page
             messages.info(self.request, status)
-            self.success_url = reverse('momends:show-momend', args = ('m', momend_id,) )
+            self.success_url = reverse('momends:show-momend', args = ('m', momend_cryptic_id,) )
         return super(HomePageLoggedFormView,self).form_valid(form)
 
 class HomePageNotLoggedView(TemplateView):
-    template_name = 'HomePageTemplate.html'
+    template_name = 'BasicMainPageTemplate.html'
     def get_context_data(self, *args, **kwargs):
-        if randint(0,1) == 0:
-            self.template_name = 'BasicMainPageTemplate.html' #basic random selection for main page! just for fun
         context = super(HomePageNotLoggedView, self).get_context_data(**kwargs)
         context['public_top_momends'] = EnrichDataWorker.get_top_public_momends(max_count=20)
+        context['should_create_automatically'] = False
+        return context
+
+class NewUserLoggedView(TemplateView):
+    template_name = 'BasicMainPageTemplate.html'
+    def get_context_data(self, **kwargs):
+        context = super(NewUserLoggedView, self).get_context_data(**kwargs)
+        context['should_create_automatically'] = True
         return context
 
 class MomendPlayerView(TemplateView):
     template_name = 'MomendPlayerTemplate.html'
 
+    def get_context_data(self, *args, **kwargs):
+        context = super(MomendPlayerView, self).get_context_data(**kwargs)
+        decoded_id = decode_id(kwargs['id'])
+        if decoded_id:
+            if kwargs['type'] == 'm':
+                _momend = Momend.objects.get(pk = decoded_id)
+            elif kwargs['type'] == 'i':
+                _momend = UserInteraction.objects.get(pk = decoded_id).momend
+            else:
+                context['error'] = 1
+                return context
+        else:
+            context['error'] = 2 #TODO error message
+            return context
+        context['error'] = 0
+        context['momend'] = _momend
+        return context
+
 class ShowMomendView(TemplateView):
-    template_name = 'ShowMomendTemplate.html'
+    template_name = 'BasicMainPageTemplate.html'
 
     def dispatch(self, request, *args, **kwargs):
-        play_stat = AnimationPlayStat()
-        if kwargs['type'] == 'm': #Whether it is momend or interaction
-            play_stat.momend_id = kwargs['id']
-        elif kwargs['type'] == 'i':
-            play_stat.interaction_id = kwargs['id']
+        decoded_id = decode_id(kwargs['id'])
+        if decoded_id:
+            play_stat = AnimationPlayStat()
 
-        if 'HTTP_REFERER' in request.META:
-            play_stat.redirect_url = request.META['HTTP_REFERER']
-        else:
-            play_stat.redirect_url = 'Direct'
-        if not request.user.is_anonymous():
-            play_stat.user = request.user
-        play_stat.save()
+            if kwargs['type'] == 'm': #Whether it is momend or interaction
+                play_stat.momend_id = decoded_id
+            elif kwargs['type'] == 'i':
+                play_stat.interaction_id = decoded_id
+
+            if 'HTTP_REFERER' in request.META:
+                play_stat.redirect_url = request.META['HTTP_REFERER']
+            else:
+                play_stat.redirect_url = 'Direct'
+            if not request.user.is_anonymous():
+                play_stat.user = request.user
+            play_stat.save()
 
         return super(ShowMomendView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
         context = super(ShowMomendView, self).get_context_data(**kwargs)
-        if kwargs['type'] == 'm':
-            _momend = Momend.objects.get(pk = kwargs['id'])
-        elif kwargs['type'] == 'i':
-            _momend = UserInteraction.objects.get(pk = kwargs['id']).momend
-        else:
-            context['error'] = 1
-            return context
+        decoded_id = decode_id(kwargs['id'])
+        if decoded_id: #Show only if id is valid
+            if kwargs['type'] == 'm':
+                _momend = Momend.objects.get(pk =decoded_id )
+            elif kwargs['type'] == 'i':
+                _momend = UserInteraction.objects.get(pk = decoded_id).momend
+            else:
+                context['error'] = 1
+                return context
 
-        context['error']  = '0'
-        context['momend'] = _momend
-        context['interactions'] = UserInteraction.objects.filter(momend = _momend)
-        context['related_momends'] = EnrichDataWorker.get_related_momends(momend=_momend, max_count=10, get_private=True)
-        _all_dis = OutData.objects.filter(owner_layer__momend=_momend).values('raw').distinct()
-        _icons = ['icon-picture', 'icon-comment', 'icon-pushpin', 'icon-desktop', ' icon-music']
-        _used_media = []
-        for _out_data in _all_dis:
-            if _out_data['raw']:
-                _obj = RawData.objects.get(pk=_out_data['raw'])
-                _tmp = dict()
-                _tmp['data'] = _obj.data
-                _tmp['thumb'] = _obj.thumbnail
-                _tmp['original_id'] = _obj.original_id
-                _tmp['provider'] = _obj.provider.name.lower()
-                _tmp['type'] = RawData.DATA_TYPE.keys()[_obj.type].lower()
-                _tmp['type_icon'] = _icons[_obj.type]
-                _tmp['original_path'] = _obj.original_path
-                _used_media.append(_tmp)
-        context['used_media'] = _used_media
+            context['error']  = '0'
+            context['momend'] = _momend
+            context['interactions'] = UserInteraction.objects.filter(momend = _momend)
+            context['related_momends'] = EnrichDataWorker.get_related_momends(momend=_momend, max_count=10, get_private=True)
+            _all_dis = OutData.objects.filter(owner_layer__momend=_momend).values('raw').distinct()
+            _icons = ['icon-picture', 'icon-comment', 'icon-pushpin', 'icon-desktop', ' icon-music']
+            _used_media = []
+            for _out_data in _all_dis:
+                if _out_data['raw']:
+                    _obj = RawData.objects.get(pk=_out_data['raw'])
+                    _tmp = dict()
+                    _tmp['data'] = _obj.data
+                    _tmp['thumb'] = _obj.thumbnail
+                    _tmp['original_id'] = _obj.original_id
+                    _tmp['provider'] = _obj.provider.name.lower()
+                    _tmp['type'] = RawData.DATA_TYPE.keys()[_obj.type].lower()
+                    _tmp['type_icon'] = _icons[_obj.type]
+                    _tmp['original_path'] = _obj.original_path
+                    _used_media.append(_tmp)
+            context['used_media'] = _used_media
+
+            providers = UserSocialAuth.objects.filter(user=self.request.user)
+            context['providers'] = [pr.provider for pr in providers]
+        else:
+            context['error'] = 2
         return context
 
 class GetMomendView(TemplateView):
@@ -136,19 +186,23 @@ class GetMomendView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(GetMomendView, self).get_context_data(**kwargs)
+        decoded_id = decode_id(kwargs['id'])
+        if not decoded_id:
+            context['momend'] = '{"error":"invalid momend id"}'
+            return context
         try:
             if kwargs['type'] == 'm':
-                obj = Momend.objects.get(pk = kwargs['id'])
+                obj = Momend.objects.get(pk = decoded_id)
                 if obj.privacy == Momend.PRIVACY_CHOICES['Private']:
                     if obj.owner != self.request.user:
-                        context['momend'] = '{"error":"not authorised"}'
+                        context['momend'] = '{"error":"not authorized"}'
                         return context
                 context['momend'] = obj.toJSON()
             elif kwargs['type'] =='i':
-                obj = UserInteraction.objects.get(pk = kwargs['id'])
+                obj = UserInteraction.objects.get(pk = decoded_id)
                 if obj.momend.privacy == Momend.PRIVACY_CHOICES['Private']:
                     if obj.momend.owner != self.request.user:
-                        context['momend'] = '{"error":"not authorised"}'
+                        context['momend'] = '{"error":"not authorized"}'
                         return context
                 context['momend'] = obj.toJSON()
             else:
@@ -159,27 +213,56 @@ class GetMomendView(TemplateView):
 
 class SaveInteractionView(View):
     def post(self, request, *args, **kwargs):
-        if not request.user:
-            return _generate_json_response(False, 'Not authenticated save interaction request', 'Please Login First')
         try:
             queue = request.POST['queue']
-            momend_id = request.POST['id']
+            encoded_id = request.POST['id']
+            momend_id = decode_id(encoded_id)
             interaction = UserInteraction()
             interaction.momend_id = momend_id
             interaction.interaction = queue
             interaction.creator = request.user
             interaction.save()
-            return _generate_json_response(True, 'Interaction Saved', url=str(reverse_lazy('momends:show-momend',args=('i',interaction.pk))))
+            return _generate_json_response(True, 'Interaction Saved', url=str(reverse_lazy('momends:show-momend',args=('i',interaction.cryptic_id))))
         except Exception as e:
             return _generate_json_response(False, 'Error while saving interaction: '+str(e), 'Try Again')
 
+class CreateMomendView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            _momend_name = request.POST['momend_name']
+            _start_date =  datetime.strptime(request.POST['start_date'], '%d %b, %Y').replace(tzinfo= pytz.UTC)
+            _finish_date = datetime.strptime(request.POST['finish_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
+            _privacy = request.POST['privacy_type']
+            _user = self.request.user
+            _theme = request.POST['momend_theme']
+            _theme = 1 #TODO remove after showing theme selection combo
+            dm = DataManager(_user)
+            try:
+                _args = dict()
+                _args['is_date'] = True
+                _args['since'] = _start_date
+                _args['until'] = _finish_date
+                momend_cryptic_id = dm.create_momend(name=_momend_name, duration=30, privacy=_privacy,
+                    theme=Theme.objects.get(pk= _theme), **_args)
+                return _generate_json_response(True, 'Created momend', cid=momend_cryptic_id)
+            except Exception as e:
+                Log.error(traceback.format_exc())
+                return _generate_json_response(False, 'Error while creating momend: '+str(e), 'An error occurred. Please try again') #Could be any error
+        except KeyError as e:
+            Log.error(traceback.format_exc())
+            return _generate_json_response(False, 'Error while creating momend: '+str(e), str(e)) #One of the parameters is missing
+        except Exception as e:
+            Log.error(traceback.format_exc())
+            return _generate_json_response(False, 'Error while creating momend (impossible): '+str(e), 'An error occurred. Please try again after a while')
+
 class DeleteMomendView(View):
     def get(self, request, *args, **kwargs):
-        if not request.user:
-            return _generate_json_response(False, 'Not authenticated delete request', 'Please Login First')
+        decoded_id = decode_id(kwargs['id'])
+        if not decoded_id:
+            return _generate_json_response(False, 'Invalid id on delete', 'Invalid Id')
         if kwargs['type'] == 'm':
             try:
-                momend = Momend.objects.get(pk = kwargs['id'])
+                momend = Momend.objects.get(pk = decoded_id)
                 if not momend.owner == request.user:
                     Log.warn("Trying to delete someone else's momend")
                     return _generate_json_response(False, user_msg='You cannot delete this momend')
@@ -201,7 +284,7 @@ class DeleteMomendView(View):
 
         if kwargs['type'] == 'i':
             try:
-                interaction = UserInteraction.objects.get(pk = kwargs['id'])
+                interaction = UserInteraction.objects.get(pk = decoded_id)
                 if not interaction.creator == request.user and not interaction.momend.owner == request.user:
                     Log.warn("Trying to delete someone else's interaction")
                     return _generate_json_response(False, user_msg='You cannot delete this interaction')
@@ -251,6 +334,54 @@ class UserProfileTemplateView(TemplateView):
         context['profile_user'] = _user
         return context
 
+class UploadFormView(FormView):
+    form_class = DocumentForm
+    template_name = 'UploadTest.html'
+    success_url = reverse_lazy('momends:home-screen')
+
+class FileUploadView(View):
+    def post(self, request, *args, **kwargs):
+        if request.FILES == None:
+            return _generate_json_response(False, 'Must have files attached: ', 'Try Again')
+        _files = request.FILES[u'files[]']
+        result = []
+        for _file in _files:
+            wrapped_file = UploadedFile(_file)
+            _filename = wrapped_file.name
+            file_size = wrapped_file.file.size
+            Log.debug ('Got file: "%s"' % str(_filename))
+            Log.debug('Content type: "$s" % file.content_type')
+
+            _file_url  = DataManagerUtil.create_file(_file, _filename)
+            Log.debug("Created file " + _filename)
+            Log.debug('Uploaded file saving done')
+            #settings imports
+
+            _file_delete_url = ""#settings.MULTI_FILE_DELETE_URL+'/'
+            #getting thumbnail url using sorl-thumbnail
+            _thumbnail = DataManagerUtil.create_photo_thumbnail(settings.SAVE_PREFIX + _filename, _filename+'_thumb.jpg')
+
+
+            result.append({"name":_filename,
+                       "size":file_size,
+                       "url":_file_url,
+                       "thumbnail_url":_thumbnail,
+                       "delete_url":_file_delete_url,
+                       "delete_type":"POST",} )
+
+        total_result = {
+            'files': result
+        }
+
+
+        #checking for json data type
+        #big thanks to Guy Shapiro
+        _response_data = simplejson.dumps(total_result)
+        if "application/json" in request.META['HTTP_ACCEPT_ENCODING']:
+            mimetype = 'application/json'
+        else:
+            mimetype = 'text/plain'
+        return HttpResponse(_response_data, mimetype=mimetype)
 
 def _generate_json_response(success, log_message=None, user_msg=None, **kwargs):
     if log_message:

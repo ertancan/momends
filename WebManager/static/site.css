@@ -118,7 +118,8 @@ a.delete-button{
 }
 .creating-dialog{
     display: none;
-    position:absolute;
+    z-index: 9999;
+    position:fixed;
     top:10%;
     left:50%;
     width: 600px;
@@ -144,7 +145,7 @@ a.delete-button{
 }
 #collecting-text{
     position: absolute;
-    left: 30%;
+    left: 25%;
 }
 /* Show Page */
 .interaction-list{

@@ -6,55 +6,85 @@
     <meta charset="UTF-8">
     <title>{% block title %} Momends {% endblock title %}</title>
 
-{% block include %}
-    <link href="{{ STATIC_URL }}fonts/font-awesome/font-awesome.css" rel="stylesheet">
-    <!--[if IE 7]>
+    {% block include %}
+        <link href="{{ STATIC_URL }}fonts/font-awesome/font-awesome.css" rel="stylesheet">
+        <!--[if IE 7]>
 		    <link href={{ STATIC_URL }}fonts/font-awesome/font-awesome-ie7.css" rel="stylesheet">
 	    <![endif]-->
-    <script src="{{ STATIC_URL }}jquery.js"></script>
-    <link href="{{ STATIC_URL }}momend_style.css" rel="stylesheet" type="text/css" />
-    <link href="{{ STATIC_URL }}player_style.css" rel="stylesheet" type="text/css" />
-    <script>STATIC_URL = '{{ STATIC_URL }}';  </script>
-    <script>MOMEND_FILE_URL = '{{ MOMEND_FILE_URL }}';  </script>
-    <script>THEME_DATA_URL = '{{ THEME_DATA_URL }}';  </script>
-{% endblock include %}
+        <script src="{{ STATIC_URL }}jquery.js"></script>
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.0/themes/base/jquery-ui.css" />
+        <link href="{{ STATIC_URL }}momend_style.css" rel="stylesheet" type="text/css" />
+        <link href="{{ STATIC_URL }}player_style.css" rel="stylesheet" type="text/css" />
+        <script>STATIC_URL = '{{ STATIC_URL }}';  </script>
+        <script>MOMEND_FILE_URL = '{{ MOMEND_FILE_URL }}';  </script>
+        <script>THEME_DATA_URL = '{{ THEME_DATA_URL }}';  </script>
+        <script>HOST = 'http://beta.momends.com';</script>
+    {% endblock include %}
 </head>
 
 <body>
 {% block heading %} {% endblock heading %}
 {% block content %}
-    <body onload="player_init()">
-    <div class="player" style="width:100%;height: 100%">
-        <div class="scene" style="height: 97%"></div>
+    <body onload="playerInit()">
+    <div class="player">
+        <div class="scene" id="scene"></div>
         <div class="music"></div>
         <div class="momend-player">
             <div class="momend-button-group">
-                <button onclick="pause()" id="play-toggle" class="icon-pause player-button"></button>
-                <input id="volume-slider" type="range" min="0" max="100" style="width: 80px">
+                <button id="play-toggle" class="icon-pause player-button"></button>
+                <div id="volume-slider"></div>
             </div>
             <div class="momend-button-group right-group">
-                <button class="icon-heart player-button" href="#"></button>
-                <button class="icon-share player-button" href="#"></button>
+                <button class="icon-heart player-button" id="button-like"></button>
+                <button class="icon-share player-button" id="button-share"></button>
                 <button class="icon-fullscreen player-button" href="#" id="button-fullscreen"></button>
             </div>
         </div>
     </div>
     <div class="finished-modal-bg" id="finished-bg" style="display: none;">
         <div class="finished-modal" id="finished-modal">
-            <div id="send-interaction-button" onclick="send_interaction_data()" class="finished-modal-button">
-                <i class="icon-magic modal-icon" id="send-interaction-icon"></i>
-                <span id="send-interaction-text">Save Interaction</span>
-            </div>
-            <div id="share-button" onclick="share()" class="finished-modal-button">
-                <i class="icon-share modal-icon" id="share-button-icon"></i>
-                <span>Share</span>
+            <div class="finished-modal-links">
+                <div id="send-interaction-button" onclick="sendInteractionData()" class="finished-modal-button">
+                    <i class="icon-magic modal-icon" id="send-interaction-icon"></i>
+                    <span id="send-interaction-text" class="finished-modal-button-text">Save Interaction</span>
+                </div>
+                <div id="final-share-button-fb" onclick="postToFacebookFeed('finish')" class="finished-modal-button">
+                    <i class="icon-facebook modal-icon"></i>
+                    <span class="finished-modal-button-text" >Share on Facebook</span>
+                </div>
+                <div id="final-share-button-tw" onclick="postToTwitter('finish')" class="finished-modal-button">
+                    <i class="icon-twitter modal-icon"></i>
+                    <span class="finished-modal-button-text" >Share on Twitter</span>
+                </div>
+                <br/>
+                <div id="final-share-button-another" onclick="getAnother()" class="finished-modal-button">
+                    <i class="modal-icon"></i>
+                    <span class="finished-modal-button-text" >Get another one</span>
+                </div>
+                <div id="final-share-button-link" onclick="showLink()" class="finished-modal-button">
+                    <i class="modal-icon icon-link"></i>
+                    <span class="finished-modal-button-text" >Link to momend</span>
+                </div>
+                <div id="final-share-button-mail" onclick="sendMail()" class="finished-modal-button">
+                    <i class="modal-icon icon-envelope"></i>
+                    <span class="finished-modal-button-text" >Mail this momend</span>
+                </div>
             </div>
         </div>
+
     </div>
-    <div class="loading-bg" id="loading-bg">
-        <i class="icon-refresh icon-spin icon-3x"></i>
-        <br>
-        <b class="loading-text">Loading momend...</b>
+    <div class="load-modal" id="load-modal">
+        <div class="load-main">
+            <div class="loaded-main-button" id="loaded-main" onclick="momendManager.startAnimation()">
+                <p>Start <i class="icon-play"></i></p>
+            </div>
+            <div class="loading-main" id="loading-main">
+                <p>Loading momend <i class="icon-refresh icon-spin"></i></p>
+            </div>
+        </div>
+        <div class="load-bottom-text">
+            <p>Do you know you can interact with your momend?<br/>Just click on the screen!</p>
+        </div>
     </div>
     {% csrf_token %}
 
@@ -64,20 +94,26 @@
 
     <script src="{{ STATIC_URL }}jquery.jplayer.min.js"></script>
     <script src="{{ STATIC_URL }}jquery.transit.min.js"></script>
+    <script src="{{ STATIC_URL }}jquery.easing.1.3.js"></script>
+    <script src="{{ STATIC_URL }}jquery.animate-shadow.min.js"></script>
     <script src="{{ STATIC_URL }}animation.js"></script>
     <script src="{{ STATIC_URL }}momend.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.0/jquery-ui.js"></script>
+    <script src='http://connect.facebook.net/en_US/all.js'></script>
+
 
     <script type="text/javascript">
-        function fetch_momend_data(){
+        var momendManager;
+        var shareOpen = false, tooltipFocused = false;
+        function fetchMomendData(){
             $.getJSON( '{% url 'momends:get-momend' params.type params.id %}', function(data) {
-                momend_data = data;
-                momend_arrived();
+                momendManager.momendArrived(data);
 
-            }).error(function(){load_failed();});
+            }).error(function(){momendManager.loadFailed();});
         }
 
-        function send_interaction_data(){
-            _sendUserInteractionToServer('{% url 'momends:save-interaction' params.id %}', send_interaction_callback);
+        function sendInteractionData(){
+            momendManager.sendUserInteractionToServer('{% url 'momends:save-interaction' params.id %}', sendInteractionCallback);
             var sendText = $('#send-interaction-text');
             var sendIcon = $('#send-interaction-icon');
             sendText.text('Sending..');
@@ -86,13 +122,16 @@
             sendIcon.addClass('icon-spinner')
         }
 
-        function send_interaction_callback(success, msg){
+        function sendInteractionCallback(success, msg){
             var sendButton = $('#send-interaction-button');
             var sendText = $('#send-interaction-text');
             var sendIcon = $('#send-interaction-icon');
             if(success){
+                _trackPlayerEvent('SendInteraction','Success');
                 sendText.text('Play Interaction');
                 sendButton.unbind('click').click(function(){
+                    _trackPlayerEvent('SendInteraction','Watch');
+                    var page_redirect_function = momendManager.getRedirectFunction();
                     if(page_redirect_function){
                         page_redirect_function(msg); //Redirect to returned url to view the interaction
                     }else{
@@ -101,6 +140,7 @@
                 });
                 sendIcon.addClass('icon-ok-sign');
             }else{
+                _trackPlayerEvent('SendInteraction','Fail');
                 sendButton.text(msg);
                 sendIcon.addClass('icon-exclamation-sign');
             }
@@ -108,10 +148,215 @@
             sendIcon.removeClass('icon-spinner');
 
         }
-        function player_init(){
-            init_animation();
-            fetch_momend_data();
+        function playerInit(){
+            momendManager = new Momend();
+            momendManager.init();
+            fetchMomendData();
+            if ( window.self === window.top ) {
+                $('#scene').addClass('fullscreen'); //Not in iframe
+            }
+            $('#volume-slider').slider({
+                min : 0,
+                max : 100,
+                value : 100,
+                slide : function(event, obj){
+                    momendManager.jsAnimate.volumeSliderChanged(obj.value)
+                }
+            });
+            var pauseButton = $('#play-toggle');
+            pauseButton.bind('click', momendManager.jsAnimate.pause);
+
+            prepareButtons();
         }
+        FB.init({appId: "125999474230740", status: true, cookie: true});
+
+        function postToFacebookFeed(caller) {
+
+            // calling the API ...
+            var obj = {
+                method: 'feed',
+                redirect_uri: HOST + '{% url 'momends:show-momend' params.type params.id %}',
+                link: HOST + '{% url 'momends:show-momend' params.type params.id %}',
+                picture: HOST + '{{ STATIC_URL }}{{ momend.thumbnail }}',
+                name: '{{ momend.name }}',
+                caption: 'Did you see this momend',
+                description: 'Someone created this momend to show you how wonderful his life is' //TODO momend description here
+            };
+
+            function callback(response) {
+                console.log("Post ID: " + response['post_id']);
+            }
+
+            FB.ui(obj, callback);
+            _trackPlayerEvent('Share','Facebook-'+caller);
+        }
+        function postToTwitter(caller){
+            window.open(generateTwitterShareURL(),'Share on Twitter','width=600,height=300,left=300,top=300');
+            _trackPlayerEvent('Share','Twitter-'+caller);
+        }
+        function generateTwitterShareURL(){
+            var baseURL ='https://twitter.com/share?';
+            var URL = baseURL + 'url='+encodeURIComponent(HOST + '{% url 'momends:show-momend' params.type params.id %}');
+            URL += '&text='+encodeURIComponent('Have you seen this momend?');
+            return URL;
+        }
+
+        function prepareButtons(){
+            var share_button = $('#button-share');
+            var fullscreen_button = $('#button-fullscreen');
+            var like_button = $('#button-like');
+            generateTooltip(share_button,'Share', 'share');
+            generateTooltip(fullscreen_button, 'Fullscreen', 'fullscreen');
+            generateTooltip(like_button, 'Like', 'like');
+            generateWonderfulShare(share_button, 'share');
+        }
+        function generateTooltip(item, text, id){ //TODO Comment here!
+            item.mouseenter(function(){
+                var tooltip = $('#'+id+'-tooltip');
+                if(tooltip.is('*')){
+                    tooltip.css({ //Location may need to change with fullscreen
+                        left:Math.min(item.offset().left + item.outerWidth()/2 -40 , $('.scene').outerWidth()-83),
+                        width:80,
+                        height:20
+                    });
+                    tooltip.fadeIn();
+                }else{
+                    tooltip = jQuery('<div/>',{
+                        id : id+'-tooltip',
+                        class : 'player-tooltip',
+                        text : text,
+                        hover : function(){tooltipFocused = true}
+                    }).appendTo('.player');
+                    tooltip.css({
+                        left:Math.min(item.offset().left + item.outerWidth()/2 -40 , $('.scene').outerWidth()-83),
+                        width:80,
+                        height:20
+                    });
+                    tooltip.fadeIn();
+                }
+            });
+            item.mouseleave(function(){
+                var tooltip = $('#'+id+'-tooltip');
+                if(id !== 'share' || !shareOpen){
+                    tooltip.fadeOut();
+                    tooltipFocused = false;
+                }else{
+                    setTimeout(function(){ //Close the tooltip if not focused in 300ms
+                        if(!tooltipFocused){
+                            shareOpen = false;
+                            _closeShareDialog(tooltip);
+                        }
+                    }, 300);
+                }
+            })
+        }
+        function generateWonderfulShare(item, id){ //TODO Comment here!
+            item.click(function(){
+                var tooltip = $('#'+id+'-tooltip');
+                if(shareOpen){ //Shrink dialog if its open when user clicked
+                    shareOpen = false;
+                    tooltip.animate({
+                        height:20
+                    },{duration:300});
+                }else{
+                    _trackPlayerEvent('Bottom','ShareButton');
+                    shareOpen = true;
+                    tooltip.animate({
+                        height:120
+                    },{duration:300});
+                    if(!$('#share-buttons').is('*')){ //Share buttons not created yet
+                        var _buttonHolder = jQuery('<div/>',{
+                            id : 'share-buttons',
+                            class : 'share-buttons'
+                        }).appendTo(tooltip);
+                        jQuery('<hr/>').appendTo(_buttonHolder);
+                        var _fb = jQuery('<a/>',{
+                            href : 'javascript:postToFacebookFeed("bottom")',
+                            class : 'share-button icon-facebook'
+                        }).appendTo(_buttonHolder);
+                        var _tw = jQuery('<a/>',{
+                            href : '#',
+                            onclick : 'javascript:postToTwitter("bottom")',
+                            class : 'share-button icon-twitter'
+                        }).appendTo(_buttonHolder);
+                    }
+                    tooltip.mouseleave(function(){
+                        shareOpen = false;
+                        _closeShareDialog(tooltip);
+                    })
+                }
+
+            });
+        }
+        function _closeShareDialog(tooltip){
+            tooltip.animate({
+                opacity:0,
+                height:20
+            },{duration:500, complete:function(){
+                tooltip.hide();
+                tooltip.css({opacity:1});
+            }});
+        }
+
+        /**
+         * Displays the link of current momend
+         */
+        function showLink(){
+            _trackPlayerEvent('finish', 'ShowLink');
+            var linkModal = jQuery('<div/>',{
+                class : 'modal-panel link-modal',
+                id : 'link-modal'
+            }).appendTo('#finished-modal');
+            var close =  jQuery('<a/>',{
+                href : '#',
+                style : 'float: right;margin-right: 3%;color: white;',
+                text : 'Close'
+            }).appendTo(linkModal);
+            close.click(function(event){
+                event.preventDefault();
+                linkModal.remove();
+            });
+            var link = jQuery('<input/>',{
+                type: 'text',
+                readonly : 'readonly',
+                class : 'momend-link',
+                val : HOST + '{% url 'momends:show-momend' params.type params.id %}'
+            }).appendTo(linkModal);
+            link.select();
+        }
+
+        /**
+         * Navigates to main page to create another momend
+         */
+    function getAnother(){
+            _trackPlayerEvent('finish', 'getAnother');
+            var url = HOST + '{% url 'momends:home-screen' %}?create=true';
+            var page_redirect_function = momendManager.getRedirectFunction();
+            if(page_redirect_function){
+                page_redirect_function(url); //Redirect to returned url to view the interaction
+            }else{
+                window.location.replace(url);
+            }
+    }
     </script>
 {% endblock scripts %}
+{% block analytics %}
+    <script type="text/javascript">
 
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-37383850-2']);
+        _gaq.push(['_setDomainName', 'momends.com']);
+        _gaq.push(['_setAllowLinker', true]);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+
+    function _trackPlayerEvent(_group, _event){
+        _gaq.push(['_trackEvent', 'Player', _group, _event])
+    }
+    </script>
+{% endblock analytics %}

@@ -19,8 +19,14 @@ body{
 .scene{
     margin:0 auto;
     width:100%;
+    height: 97%;
     overflow:hidden;
     position:relative;
+    font-size: 16px;
+    background-color: rgb(200,200,200);
+}
+.scene.fullscreen{
+    font-size: 22px;
 }
 .error{
     position: absolute;
@@ -36,7 +42,7 @@ figure, figcaption{ /*add any other html5 elements you use*/
 .photo {
     display:none;
     position:absolute;
-    padding: 6px 8px 10px 8px; /*size of the frame*/
+    overflow: visible !important;
     user-select: none;
     moz-user-select: none;
     -webkit-user-select: none;
@@ -49,8 +55,9 @@ figure, figcaption{ /*add any other html5 elements you use*/
 
 .status-text{
     position:relative;
-    padding:10px;
     width: 75%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .scene-background{
@@ -71,9 +78,10 @@ figure, figcaption{ /*add any other html5 elements you use*/
 
 .photo_image{
     position:relative;
-    height:100%;
-    margin:3px;
-    margin-left:0px;
+    display:block;
+    margin-left: auto;
+    margin-right: auto;
+    height:97%;
     user-select: none;
     moz-user-select: none;
     -webkit-user-select: none;

@@ -1,9 +1,7 @@
 __author__ = 'ertan'
 from django.conf import settings
 import subprocess,os
-import re
 from Outputs.AnimationManager.models import ImageEnhancement
-from Outputs.AnimationManager.models import ThemeData
 import shutil
 from LogManagers.Log import Log
 
@@ -31,7 +29,7 @@ class ImageEnhancementUtility(object):
             name_part = name_part[len(settings.SAVE_PREFIX) + len(settings.COLLECTED_FILE_PATH):]
 
         for i, enhance in enumerate(enhancement_objects):
-            _enhancement_parameters = ImageEnhancementUtility._replace_parameter_keywords(enhance.parameters, theme_data_manager) #Replace keywords in parameters
+            _enhancement_parameters = theme_data_manager.replace_parameter_keywords(enhance.parameters  ) #Replace keywords in parameters
             _enh_out_filename = settings.TMP_FILE_PATH + name_part +'_' + file_prefix + '_enh'+str(i)+ ext_part #name file as filename_enh1.ext etc.
             _params = settings.ENHANCEMENT_SCRIPT_DIR + enhance.script_path +' '
             if _enhancement_parameters: #append parameters if exists
@@ -53,29 +51,3 @@ class ImageEnhancementUtility(object):
 
         shutil.move(_tmp_filename, _save_filename)
         return _current_filename
-
-    @staticmethod
-    def _replace_parameter_keywords(parameter,theme_data_manager):
-        """
-        Replaces occurrences of reserved keywords such as {{THEME_FRAME}} or {{THEME_DATA_PARAMETER}}
-        :param parameter: parameter string of enhancement
-        :param theme_data_manager: ThemeDataManager object
-        :return: replaced parameter string
-        """
-        if not parameter:
-            return None
-        keyword_re='(\\{\\{(?:[a-z][a-z0-9_]*)\\}\\})'
-        keyword_finder = re.compile(keyword_re,re.IGNORECASE|re.DOTALL)
-
-        regex_result =keyword_finder.search(parameter)
-        while regex_result:
-            matched_keyword = regex_result.group()
-            theme_data = theme_data_manager.get_data_for_keyword(matched_keyword)
-            if theme_data:
-                parameter = parameter.replace(matched_keyword,theme_data.data_path)
-            elif matched_keyword == ThemeData.THEME_DATA_PARAMETER_KEYWORD:
-                parameter = parameter.replace(matched_keyword, theme_data_manager.getLastResult().parameters)
-
-            regex_result =keyword_finder.search(parameter)
-
-        return parameter

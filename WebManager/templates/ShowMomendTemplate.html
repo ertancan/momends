@@ -2,7 +2,11 @@
 
 {% load url from future %}
 {% block meta %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta property="og:type" content="article"/>
+    <meta property="og:image" content="{{ momend.thumbnail}}"/>
+    <meta property="og:title" content="{{ momend.name }}"/>
+    <meta property="og:description" content="You can now re-experience your precious momends!"/>
 {% endblock meta %}
 {% block content %}
     <section id="content" class="container">
@@ -19,7 +23,7 @@
                         {% for interaction in interactions %}
                         <li class="interaction">
                             <i class="icon-magic"></i>
-                            <a href="{% url 'momends:show-momend' 'i' interaction.id %}">
+                            <a href="{% url 'momends:show-momend' 'i' interaction.cryptic_id %}">
                                 Interaction {{ forloop.counter }} : {{ interaction.date|date:"j M Y" }}
                             </a>
                         </li>
@@ -84,11 +88,20 @@
     <script>
         player_loaded = null;
         fullscreen_on = false;
+        var resumeAfterModalClose;
+        var momendManager;
         function pausePlayer(){
-            player_frame.contentWindow.pause();
+            if(momendManager.isPlaying){
+                momendManager.jsAnimate.pause();
+                resumeAfterModalClose = true;
+            }else{
+                resumeAfterModalClose = false;
+            }
         }
         function resumePlayer(){
-            player_frame.contentWindow.resume();
+            if(resumeAfterModalClose){
+                momendManager.jsAnimate.resume();
+            }
         }
         function modalShow(media){
             pausePlayer();
@@ -98,10 +111,10 @@
         }
         function frameLoaded(){
             player_frame = document.getElementById('momend-player-frame');
-            $('#momend-player').css('background-color','rgba(51,51,51,0)');
-            player_frame.contentWindow.setFullscreenFunction(fullscreen);
-            player_frame.contentWindow.addFinishListenerFunction(finished);
-            player_frame.contentWindow.setRedirectFunction(redirectToPage);
+            momendManager = player_frame.contentWindow.momendManager;
+            momendManager.setFullscreenFunction(fullscreen);
+            momendManager.addFinishListenerFunction(finished);
+            momendManager.setRedirectFunction(redirectToPage);
             //We may want to open in a new tab?
         }
         function finished(){
@@ -110,7 +123,7 @@
             }
         }
         function fullscreen(){
-            player_frame.contentWindow.fullscreenToggle();
+            momendManager.fullscreenToggle();
             if(!fullscreen_on){
                 $('#momend-player').attr("class","player-fullscreen");
             }else{

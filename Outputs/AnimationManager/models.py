@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
 from DataManager.models import RawData
+from DataManager.models import encode_id
 from django.utils import simplejson
 from datetime import datetime
 from django.conf import settings
@@ -101,6 +102,7 @@ class CoreAnimationData(BaseDataManagerModel):
     type = models.IntegerField(choices=_choices) #Type of the animation
     duration = models.IntegerField(verbose_name = 'Duration (ms)', default=0) #Duration of certain types
     delay = models.IntegerField(verbose_name='Delay (ms)', default=0)
+    easing = models.CharField(max_length=255, null=True, blank=True) #Easing functions (or cubic-bezier also supported in extended animation)  for default list: http://easings.net/
     pre = models.TextField(null=True, blank=True) #Precondition of the object to perform the animation
     anim = models.TextField(null=True, blank=True) #Steps to be performed if the type is 'animation'
     target = models.IntegerField(null=True, blank=True) #Animation layer to affect if inter-layer type like wait,block,unblock etc.
@@ -110,18 +112,39 @@ class CoreAnimationData(BaseDataManagerModel):
 
     click_animation = models.ForeignKey('UserInteractionAnimationGroup', null=True, blank=True, related_name='click_animation')
     hover_animation = models.ForeignKey('UserInteractionAnimationGroup', null=True, blank=True, related_name='hover_animation')
+    shadow = models.ForeignKey('DynamicShadow', null=True, blank=True)
 
     def __unicode__(self):
         return str(self.group)+'-'+str(self.used_object_type)
 
     def encode(self):
-        enc = model_to_dict(self,exclude=['group','click_animation','hover_animation','used_object_id','order_in_group','type'])
+        enc = model_to_dict(self,exclude=['group','click_animation','hover_animation','used_object_id','order_in_group','type', 'shadow'])
         enc['type'] = CoreAnimationData.ANIMATION_TYPE[self.type]
         if self.click_animation:
             enc['click_animation'] = self.click_animation.encode()
         if self.hover_animation:
             enc['hover_animation'] = self.hover_animation.encode()
+        if self.shadow:
+            enc['shadow'] = self.shadow.encode()
         return enc
+
+class DynamicShadow(BaseDataManagerModel):
+    name = models.CharField(max_length=255)
+    max_x = models.IntegerField(default=0)
+    max_y = models.IntegerField(default=0)
+    blur = models.IntegerField(default=0)
+    spread = models.IntegerField(default=0)
+    color = models.CharField(max_length=50, default="rgba(0, 0, 0, 0.8)")
+    inset = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        _str = self.name+'-'+str(self.blur)+'px, '+str(self.spread)+'px, '+self.color
+        if self.inset:
+            _str += ' inset'
+        return _str
+
+    def encode(self):
+        return model_to_dict(self, exclude='name')
 
 class ImageEnhancement(BaseDataManagerModel):
     name = models.CharField(max_length=255)
@@ -231,8 +254,9 @@ class AnimationGroup(BaseDataManagerModel):
     ANIMATION_GROUP_TYPE = {
         'Background': 0,
         'Music': 1,
-        'SceneChange': 2,
+        'Stub': 2,
         'Normal': 3,
+        'UserInteraction': 4,
         }
     type = models.IntegerField(choices=[[ANIMATION_GROUP_TYPE[key],key] for key in ANIMATION_GROUP_TYPE.keys()])
 
@@ -284,6 +308,7 @@ class UserInteraction(BaseDataManagerModel):
     date = models.DateTimeField(auto_now_add=True)
     interaction = models.TextField()
     creator = models.ForeignKey(User)
+    cryptic_id = models.CharField(max_length=255)
 
     def __unicode__(self):
         return str(self.momend)+'-'+str(self.creator)+':'+str(self.date)
@@ -297,6 +322,12 @@ class UserInteraction(BaseDataManagerModel):
 
     def toJSON(self):
         return simplejson.dumps(self.encode(), default=lambda obj: obj.isoformat() if isinstance(obj, datetime) else None)
+
+def generate_cryptic_id_for_interaction(sender,instance,using,**kwargs):
+    if not instance.cryptic_id:
+        instance.cryptic_id = encode_id(instance.pk)
+
+pre_save.connect(generate_cryptic_id_for_interaction, UserInteraction)
 
 class DeletedUserInteraction(BaseDataManagerModel):
     momend_id = models.IntegerField() #Using id so as not to link with momend

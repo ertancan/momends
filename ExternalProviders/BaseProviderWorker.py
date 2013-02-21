@@ -16,17 +16,17 @@ class BaseProviderWorker(object):
 class BasePhotoProviderWorker(BaseProviderWorker):
     __metaclass__ = abc.ABCMeta
     @abc.abstractmethod
-    def collect_photo(self, user, since, until):
+    def collect_photo(self, user, **kwargs):
         pass
 
 class BaseStatusProviderWorker(BaseProviderWorker):
     __metaclass__ = abc.ABCMeta
     @abc.abstractmethod
-    def collect_status(self, user, since, until):
+    def collect_status(self, user, **kwargs):
         pass
 
 class BaseLocationProviderWorker(BaseProviderWorker):
     __metaclass__ = abc.ABCMeta
     @abc.abstractmethod
-    def collect_checkin(self, user, since, until):
+    def collect_checkin(self, user, **kwargs):
         pass

@@ -9,30 +9,97 @@
     <div id="maindiv" class="scene">
 
         <iframe align="center" id="video" class="video" width="100%" height="100%" src="http://www.youtube.com/embed/dVZpm0okAH8?rel=0" frameborder="0" allowfullscreen></iframe>
-
+        {% if user.is_authenticated %}
+            <div class="basic-header" id="header">
+                <a class="basic-logout-link" id='basic-logout-link' href="{% url 'auth_logout' %}" title="logout" >Logout</a>
+            </div>
+        {% endif %}
         <div class="transparent" id="transparent-content">
             <div class="logo-div">
                 <h6 class="logo">momen<span style="color: darkred">d</span>s</h6>
             </div>
             <div class="actions">
-                <a href="javascript:watchVideo()" class="white-link">
-                    <img src="{{ STATIC_URL }}img/video-icon.jpg"/>
-                    Watch Video
-                </a>
-                <b style="font-size: 20px;color: #ffffff; margin: 0 9px 0 9px">|</b> <!-- I had to! (pixel perfection :)) -->
-                <a href="#" class="white-link" onclick='showAuthModal("{% url 'auth_login' %}","Sign in")'>Sign in</a>
-                <b style="font-size: 20px;color: #ffffff; margin: 0 9px 0 9px">|</b> <!-- I had to! (pixel perfection :)) -->
-                <a href="#" class="white-link" onclick='showAuthModal("{% url 'registration_register' %}","Sign Up")' >Sign Up</a>
+                {% if not user.is_authenticated %}
 
+                    <a href="javascript:watchVideo()" class="white-link">
+                        <img src="{{ STATIC_URL }}img/video-icon.jpg"/>
+                        What we do?
+                    </a>
+                    <b style="font-size: 20px;color: #ffffff; margin: 0 9px 0 9px">|</b> <!-- I had to! (pixel perfection :)) -->
+                    <a href="#" class="white-link" onclick='showAuthModal("{% url 'auth_login' %}","Sign in")'>Get yours now!</a>
+                {% else %}
+                    <a href="#" class="white-link" onclick='showCreateModal()'>Hello {{ user.username }}, Create a momend?</a>
+                {% endif %}
             </div>
         </div>
     </div>
+    <div class="social-networks-basic">
+        <p>
+            <a class="social-network twitter" href="https://twitter.com/momends"></a>
+            <a class="social-network facebook" href="https://www.facebook.com/momends" style="margin-left: 10px"></a>
+        </p>
+    </div>
+    <!-- Create Modal -->
+    <div id="create-modal-mini" class="modal hide fade span6" tabindex="-1" role="dialog" aria-labelledby="create-modal" aria-hidden="true" data-backdrop="true">
+        <form class="form-horizontal" id="create-form" method="post" action="">{% csrf_token %}
+            <div class="modal-body" id="create-modal-body-mini">
+
+                <div class="span6">
+                    {{ form.non_field_errors }}
+                        {{ form.momend_name.as_hidden }}
+                        {{ form.momend_theme.as_hidden }}
+                        {{ form.privacy_type.as_hidden }}
+                    <div class="create-social-media">
+                                <i class="icon-facebook icon-3x create-social-button" id="create-social-facebook" onclick="socialToggle('facebook')"></i>
+                                <i class="icon-twitter icon-3x create-social-button" id="create-social-twitter" onclick="socialToggle('twitter')"></i>
+
+                    </div>
+                    <div class="pagination">
+                        <ul>
+                            <li><a id="date-1y" class="date-selector-link selected"href="#" onclick="dateSelected('year')">1 Year</a> </li>
+                            <li><a id="date-6m" class="date-selector-link" href="#" onclick="dateSelected('6mon')">6 Mon</a> </li>
+                            <li><a id="date-1m" class="date-selector-link" href="#" onclick="dateSelected('1mon')">1 Mon</a> </li>
+                            <li><a id="date-custom" class="date-selector-link" href="#" onclick="dateSelected('custom')">Custom</a> </li>
+                        </ul>
+                    </div>
+                    <div class="modal-group-container">
+                        <div class="modal-tab-content span8">
+                            <div id="date-content" style="display: none">
+                                {{ form.start_date.errors }}
+                                <label for="id_start_date" class="modal-form-item">From:</label>
+                                {{ form.start_date }}
+                                <br/>
+                                {{ form.finish_date.errors }}
+                                <label for="id_finish_date" class="modal-form-item">To:</label>
+                                {{ form.finish_date }}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="button orange" id="get-button" type="submit">Get it!</button>
+            </div>
+        </form>
+    </div>
+    <div class="creating-dialog" id="creating-dialog">
+        <h3>Please Wait...</h3>
+        <img class="collect-box" src="{{ STATIC_URL }}img/box.png">
+        <img src="{{ STATIC_URL }}img/arrows.png">
+        <h3 id="collecting-text">We are creating your momend</h3>
+    </div>
     <script>
+        var HOST = 'http://beta.momends.com';
         var currentBg = 0;
         var lastLoaded = -1;
         var bgArr = [];
         var bgDivArr = [];
         var animationInterval = 5000;
+        var auth = [{% for provider in providers %}'{{ provider }}',{% endfor %}];
+        var _type = '{{ params.type }}';
+        var _cid = '{{ params.id }}';
+        var user_momend_count = {% if user.is_authenticated %} {{ user_top_momends|length }};{% else %}false;{% endif %}
         $('body').ready(function(){
             for(var i=0;i<5;i++){
                 bgArr.push(STATIC_URL+'img/carousel'+(i+1)+'.jpg');
@@ -44,7 +111,92 @@
                 bgArr[j] = temp;
             }
             loadNext();
+
+            $('.modal-date-input').datepicker({
+                changeMonth: true,
+                changeYear: true,
+                maxDate: "+0D",
+                dateFormat: "d M, yy"
+            });
+
+            $('#get-button').click(function(event){
+                event.preventDefault();
+                var postData = {'momend_name':"{{user.username}}'s momend",
+                    'start_date': $('#id_start_date').val(),
+                    'finish_date': $('#id_finish_date').val(),
+                    'momend_theme': 0,
+                    'privacy_type': 1,
+                    'facebook-active': $('#create-social-facebook').hasClass('active'),
+                    'twitter-active': $('#create-social-twitter').hasClass('active')};
+                createMomend(postData);
+            });
+            if(_cid){ //If we have a video to show
+                playMomend(_cid, _type === 'i');
+            }else if(user_momend_count === 0){ //If home page & user logged in and has no momends
+                welcome();
+            }else if(getURLParameter('create') === 'true'){ //Someone told me to show create modal
+                showCreateModal();
+                _trackPageEvent('Create', 'AutoShowDialog');
+            }
         });
+
+        /**
+         * Welcomes and creates the first momend for the user
+         */
+        function welcome(){
+            _trackPageEvent('Page', 'Welcome');
+            var _date = new Date();
+            _date.setDate(_date.getDate() -365 );
+            $.datepicker.formatDate("d M, yy", _date);
+            var postData = {'momend_name':"{{user.username}}'s first momend",
+                'start_date': $.datepicker.formatDate("d M, yy", _date),
+                'finish_date': $.datepicker.formatDate("d M, yy", new Date()), //Today
+                'momend_theme': 0,
+                'privacy_type': 1,
+                'facebook-active': true,
+                'twitter-active': false};
+            createMomend(postData)
+        }
+
+
+        function createMomend(postData){
+            _trackPageEvent('Create', 'Creating');
+            var start = new Date();
+            var creatingDialog = $('#creating-dialog');
+            creatingDialog.fadeIn();
+            animateCollectingText();
+
+            var token = $('[name="csrfmiddlewaretoken"]')[0].value;
+            $.ajax({
+                type: 'POST',
+                url: '{% url 'momends:create-momend'%}',
+                beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', token);},
+                data: postData,
+                success: function(msg){
+                    console.log(msg);
+                    var result = JSON.parse(msg);
+                    if(result.resp){ //Created
+                        var end = new Date();
+                        var seconds = Math.floor((end - start) / 1000);
+                        _gaq.push(['_trackEvent', 'Page', 'Momend', 'Created',seconds]);
+                        creatingDialog.fadeOut();
+                        playMomend(result.cid);
+                    }else{
+                        _trackPageEvent('Momend', 'CreateFailed');
+                        creatingDialog.fadeOut();
+                    }
+                },
+                error: function(msg){
+                    _trackPageEvent('Momend', 'CreateServerError');
+                    creatingDialog.fadeOut();
+                }
+            });
+        }
+
+        /**
+         * Loads next background image if not all images are loaded.
+         * If current loaded image is the first one shows it, hides the div otherwise
+         */
         function loadNext(){
             if(lastLoaded == bgArr.length-1){
                 return;
@@ -70,6 +222,10 @@
                 }
             });
         }
+
+        /**
+         * Handles fadein - fadeout animations of background images
+         */
         function nextAnimation(){
             if(lastLoaded != bgDivArr.length-1 && lastLoaded < currentBg+1){ //next item not loaded yet
                 setTimeout(nextAnimation, animationInterval);
@@ -95,7 +251,12 @@
                 $(this).hide();
             }});
         }
+
+        /**
+         * shows the video and adds a backdrop
+         */
         function watchVideo(){
+            _trackPageEvent('Video', 'Watch');
             var box = $("<div/>").addClass("darkCover").click(function(){
                 $(this).fadeOut();
                 content.fadeOut();
@@ -111,7 +272,33 @@
             content.fadeTo("fast",1);
         }
 
+        function showCreateModal(){
+            _trackPageEvent('Create', 'ShowDialog');
+            var _modal = $('#create-modal-mini');
+            _modal.css('margin-left',_modal.outerWidth()/-2);
+            _modal.modal();
+            for(var i = 0;i<auth.length; i++){ //Mark authenticated providers as active
+                $('#create-social-'+auth[i]).addClass('active');
+            }
+        }
+
+        function animateCollectingText(state){
+            var texts = ['While we are creating your momend',
+                'While we are creating your momend.',
+                'While we are creating your momend..',
+                'While we are creating your momend...'];
+            if(!state || state===texts.length){
+                state = 0;
+            }
+            var obj = $('#collecting-text');
+            obj.text(texts[state]);
+            setTimeout(function(){
+                animateCollectingText(state+1);
+            },500);
+        }
+
         function showAuthModal(_url, title){
+            _trackPageEvent('Auth', 'ShowDialog');
             var modal =jQuery('<div/>',{
                 'id': 'modal',
                 'class' : 'modal hide fade',
@@ -133,10 +320,150 @@
                 modal.modal({
                     'remote' : _url
                 });
-            })
+            });
             modal.bind('hidden',function(){
                 $(this).remove();
             });
+        }
+        function socialToggle(provider){
+            if(provider === 'facebook'){
+                return;
+            }
+            console.log(provider);
+            if($.inArray(provider, auth)){
+                var _button = $('#create-social-'+provider);
+                if(_button.hasClass('active')){
+                    _button.removeClass('active');
+                }else{
+                    _button.addClass('active');
+                }
+            }else{ //Show authentication dialog
+                var _twitterConnectURL = HOST + '{% url 'socialauth_begin' 'twitter' %}';
+                window.location.replace(_twitterConnectURL);
+            }
+        }
+        function dateSelected(type){
+            $('.date-selector-link').removeClass('selected');
+            $('#date-content').hide();
+            var _start = $('#id_start_date');
+            var date = new Date();
+            switch (type){
+                case 'year':
+                    date.setDate(date.getDate() -365 );
+                    _start.val($.datepicker.formatDate("d M, yy", date));
+                    $('#date-1y').addClass('selected');
+                    modalResize(false);
+                    break;
+                case '6mon':
+                    date.setDate(date.getDate() -180 );
+                    _start.val($.datepicker.formatDate("d M, yy", date));
+                    $('#date-6m').addClass('selected');
+                    modalResize(false);
+                    break;
+                case '1mon':
+                    date.setDate(date.getDate() -30 );
+                    _start.val($.datepicker.formatDate("d M, yy", date));
+                    $('#date-1m').addClass('selected');
+                    modalResize(false);
+                    break;
+                case 'custom':
+                    $('#date-custom').addClass('selected');
+                    $('#date-content').show();
+                    modalResize(true);
+            }
+        }
+    function modalResize(toBig){
+        var modal = $('#create-modal-mini');
+        var body = $('#create-modal-body-mini')
+        if(toBig){
+            modal.animate({height:300},500);
+            body.animate({height:206},500)
+        }else{
+            modal.animate({height:200},500);
+            body.animate({height:106},500)
+        }
+    }
+    function playMomend(cid, isInteraction){
+        var mainURL = '{% url 'momends:play-momend' 'm' 'dummy' %}';
+        var momendURL = mainURL.replace('dummy', cid);
+        if(isInteraction === true){
+            momendURL = momendURL.replace('/m/','/i/'); //TODO better?
+        }
+        var playBG = jQuery('<div/>',{
+            id : 'play-bg',
+            class : 'play-bg'
+        }).appendTo('body');
+        var portablePlayer = jQuery('<div/>',{
+            id : 'momend-player',
+            class: 'portable-player regular'
+        }).appendTo(playBG);
+        var playerFrame = jQuery('<iframe/>',{
+            src : momendURL,
+            style : 'width: 100%;height: 100%;border: 0;',
+            id : 'momend-player-frame',
+            onload : 'frameLoaded()'
+        }).appendTo(portablePlayer);
+
+        playBG.click(function(){ //Pause the momend and minimize it if backdrop pressed
+            momendManager.jsAnimate.pause();
+            playBG.fadeOut();
+            if(!$('#show-again').is('*')){ //To prevent inserting more than 1 buttons if user presses the button repeatedly
+                var _showAgainButton = jQuery('<a/>',{
+                    text : 'Show Momend',
+                    class : 'basic-show-again-link',
+                    id :'show-again',
+                    href : '#'
+                }).appendTo('#header');
+                $('#basic-logout-link').css({float:'right'}); // to send Logout to the right most side again
+                _showAgainButton.click(function(event){
+                    event.preventDefault();
+                    playBG.fadeIn();
+                    $(this).remove();
+                });
+            }
+        });
+    }
+        function _trackPageEvent(_group, _event){
+            _gaq.push(['_trackEvent', 'Page', _group, _event])
+        }
+    </script>
+    <script>
+        /**
+         * This group handles momend player frame
+         */
+        fullscreen_on = false;
+        function frameLoaded(){
+            player_frame = document.getElementById('momend-player-frame');
+            momendManager = player_frame.contentWindow.momendManager;
+            momendManager.setFullscreenFunction(fullscreen);
+            momendManager.addFinishListenerFunction(finished);
+            momendManager.setRedirectFunction(redirectToPage);
+            //We may want to open in a new tab?
+        }
+        function finished(){
+            if(fullscreen_on){
+                fullscreen();
+            }
+        }
+        function fullscreen(){
+            momendManager.fullscreenToggle();
+            var _player = $('#momend-player');
+            if(!fullscreen_on){
+                _player.addClass('fullscreen');
+                _player.removeClass('regular');
+            }else{
+                _player.removeClass('fullscreen');
+                _player.addClass('regular');
+            }
+            fullscreen_on = !fullscreen_on;
+        }
+        function redirectToPage(url){
+            location.href = url;
+        }
+        function getURLParameter(name) {
+            return decodeURI(
+                    (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
+            );
         }
     </script>
 {% endblock content %}

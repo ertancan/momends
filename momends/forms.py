@@ -18,3 +18,4 @@ class RegistrationFormMomends(RegistrationFormUniqueEmail):
 
 #class RegistrationFormUniqueEmailRecaptcha(RegistrationFormUniqueEmail, RegistrationFormCaptcha):
 #    pass
+

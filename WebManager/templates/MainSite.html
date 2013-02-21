@@ -1,11 +1,18 @@
 {% load url from future %}
 
 <!doctype html>
-<html xmlns="http://www.w3.org/1999/html">
+<html xmlns="http://www.w3.org/1999/html"
+      xmlns:og="http://ogp.me/ns#"
+      xmlns:fb="https://www.facebook.com/2008/fbml">
 <head>
     <meta charset="UTF-8">
 
     <title>{% block title %} Momends {% endblock title %}</title>
+    {% block default_meta %}
+        <meta property="og:site_name" content="momends"/>
+        <meta property="og:url" content="{{ request.build_absolute_uri }}"/>
+        <meta property="fb:app_id" content="125999474230740"/>
+    {% endblock default_meta %}
     {% block meta %} {% endblock meta %}
     {% block jquery %}
         <script src="http://code.jquery.com/jquery-latest.js"></script>
@@ -35,115 +42,138 @@
 
 <body>
 
-    {% block heading %}
-        {% block navbar %}
-            <header id="header">
-                <!-- Navigation
-                ================================================== -->
-                <nav class="navbar">
-                    <div class="navbar-inner">
-                        <div class="container">
-                            <!-- Logo -->
-                            <a class="brand" href={% url 'momends:front-page' %}>
-                                <img src="{{ STATIC_URL }}/img/logo.png" class="logo">
-                            </a>
-                            <ul class="nav">
-
-                                {% if user.is_authenticated %}
-                                    <li><a href="{% url 'momends:settings-screen' %}" title="settings" >{{ user.username }}</a></li>
-                                    <li><a href="{% url 'auth_logout' %}" title="logout" >Logout</a></li>
-                                {% else %}
-                                    <li><a href="#" onclick='showAuthModal("{% url 'auth_login' %}","Login")'>Sign in</a></li>
-                                    <li><a href="#" onclick='showAuthModal("{% url 'registration_register' %}","Sign Up")'>Sign up</a></li>
-                                {% endif %}
-
-                            </ul>
-                        </div><!-- end .container -->
-                    </div><!-- end .navbar-inner -->
-                </nav>
-            </header>
-        {% endblock navbar %}
-
-    {% endblock heading %}
-
-    {% block message %}
-        {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                    <div class="alert {% if message.tags %}alert-{{ message.tags }}"{% endif %}>
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endblock message %}
-
-    {% block content %}
-
-                <!--> nothing on here, just template <-->
-    {% endblock content%}
-
-    {% block footer %}
-        <footer id="footer">
-            <div class="container">
-                <div class="row">
-                    <div class="span3">
-                        <a class="brand momend-word" href={% url 'momends:front-page' %}>
-                            momen<span style="color:#8b0000">d</span>s
+{% block heading %}
+    {% block navbar %}
+        <header id="header">
+            <!-- Navigation
+            ================================================== -->
+            <nav class="navbar">
+                <div class="navbar-inner">
+                    <div class="container">
+                        <!-- Logo -->
+                        <a class="brand" href={% url 'momends:front-page' %}>
+                            <img src="{{ STATIC_URL }}/img/logo.png" class="logo">
                         </a>
+                        <ul class="nav">
 
-                    </div>
-                    <div class="span4 social-networks">
-                        <p>
-                            <a class="social-network twitter" href="https://twitter.com/momends"></a>
-                            <a class="social-network facebook" href="https://www.facebook.com/momends"></a>
-                            <!--<a class="social-network linkedin"></a>
-                            <a class="social-network dribbble"></a>
-                            <a class="social-network pinterest"></a> -->
-                        </p>
-                    </div>
-                </div> <!-- end .row -->
-            </div> <!-- end .container -->
-        </footer><!-- end #footer -->
-    {% endblock footer %}
+                            {% if user.is_authenticated %}
+                                <li><a href="{% url 'momends:settings-screen' %}" title="settings" >{{ user.username }}</a></li>
+                                <li><a href="{% url 'auth_logout' %}" title="logout" >Logout</a></li>
+                            {% else %}
+                                <li><a href="#" onclick='showAuthModal("{% url 'auth_login' %}","Login")'>Sign in</a></li>
+                                <li><a href="#" onclick='showAuthModal("{% url 'registration_register' %}","Sign Up")'>Sign up</a></li>
+                            {% endif %}
 
-    {% block default-scripts %}
-        <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
-        <script src="http://code.jquery.com/ui/1.10.0/jquery-ui.js"></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.isotope.min.js"></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.touchSwipe.js"></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.hotkeys.min.js" charset='utf-8'></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}js/functions.min.js"></script>
-        <script>
-            function showAuthModal(_url, title){
-                var modal =jQuery('<div/>',{
-                    'id': 'modal',
-                    'class' : 'modal hide fade',
-                    'tabindex' : '-1',
-                    'role' : 'dialog',
-                    'aria-lablledby' : 'modal-label',
-                    'aria-hidden' : 'true'
-                }).appendTo('body');
-                var header = jQuery('<div/>',{
-                    'class' : 'modal-header'
-                }).appendTo(modal);
-                jQuery('<h3/>',{
-                    'text' : title
-                }).appendTo(header);
-                var modal_body = jQuery('<div/>',{
-                    class : 'modal-body'
-                }).appendTo(modal);
-                modal.ready(function(){
-                    modal.modal({
-                        'remote' : _url
-                    });
+                        </ul>
+                    </div><!-- end .container -->
+                </div><!-- end .navbar-inner -->
+            </nav>
+        </header>
+    {% endblock navbar %}
+
+{% endblock heading %}
+
+{% block message %}
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}"{% endif %}>
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock message %}
+
+{% block content %}
+
+    <!--> nothing on here, just template <-->
+{% endblock content%}
+
+{% block footer %}
+    <footer id="footer">
+        <div class="container">
+            <div class="row">
+                <div class="span3">
+                    <a class="brand momend-word" href={% url 'momends:front-page' %}>
+                        momen<span style="color:#8b0000">d</span>s
+                    </a>
+
+                </div>
+                <div class="span4 social-networks">
+                    <p>
+                        <a class="social-network twitter" href="https://twitter.com/momends"></a>
+                        <a class="social-network facebook" href="https://www.facebook.com/momends"></a>
+                        <!--<a class="social-network linkedin"></a>
+                        <a class="social-network dribbble"></a>
+                        <a class="social-network pinterest"></a> -->
+                    </p>
+                </div>
+            </div> <!-- end .row -->
+        </div> <!-- end .container -->
+    </footer><!-- end #footer -->
+{% endblock footer %}
+
+{% block default-scripts %}
+    <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.0/jquery-ui.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.isotope.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.touchSwipe.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.hotkeys.min.js" charset='utf-8'></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/functions.min.js"></script>
+    <script>
+        function showAuthModal(_url, title){
+            var modal =jQuery('<div/>',{
+                'id': 'modal',
+                'class' : 'modal hide fade',
+                'tabindex' : '-1',
+                'role' : 'dialog',
+                'aria-lablledby' : 'modal-label',
+                'aria-hidden' : 'true'
+            }).appendTo('body');
+            var header = jQuery('<div/>',{
+                'class' : 'modal-header'
+            }).appendTo(modal);
+            jQuery('<h3/>',{
+                'text' : title
+            }).appendTo(header);
+            var modal_body = jQuery('<div/>',{
+                class : 'modal-body'
+            }).appendTo(modal);
+            modal.ready(function(){
+                modal.modal({
+                    'remote' : _url
                 });
-                modal.bind('hidden',function(){
-                    $(this).remove();
-                });
-            }
-        </script>
-    {% endblock %}
+            });
+            modal.bind('hidden',function(){
+                $(this).remove();
+            });
+        }
+        var uvOptions = {};
+        (function() {
+            var uv = document.createElement('script'); uv.type = 'text/javascript'; uv.async = true;
+            uv.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'widget.uservoice.com/wjZNCqz1xRr6EPec141sw.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(uv, s);
+        })();
+    </script>
+{% endblock %}
+{% block analytics %}
+    <script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-37383850-1']);
+        _gaq.push(['_setDomainName', 'momends.com']);
+        _gaq.push(['_setAllowLinker', true]);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+
+    </script>
+{% endblock analytics %}
 </body>
 </html>

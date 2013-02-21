@@ -26,7 +26,11 @@ class UserInteractionAnimationGroupAdmin(admin.ModelAdmin):
     list_display = ['name', 'stop_current_animation', 'clear_further_animations', 'disable_further_interaction', 'animations']
 
 class CoreAnimationDataAdmin(admin.ModelAdmin):
-    list_display = ['group', 'order_in_group','used_object_type', 'used_theme_data', 'name', 'type', 'duration', 'delay', 'triggerNext', 'waitPrev', 'click_animation', 'hover_animation']
+    list_display = ['group', 'order_in_group','used_object_type', 'used_theme_data', 'name', 'type', 'duration', 'delay', 'triggerNext', 'waitPrev', 'click_animation', 'hover_animation', 'shadow']
+    save_as = True
+
+class DynamicShadowAdmin(admin.ModelAdmin):
+    list_display = ['name', 'max_x', 'max_y', 'blur', 'spread', 'color', 'inset']
     save_as = True
 
 class AnimationPlayStatAdmin(admin.ModelAdmin):
@@ -52,6 +56,7 @@ admin.site.register(EnhancementGroup, EnhancementGroupAdmin)
 admin.site.register(Scenario, ScenarioAdmin)
 admin.site.register(UserInteractionAnimationGroup, UserInteractionAnimationGroupAdmin)
 admin.site.register(CoreAnimationData, CoreAnimationDataAdmin)
+admin.site.register(DynamicShadow, DynamicShadowAdmin)
 admin.site.register(AnimationPlayStat, AnimationPlayStatAdmin)
 admin.site.register(UserInteraction, UserInteractionAdmin)
 admin.site.register(DeletedUserInteraction, DeletedUserInteractionAdmin)

@@ -38,14 +38,11 @@ USE_L10N = True
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
 
-# Absolute filesystem path to the directory that will hold user-uploaded files.
-# Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = ''
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
-MEDIA_URL = ''
+MEDIA_URL = '/media/'
 
 # URL prefix for static files.
 STATIC_URL = '/static/'
@@ -55,6 +52,11 @@ STATIC_URL = '/static/'
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
 STATIC_ROOT = 'WebManager/static/'
+
+
+# Absolute filesystem path to the directory that will hold user-uploaded files.
+# Example: "/home/media/media.lawrence.com/media/"
+MEDIA_ROOT = ''
 
 # List of finder classes that know how to find static files in
 # various locations.
@@ -107,11 +109,13 @@ INSTALLED_APPS = (
     'ExternalProviders.FacebookProvider',
     'ExternalProviders.TwitterProvider',
     'ExternalProviders.InstagramProvider',
+    'ExternalProviders.FileUploadProvider',
     'Outputs.AnimationManager',
     'Outputs.VideoManager',
     'WebManager',
     'social_auth',
     'registration',
+    'sorl.thumbnail',
 )
 
 
@@ -142,6 +146,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'social_auth.context_processors.social_auth_by_type_backends',
     'momends.context_processors.momend_file_url',
     'momends.context_processors.theme_data_url',
+    'django.core.context_processors.request',
     )
 
 SOCIAL_AUTH_PIPELINE = (
@@ -169,13 +174,6 @@ RECAPTCHA_PUBLIC_KEY = environ.get('RECAPTCHA_PUBLIC_KEY')
 RECAPTCHA_PRIVATE_KEY = environ.get('RECAPTCHA_PRIVATE_KEY')
 #RECAPTCHA_USE_SSL = True
 
-EMAIL_HOST = 'smtp.momends.com'
-EMAIL_HOST_USER = 'info@momends.com'
-EMAIL_HOST_PASSWORD = environ['EMAIL_HOST_PASSWORD']
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-SERVER_EMAIL = 'info@momends.com'
-DEFAULT_FROM_EMAIL = 'info@momends.com'
 
 DATABASE_OPTIONS = {
     'use_unicode': True,

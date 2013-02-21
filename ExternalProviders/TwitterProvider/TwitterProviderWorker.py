@@ -8,7 +8,57 @@ from social_auth.db.django_models import UserSocialAuth
 from LogManagers.Log import Log
 
 class TwitterProviderWorker(BaseStatusProviderWorker):
-    def collect_status(self, user, since, until):
+
+    def collect_status(self, user, **kwargs):
+        _return_data = []
+        if kwargs['is_date']:
+            _return_data += self._collect_status_by_date(user, kwargs['since'], kwargs['until'])
+        if kwargs.get('keywords', None):
+            _return_data += self._collect_status_by_keywords(user, kwargs['keywords'])
+        if kwargs.get('item_id', None):
+            _return_data += self._collect_status_by_id(user, kwargs['item_id'])
+        if kwargs.get('friends', None):
+            _return_data += self._collect_status_with_friends(user, kwargs['friends'])
+        return _return_data
+
+    def _collect_status_by_id(self, user, status_ids):
+        """
+        :param user:
+        :param status_ids: status_id's array of user
+        :return: raw_data of album photos
+        TODO: implementation is needed
+        """
+        _return_data = []
+        if 1:
+            raise NotImplementedError()
+        return _return_data
+
+    def _collect_status_by_keywords(self, user, keywords):
+        """
+        :param user:
+        :param keywords: status_id's array of user
+        :return: raw_data of album photos
+        TODO: implementation is needed
+        """
+        _return_data = []
+        if 1:
+            raise NotImplementedError()
+        return _return_data
+
+    def _collect_status_with_friends(self, user, friends):
+        """
+        :param user:
+        :param friends: friend list of user to get photos with
+        :return: raw_data of album photos
+        TODO: implementation is needed
+        """
+        _return_data = []
+        if 1:
+            raise NotImplementedError()
+        return _return_data
+
+
+    def _collect_status_by_date(self, user, since, until):
         provider = self.getProvider()
         consumer_key = settings.TWITTER_CONSUMER_KEY
         consumer_secret = settings.TWITTER_CONSUMER_SECRET

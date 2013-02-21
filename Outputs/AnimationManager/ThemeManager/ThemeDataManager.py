@@ -3,6 +3,7 @@ from Outputs.AnimationManager.models import ThemeData
 from LogManagers.Log import Log
 from DataManager.DataManagerModel import DataManagerModel
 import random
+import re
 
 class ThemeDataManager(DataManagerModel):
     def __init__(self, theme):
@@ -10,7 +11,7 @@ class ThemeDataManager(DataManagerModel):
         super(ThemeDataManager,self).__init__(self._group_theme_data(theme_assets),ThemeData.THEME_DATA_TYPE_KEYWORDS)
 
 
-    def _group_theme_data(self,theme_data):
+    def _group_theme_data(self, theme_data):
         types = ThemeData.THEME_DATA_TYPE
         result = []
         for i in range(0,len(types)):
@@ -21,7 +22,7 @@ class ThemeDataManager(DataManagerModel):
 
         return result
 
-    def get_data_for_keyword(self,keyword):
+    def get_data_for_keyword(self, keyword):
         if keyword in self.keywords:
             index = self.keywords.index(keyword)
             obj_type = index/3
@@ -43,7 +44,7 @@ class ThemeDataManager(DataManagerModel):
         return self._last_obj
 
 
-    def getPreviousData(self,type):
+    def getPreviousData(self, type):
         if len(self.data[type]) == 0:
             Log.error('No theme data for type:'+str(type))
             self._last_obj = None
@@ -56,7 +57,7 @@ class ThemeDataManager(DataManagerModel):
         self._last_obj = self.data[type][self.current_indexes[type]]
         return self._last_obj
 
-    def getNextData(self,type):
+    def getNextData(self, type):
         self.random_indexes[type] = -1 #Clear previous random index
         if len(self.data[type]) == 0:
             Log.error('No theme data for type:'+str(type))
@@ -68,9 +69,33 @@ class ThemeDataManager(DataManagerModel):
         self._last_obj = self.data[type][self.current_indexes[type]]
         return self._last_obj
 
-    def getRandData(self,type):
+    def getRandData(self, type):
         rand_index = random.randint(0,len(self.data[type])-1)
         self.random_indexes[type] = rand_index
 
         self._last_obj = self.data[type][rand_index]
         return self._last_obj
+
+    def replace_parameter_keywords(self, parameter):
+        """
+        Replaces occurrences of reserved keywords such as {{THEME_FRAME}} or {{THEME_DATA_PARAMETER}}
+        :param parameter: parameter string of enhancement
+        :return: replaced parameter string
+        """
+        if not parameter:
+            return None
+        keyword_re='(\\{\\{(?:[a-z][a-z0-9_]*)\\}\\})'
+        keyword_finder = re.compile(keyword_re,re.IGNORECASE|re.DOTALL)
+
+        regex_result =keyword_finder.search(parameter)
+        while regex_result:
+            matched_keyword = regex_result.group()
+            theme_data = self.get_data_for_keyword(matched_keyword)
+            if theme_data:
+                parameter = parameter.replace(matched_keyword,theme_data.data_path)
+            elif matched_keyword == ThemeData.THEME_DATA_PARAMETER_KEYWORD:
+                parameter = parameter.replace(matched_keyword, self.getLastResult().parameters)
+
+            regex_result =keyword_finder.search(parameter)
+
+        return parameter
