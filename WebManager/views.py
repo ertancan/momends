@@ -174,9 +174,9 @@ class ShowMomendView(TemplateView):
                     _tmp['original_path'] = _obj.original_path
                     _used_media.append(_tmp)
             context['used_media'] = _used_media
-
-            providers = UserSocialAuth.objects.filter(user=self.request.user)
-            context['providers'] = [pr.provider for pr in providers]
+            if self.request.user.is_active:
+                providers = UserSocialAuth.objects.filter(user=self.request.user)
+                context['providers'] = [pr.provider for pr in providers]
         else:
             context['error'] = 2
         return context
