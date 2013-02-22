@@ -7,99 +7,98 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>momends</title>
 
-    <link rel="stylesheet" type="text/css" href="{{ HOST_URL }}{{ STATIC_URL }}email.css" />
-
 </head>
 
 <body bgcolor="#FFFFFF">
-
-<!-- HEADER -->
-<table class="head-wrap" bgcolor="#999999">
-    <tr>
-        <td></td>
-        <td class="header container" >
-
-            <div class="content">
-                <table bgcolor="#999999">
-                    <tr>
-                        <td><img src="{{ HOST_URL }}{{ STATIC_URL }}img/logo-uzun.png" /></td>
-                    </tr>
-                </table>
-            </div>
-
-        </td>
-        <td></td>
-    </tr>
-</table><!-- /HEADER -->
-
-
-<!-- BODY -->
-<table class="body-wrap">
-    <tr>
-        <td></td>
-        <td class="container" bgcolor="#FFFFFF">
-
-            <div class="content">
-                <table>
-                    <tr>
-                        <td>
-                            <h3>Hi, {{ owner.first_name }} {{ owner.last_name }} </h3>
-                            <p class="lead">As you requested, we are here to collect your precious data and provide it back as a unique momend of your life. While reaching it with the following link below, never forget your memories makes more sense when you share them with your beloved ones.</p>
-                            <!-- Callout Panel -->
-                            <p class="callout"><a href="{{ HOST_URL }}{{ momend_url }}">Click  and go to your momend&raquo;</a>
-                            </p><!-- /Callout Panel -->
-
-                            <!-- social & contact -->
-                            <table class="social" width="100%">
-                                <tr>
+<div>
+    <table width="100%" cellpadding="0" cellspacing="0">
+        <tbody><tr>
+            <td style="padding-left:50px;padding-right:50px">
+                <table align="center" cellpadding="0" cellspacing="0">
+                    <tbody><tr>
+                        <td align="center" style="width:540px">
+                            <table align="center" width="100%" cellpadding="0" cellspacing="0">
+                                <tbody><tr>
                                     <td>
-
-                                        <!-- column 1 -->
-                                        <table align="left" class="column">
-                                            <tr>
-                                                <td>
-
-                                                    <h5 class="">Connect with us:</h5>
-                                                    <p class=""><a href="facebook.com/momends" class="soc-btn fb">Facebook</a> <a href="twitter.com/momends" class="soc-btn tw">Twitter</a> </p>
-
-
+                                        <table align="center" width="100%" cellpadding="0" cellspacing="0">
+                                            <tbody><tr>
+                                                <td align="center" style="padding-bottom:20px;padding-top:25px">
+                                                    <a href="{{ HOST_URL }}" target="_blank">
+                                                        <img src="http://beta.momends.com/static/img/logo-ufak.png" alt="momends-logo">
+                                                    </a>
                                                 </td>
                                             </tr>
-                                        </table><!-- /column 1 -->
+                                            <tr>
+                                                <td align="center">
+                                                    <table width="100%" cellpadding="0" cellspacing="0">
+                                                        <tbody><tr valign="top">
+                                                            <td style="min-height:1px;border-bottom:1px solid #d7d7d7"></td>
+                                                        </tr>
+                                                        <tr valign="top">
+                                                            <td style="min-height:1px;border-bottom:1px solid #ffffff"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="padding-left:10px;padding-right:10px;padding-bottom:25px;padding-top:25px">
 
-                                        <!-- column 2 --><!-- /column 2 -->
 
-                                        <span class="clear"></span>
+                                                                <table width="100%" cellpadding="0" cellspacing="0">
+                                                                    <tbody><tr>
+                                                                        <td style="padding-bottom:15px" align="center">
+                                                                            <span style="font-family:arial;font-size:16px;font-weight:bold;color:#333333;text-decoration:none">Hi {{ owner.first_name }},</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td style="padding-bottom:15px" align="center">
+                                                                            <span style="font-family:arial;color:#333333;font-size:16px;text-decoration:none;line-height:22px">As you requested, we are here to collect your precious data and provide it back as a unique momend of your life.</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td style="padding-bottom:15px" align="center">
+                                                                            <span style="font-family:arial;color:#333333;font-size:16px;text-decoration:none;line-height:22px"> While reaching it with the following link below,</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td style="padding-bottom:15px" align="center">
+                                                                            <span style="font-family:arial;color:#333333;font-size:16px;text-decoration:none;line-height:22px">never forget your memories makes more sense when you share them with your beloved ones.</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td align="center" style="padding-bottom:40px">
+                                                                            <table cellpadding="0" cellspacing="0"><tbody><tr><td bgcolor="darkred" align="center" style="padding-top:10px;padding-right:25px;padding-bottom:10px;padding-left:25px"><a href="{{ HOST_URL }}{{ momend_url }}" style="font-family:arial;text-decoration:none;font-size:19px;color:#ffffff" target="_blank">Go and watch your momend</a></td>
+                                                                            </tr></tbody></table>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td align="center">
+                                                                            <span style="font-family:arial;font-size:16px;font-weight:bold;color:#333333;text-decoration:none">Connect with us:</span>
+                                                                            <p class="">
+                                                                                <a href="facebook.com/momends" style="background-color: #3B5998!important;padding: 3px 7px;font-size:12px;margin-bottom:10px;text-decoration:none;color: #FFF;font-weight:bold;display:inline-block;text-align:center;width: 100px">Facebook</a>
+                                                                                <a href="twitter.com/momends" style="background-color: #1daced!important;padding: 3px 7px;font-size:12px;margin-bottom:10px;text-decoration:none;color: #FFF;font-weight:bold;display:inline-block;text-align:center;width: 100px">Twitter</a> </p>
 
+                                                                        </td>
+                                                                    </tr>
+                                                                    </tbody></table>
+                                                            </td>
+                                                        </tr>
+                                                        <tr valign="top">
+                                                            <td style="min-height:1px;border-bottom:1px solid #dcdcdc"></td>
+                                                        </tr>
+                                                        <tr valign="top">
+                                                            <td style="min-height:1px;border-bottom:1px solid #ffffff"></td>
+                                                        </tr>
+                                                        </tbody></table>
+                                                </td>
+                                            </tr>
+                                            </tbody></table>
                                     </td>
                                 </tr>
-                            </table><!-- /social & contact -->
-
+                                </tbody></table>
                         </td>
                     </tr>
-                </table>
-            </div><!-- /content -->
-
-        </td>
-        <td></td>
-    </tr>
-</table><!-- /BODY -->
-
-<!-- FOOTER -->
-<table class="footer-wrap">
-    <tr>
-        <td></td>
-        <td class="container">
-
-            <!-- content -->
-            <div class="content">
-
-            </div><!-- /content -->
-
-        </td>
-        <td></td>
-    </tr>
-</table><!-- /FOOTER -->
-
+                    </tbody></table>
+            </td>
+        </tr>
+        </tbody></table>
+</div>
 </body>
 </html>

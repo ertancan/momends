@@ -250,6 +250,7 @@ a.selected{
 }
 .basic-dialog{
     display: none;
+    text-align: center;
     width: 640px;
     position: relative;
     background-color: rgba(40,40,40,1);
@@ -268,5 +269,5 @@ a.selected{
 }
 .basic-dialog-close{
     width: 100px;
-    margin: 20px 0 20px 270px;
+    margin-top: 20px;
 }

@@ -23,7 +23,7 @@ class Momend(BaseDataManagerModel):
     create_date = models.DateTimeField(auto_now_add=True)
     name = models.CharField(null=False, blank=False, max_length=255)
     thumbnail = models.CharField(max_length=2000, null=True, blank=True)
-    cryptic_id = models.CharField(max_length=255)
+    cryptic_id = models.CharField(max_length=255, null=True, blank=True)
 
     momend_start_date = models.DateTimeField(null=True)
     momend_end_date = models.DateTimeField(null=True)

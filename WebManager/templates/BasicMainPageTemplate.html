@@ -28,7 +28,7 @@
                     <b style="font-size: 20px;color: #ffffff; margin: 0 9px 0 9px">|</b> <!-- I had to! (pixel perfection :)) -->
                     <a href="#" class="white-link" onclick='showAuthModal("{% url 'auth_login' %}","Sign in")'>Get yours now!</a>
                 {% else %}
-                    <a href="#" class="white-link" onclick='showCreateModal()'>Hello {{ user.username }}, Create a momend?</a>
+                    <a href="#" class="white-link" onclick='showCreateModal()'>Hello {{ user.username }}, create a momend?</a>
                 {% endif %}
             </div>
         </div>
@@ -91,13 +91,8 @@
             <h3 id="collecting-text">We are creating your momend</h3>
         </div>
     </div>
-    <div class="basic-dialog" id="welcome-dialog" style="height: 150px">
-        Since this is your first time here, We are creating a momend for you!
-        <br/>
-        You will get an email as soon as it is ready.
-        <br/>
-        So, you can either wait here or you can come back any time you want
-        <br/>
+    <div class="basic-dialog" id="welcome-dialog" style="height: 90px">
+        It seems you don't have any momend yet, here comes your first!
         <button class="button orange basic-dialog-close" id="close-button" onclick="$('#welcome-dialog').fadeOut()">OK!</button>
     </div>
     <script>
@@ -436,7 +431,7 @@
                     }).appendTo('#maindiv');
                 }
                 var _showAgainButton = jQuery('<a/>',{
-                    text : 'Show Momend',
+                    text : 'Show momend',
                     class : 'basic-show-again-link',
                     id :'show-again',
                     href : '#'
