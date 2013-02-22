@@ -102,3 +102,5 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 SERVER_EMAIL = 'info@momends.com'
 DEFAULT_FROM_EMAIL = 'info@momends.com'
+
+HOST_URL = 'http://beta.momends.com'

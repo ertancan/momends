@@ -7,3 +7,7 @@ def momend_file_url(request):
 def theme_data_url(request):
     from django.conf import settings
     return {'THEME_DATA_URL': settings.THEME_DATA_PATH}
+
+def host_url(request):
+    from django.conf import settings
+    return {'HOST_URL' : settings.HOST_URL}

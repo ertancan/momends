@@ -15,6 +15,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
+from django.core.urlresolvers import reverse_lazy
 from django.conf import settings
 
 
@@ -46,7 +47,7 @@ class DataManager:
 
         score = MomendScore(momend = self.momend, provider_score = self._calculate_provider_score())
         score.save()
-        self.send_momend_created_email("")
+        self.send_momend_created_email(self.momend)
         return self.momend.cryptic_id
 
     def collect_user_data(self, inc_photo, inc_status, inc_checkin, **kwargs): #TODO concatenation fail if cannot connect to facebook or twitter (fixed on status)
@@ -130,9 +131,11 @@ class DataManager:
 
         return _score
 
-    def send_momend_created_email(self, momend_url):
-        ctx_dict = {'momend_url': momend_url,
-                    'user':self.user
+    def send_momend_created_email(self, momend):
+        ctx_dict = {'momend_url' : str(reverse_lazy('momends:show-momend',args=('m',momend.cryptic_id))),
+                    'owner' : momend.owner,
+                    'STATIC_URL' : settings.STATIC_URL,
+                    'HOST_URL' : settings.HOST_URL
                     }
         subject = render_to_string('MomendCreatedMailSubjectTemplate.html', ctx_dict)
         # Email subject *must not* contain newlines

@@ -18,7 +18,7 @@
         <script>STATIC_URL = '{{ STATIC_URL }}';  </script>
         <script>MOMEND_FILE_URL = '{{ MOMEND_FILE_URL }}';  </script>
         <script>THEME_DATA_URL = '{{ THEME_DATA_URL }}';  </script>
-        <script>HOST = 'http://beta.momends.com';</script>
+        <script>HOST_URL = '{{ HOST_URL }}';</script>
     {% endblock include %}
 </head>
 
@@ -175,9 +175,9 @@
             // calling the API ...
             var obj = {
                 method: 'feed',
-                redirect_uri: HOST + '{% url 'momends:show-momend' params.type params.id %}',
-                link: HOST + '{% url 'momends:show-momend' params.type params.id %}',
-                picture: HOST + '{{ STATIC_URL }}{{ momend.thumbnail }}',
+                redirect_uri: HOST_URL + '{% url 'momends:show-momend' params.type params.id %}',
+                link: HOST_URL + '{% url 'momends:show-momend' params.type params.id %}',
+                picture: HOST_URL + '{{ STATIC_URL }}{{ momend.thumbnail }}',
                 name: '{{ momend.name }}',
                 caption: 'Did you see this momend',
                 description: 'Someone created this momend to show you how wonderful his life is' //TODO momend description here
@@ -196,7 +196,7 @@
         }
         function generateTwitterShareURL(){
             var baseURL ='https://twitter.com/share?';
-            var URL = baseURL + 'url='+encodeURIComponent(HOST + '{% url 'momends:show-momend' params.type params.id %}');
+            var URL = baseURL + 'url='+encodeURIComponent(HOST_URL + '{% url 'momends:show-momend' params.type params.id %}');
             URL += '&text='+encodeURIComponent('Have you seen this momend?');
             return URL;
         }
@@ -320,7 +320,7 @@
                 type: 'text',
                 readonly : 'readonly',
                 class : 'momend-link',
-                val : HOST + '{% url 'momends:show-momend' params.type params.id %}'
+                val : HOST_URL + '{% url 'momends:show-momend' params.type params.id %}'
             }).appendTo(linkModal);
             link.select();
         }
@@ -330,7 +330,7 @@
          */
     function getAnother(){
             _trackPlayerEvent('finish', 'getAnother');
-            var url = HOST + '{% url 'momends:home-screen' %}?create=true';
+            var url = HOST_URL + '{% url 'momends:home-screen' %}?create=true';
             var page_redirect_function = momendManager.getRedirectFunction();
             if(page_redirect_function){
                 page_redirect_function(url); //Redirect to returned url to view the interaction
