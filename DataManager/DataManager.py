@@ -142,6 +142,7 @@ class DataManager:
         subject = ''.join(subject.splitlines())
 
         message = render_to_string('MomendCreatedMailTemplate.html', ctx_dict)
+        print message
         text_content = strip_tags(message)
         msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [self.user.email])
         msg.attach_alternative(message, "text/html")
