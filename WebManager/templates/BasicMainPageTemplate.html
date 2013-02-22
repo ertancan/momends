@@ -191,16 +191,17 @@
                         var end = new Date();
                         var seconds = Math.floor((end - start) / 1000);
                         _gaq.push(['_trackEvent', 'Page', 'Momend', 'Created',seconds]);
-                        creatingDialog.fadeOut();
+                        creatingDialogBg.fadeOut();
+                        $('#create-modal-mini').hide();
                         playMomend(result.cid);
                     }else{
                         _trackPageEvent('Momend', 'CreateFailed');
-                        creatingDialog.fadeOut();
+                        creatingDialogBg.fadeOut();
                     }
                 },
                 error: function(msg){
                     _trackPageEvent('Momend', 'CreateServerError');
-                    creatingDialog.fadeOut();
+                    creatingDialogBg.fadeOut();
                 }
             });
         }
