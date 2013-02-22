@@ -116,9 +116,20 @@ a.delete-button{
     text-decoration: none;
     cursor: pointer;
 }
-.creating-dialog{
-    display: none;
+.creating-dialog-bg{
     z-index: 9999;
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+}
+.creating-dialog-bg.dark{
+    background-color:rgba(51,51,51,0.8);
+}
+.creating-dialog{
     position:fixed;
     top:10%;
     left:50%;
@@ -178,4 +189,7 @@ a.delete-button{
     height: 100%;
     background-color: rgba(255,255,255,1) !important;
     z-index: 9999;
+}
+#uvTab{
+    top: 92% !important;
 }

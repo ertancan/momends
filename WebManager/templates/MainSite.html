@@ -150,14 +150,18 @@
                 $(this).remove();
             });
         }
-        var uvOptions = {};
-        (function() {
-            var uv = document.createElement('script'); uv.type = 'text/javascript'; uv.async = true;
-            uv.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'widget.uservoice.com/wjZNCqz1xRr6EPec141sw.js';
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(uv, s);
-        })();
     </script>
 {% endblock %}
+{% block feedback %}
+<script>
+    var uvOptions = {};
+    (function() {
+        var uv = document.createElement('script'); uv.type = 'text/javascript'; uv.async = true;
+        uv.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'widget.uservoice.com/wjZNCqz1xRr6EPec141sw.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(uv, s);
+    })();
+</script>
+{% endblock feedback %}
 {% block analytics %}
     <script type="text/javascript">
 

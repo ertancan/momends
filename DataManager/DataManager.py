@@ -142,8 +142,10 @@ class DataManager:
         text_content = strip_tags(message)
         msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [self.user.email])
         msg.attach_alternative(message, "text/html")
-
-        msg.send()
+        try:
+            msg.send()
+        except Exception as e:
+            Log.error('Error while sending momend created email: '+str(e))
         #self.user.email_user(subject, message, settings.DEFAULT_FROM_EMAIL)
 
 

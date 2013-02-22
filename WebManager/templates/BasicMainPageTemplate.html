@@ -56,9 +56,9 @@
                     </div>
                     <div class="pagination">
                         <ul>
-                            <li><a id="date-1y" class="date-selector-link selected"href="#" onclick="dateSelected('year')">1 Year</a> </li>
-                            <li><a id="date-6m" class="date-selector-link" href="#" onclick="dateSelected('6mon')">6 Mon</a> </li>
-                            <li><a id="date-1m" class="date-selector-link" href="#" onclick="dateSelected('1mon')">1 Mon</a> </li>
+                            <li><a id="date-1y" class="date-selector-link selected"href="#" onclick="dateSelected('year')">Last Year</a> </li>
+                            <li><a id="date-6m" class="date-selector-link" href="#" onclick="dateSelected('6mon')">Last 6 Month</a> </li>
+                            <li><a id="date-1m" class="date-selector-link" href="#" onclick="dateSelected('1mon')">Last Month</a> </li>
                             <li><a id="date-custom" class="date-selector-link" href="#" onclick="dateSelected('custom')">Custom</a> </li>
                         </ul>
                     </div>
@@ -83,11 +83,22 @@
             </div>
         </form>
     </div>
-    <div class="creating-dialog" id="creating-dialog">
-        <h3>Please Wait...</h3>
-        <img class="collect-box" src="{{ STATIC_URL }}img/box.png">
-        <img src="{{ STATIC_URL }}img/arrows.png">
-        <h3 id="collecting-text">We are creating your momend</h3>
+    <div class="creating-dialog-bg" id="creating-dialog-bg">
+        <div class="creating-dialog" id="creating-dialog">
+            <h3>Please Wait...</h3>
+            <img class="collect-box" src="{{ STATIC_URL }}img/box.png">
+            <img src="{{ STATIC_URL }}img/arrows.png">
+            <h3 id="collecting-text">We are creating your momend</h3>
+        </div>
+    </div>
+    <div class="basic-dialog" id="welcome-dialog" style="height: 150px">
+        Since this is your first time here, We are creating a momend for you!
+        <br/>
+        You will get an email as soon as it is ready.
+        <br/>
+        So, you can either wait here or you can come back any time you want
+        <br/>
+        <button class="button orange basic-dialog-close" id="close-button" onclick="$('#welcome-dialog').fadeOut()">OK!</button>
     </div>
     <script>
         var HOST = 'http://beta.momends.com';
@@ -155,15 +166,16 @@
                 'privacy_type': 1,
                 'facebook-active': true,
                 'twitter-active': false};
-            createMomend(postData)
+            createMomend(postData);
+            $('#creating-dialog-bg').addClass('dark');
+            $('#welcome-dialog').show();
         }
-
 
         function createMomend(postData){
             _trackPageEvent('Create', 'Creating');
             var start = new Date();
-            var creatingDialog = $('#creating-dialog');
-            creatingDialog.fadeIn();
+            var creatingDialogBg = $('#creating-dialog-bg');
+            creatingDialogBg.fadeIn();
             animateCollectingText();
 
             var token = $('[name="csrfmiddlewaretoken"]')[0].value;
@@ -179,16 +191,17 @@
                         var end = new Date();
                         var seconds = Math.floor((end - start) / 1000);
                         _gaq.push(['_trackEvent', 'Page', 'Momend', 'Created',seconds]);
-                        creatingDialog.fadeOut();
+                        creatingDialogBg.fadeOut();
+                        $('#create-modal-mini').hide();
                         playMomend(result.cid);
                     }else{
                         _trackPageEvent('Momend', 'CreateFailed');
-                        creatingDialog.fadeOut();
+                        creatingDialogBg.fadeOut();
                     }
                 },
                 error: function(msg){
                     _trackPageEvent('Momend', 'CreateServerError');
-                    creatingDialog.fadeOut();
+                    creatingDialogBg.fadeOut();
                 }
             });
         }
@@ -227,6 +240,9 @@
          * Handles fadein - fadeout animations of background images
          */
         function nextAnimation(){
+            if($('#momend-player').is(':visible')){ //Do not animate if player is active
+                return;
+            }
             if(lastLoaded != bgDivArr.length-1 && lastLoaded < currentBg+1){ //next item not loaded yet
                 setTimeout(nextAnimation, animationInterval);
                 return;
@@ -406,8 +422,19 @@
 
         playBG.click(function(){ //Pause the momend and minimize it if backdrop pressed
             momendManager.jsAnimate.pause();
-            playBG.fadeOut();
+            $('#momend-player').animate({'width':0,'height':0,'top':0,'left':'35%'},500);
+            setTimeout(function(){
+                playBG.fadeOut(function(){
+                    nextAnimation();
+                });
+            },300);
             if(!$('#show-again').is('*')){ //To prevent inserting more than 1 buttons if user presses the button repeatedly
+                if(!$('#header').is('*')){
+                    jQuery('<div/>',{
+                        class : 'basic-header',
+                        id : 'header'
+                    }).appendTo('#maindiv');
+                }
                 var _showAgainButton = jQuery('<a/>',{
                     text : 'Show Momend',
                     class : 'basic-show-again-link',
@@ -418,6 +445,9 @@
                 _showAgainButton.click(function(event){
                     event.preventDefault();
                     playBG.fadeIn();
+                    setTimeout(function(){
+                        $('#momend-player').animate({'width':640,'height':480,'top':'20%','left':0},300);
+                    },300);
                     $(this).remove();
                 });
             }

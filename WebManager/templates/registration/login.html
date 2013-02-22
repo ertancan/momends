@@ -10,7 +10,7 @@
     <a href="{% url 'registration_register' %}">Register</a>
     <a href="{% url 'auth_password_reset' %}">Forgot Password</a>
 
-    <form name="login_form" action="{% url 'auth_login' %}" method="post">{% csrf_token %}
+    <form name="login_form" action="{% url 'auth_login' %}" method="post" style="display: none">{% csrf_token %}
         {{ form.non_field_errors }}
 
         <label for="id_username" >Username</label>
@@ -24,3 +24,4 @@
     </form>
 
 {% endblock content %}
+{% block feedback %}{# empty for login #}{% endblock feedback %}

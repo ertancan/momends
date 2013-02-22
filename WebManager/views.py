@@ -33,6 +33,7 @@ from django.core.files.uploadedfile import UploadedFile
 from DataManager.DataManagerUtil import DataManagerUtil
 from django.conf import settings
 import traceback
+import time
 
 class HomePageLoggedFormView(FormView):
     form_class = CreateMomendForm
@@ -174,9 +175,9 @@ class ShowMomendView(TemplateView):
                     _tmp['original_path'] = _obj.original_path
                     _used_media.append(_tmp)
             context['used_media'] = _used_media
-
-            providers = UserSocialAuth.objects.filter(user=self.request.user)
-            context['providers'] = [pr.provider for pr in providers]
+            if self.request.user.is_active:
+                providers = UserSocialAuth.objects.filter(user=self.request.user)
+                context['providers'] = [pr.provider for pr in providers]
         else:
             context['error'] = 2
         return context
@@ -229,6 +230,8 @@ class SaveInteractionView(View):
 class CreateMomendView(View):
     def post(self, request, *args, **kwargs):
         try:
+            Log.debug('Create momend request')
+            _create_start = time.clock()
             _momend_name = request.POST['momend_name']
             _start_date =  datetime.strptime(request.POST['start_date'], '%d %b, %Y').replace(tzinfo= pytz.UTC)
             _finish_date = datetime.strptime(request.POST['finish_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
@@ -244,7 +247,11 @@ class CreateMomendView(View):
                 _args['until'] = _finish_date
                 momend_cryptic_id = dm.create_momend(name=_momend_name, duration=30, privacy=_privacy,
                     theme=Theme.objects.get(pk= _theme), **_args)
-                return _generate_json_response(True, 'Created momend', cid=momend_cryptic_id)
+                if momend_cryptic_id: #If created momend successfully
+                    Log.info('Momend created in: '+str(time.clock() - _create_start))
+                    return _generate_json_response(True, 'Created momend', cid=momend_cryptic_id)
+                _error_msg = dm.get_last_status()
+                return _generate_json_response(False, 'Create momend failed with error message: '+_error_msg, _error_msg)
             except Exception as e:
                 Log.error(traceback.format_exc())
                 return _generate_json_response(False, 'Error while creating momend: '+str(e), 'An error occurred. Please try again') #Could be any error
