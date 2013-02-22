@@ -479,7 +479,7 @@ var JSAnimate = (function(){
     function _finish(){
         $('#finished-bg').show();
         if(currentMusicObj){
-            currentMusicObj.jPlayer('stop');
+            __musicFade(currentMusicObj, false,1/(2000/MUSIC_ANIMATION_INTERVAL), false); //Fadeout animation for 2 seconds
         }
         for(var i=0; i<animationFinishObserver.length; i++){
             animationFinishObserver[i]();
