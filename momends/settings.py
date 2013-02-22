@@ -146,6 +146,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'social_auth.context_processors.social_auth_by_type_backends',
     'momends.context_processors.momend_file_url',
     'momends.context_processors.theme_data_url',
+    'momends.context_processors.host_url',
     'django.core.context_processors.request',
     )
 

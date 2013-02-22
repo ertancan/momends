@@ -109,13 +109,24 @@ if DEBUG:
 
 from settings import *
 MOMEND_FILE_URL = STATIC_URL
-TMP_FILE_PATH = 'operational_files/tmp/momends_tmp/'
+TMP_FILE_PATH = 'operational_files/tmp/'
+
+#Settings for directories
+
+SAVE_PREFIX = ''
+ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scripts/'
+COLLECTED_FILE_PATH = 'operational_files/userdata/collected/'
+THUMBNAIL_FILE_PATH = 'operational_files/userdata/thumbnail/'
+ENHANCED_FILE_PATH = 'operational_files/userdata/enhanced/'
+THEME_DATA_PATH =  'operational_files/themedata/'
 
 
-EMAIL_HOST = 'smtp.momends.com'
+
+"""EMAIL_HOST = 'smtp.momends.com'
 EMAIL_HOST_USER = 'info@momends.com'
 EMAIL_HOST_PASSWORD = environ['EMAIL_HOST_PASSWORD']
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 SERVER_EMAIL = 'info@momends.com'
 DEFAULT_FROM_EMAIL = 'info@momends.com'
+HOST_URL = 'http://test.momends.com:8000'

@@ -101,7 +101,7 @@
         <button class="button orange basic-dialog-close" id="close-button" onclick="$('#welcome-dialog').fadeOut()">OK!</button>
     </div>
     <script>
-        var HOST = 'http://beta.momends.com';
+        var HOST_URL = '{{ HOST_URL }}';
         var currentBg = 0;
         var lastLoaded = -1;
         var bgArr = [];
@@ -354,7 +354,7 @@
                     _button.addClass('active');
                 }
             }else{ //Show authentication dialog
-                var _twitterConnectURL = HOST + '{% url 'socialauth_begin' 'twitter' %}';
+                var _twitterConnectURL = HOST_URL + '{% url 'socialauth_begin' 'twitter' %}';
                 window.location.replace(_twitterConnectURL);
             }
         }

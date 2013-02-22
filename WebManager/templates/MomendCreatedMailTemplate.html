@@ -7,7 +7,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>momends</title>
 
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}email.css" />
+    <link rel="stylesheet" type="text/css" href="{{ HOST_URL }}{{ STATIC_URL }}email.css" />
 
 </head>
 
@@ -22,7 +22,7 @@
             <div class="content">
                 <table bgcolor="#999999">
                     <tr>
-                        <td><img src="{{ STATIC_URL }}img/logo-uzun.png" /></td>
+                        <td><img src="{{ HOST_URL }}{{ STATIC_URL }}img/logo-uzun.png" /></td>
                     </tr>
                 </table>
             </div>
@@ -43,10 +43,10 @@
                 <table>
                     <tr>
                         <td>
-                            <h3>Hi, {{ user.name }} {{ user.surname }} </h3>
+                            <h3>Hi, {{ owner.first_name }} {{ owner.last_name }} </h3>
                             <p class="lead">As you requested, we are here to collect your precious data and provide it back as a unique momend of your life. While reaching it with the following link below, never forget your memories makes more sense when you share them with your beloved ones.</p>
                             <!-- Callout Panel -->
-                            <p class="callout"><a href="{[ momend_url }}">Click  and go to your momend&raquo;</a>
+                            <p class="callout"><a href="{{ HOST_URL }}{{ momend_url }}">Click  and go to your momend&raquo;</a>
                             </p><!-- /Callout Panel -->
 
                             <!-- social & contact -->
