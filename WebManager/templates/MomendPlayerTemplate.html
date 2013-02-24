@@ -177,7 +177,7 @@
                 method: 'feed',
                 redirect_uri: HOST_URL + '{% url 'momends:show-momend' params.type params.id %}',
                 link: HOST_URL + '{% url 'momends:show-momend' params.type params.id %}',
-                picture: HOST_URL + '{{ STATIC_URL }}{{ momend.thumbnail }}',
+                picture: MOMEND_FILE_URL +'{{ momend.thumbnail }}',
                 name: '{{ momend.name }}',
                 caption: 'Did you see this momend',
                 description: 'Someone created this momend to show you how wonderful his life is' //TODO momend description here
