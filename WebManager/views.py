@@ -8,7 +8,6 @@ from django.views.generic.base import TemplateView
 from django.views.generic.base import View
 from django.views.generic.base import RedirectView
 from django.http import HttpResponse
-from WebManager.forms import CreateMomendForm
 from WebManager.forms import SettingsForm
 from WebManager.forms import DocumentForm
 from DataManager.DataManager import DataManager
@@ -35,8 +34,7 @@ from django.conf import settings
 import traceback
 import time
 
-class HomePageLoggedFormView(FormView):
-    form_class = CreateMomendForm
+class HomePageLoggedFormView(TemplateView):
     template_name = 'BasicMainPageTemplate.html'
     def get_context_data(self, **kwargs):
         context =  super(HomePageLoggedFormView,self).get_context_data(**kwargs)
@@ -49,54 +47,12 @@ class HomePageLoggedFormView(FormView):
         return context
 
 
-    def form_valid(self, form):
-        Log.debug('Create momend form sent form')
-        _momend_name = form.cleaned_data['momend_name']
-        _start_date = form.cleaned_data['start_date']
-        _finish_date = form.cleaned_data['finish_date']
-        _privacy = form.cleaned_data['privacy_type']
-        _user = User.objects.get(username=self.request.user)
-        dm = DataManager(_user)
-        try:
-            _args = dict()
-            _args['is_date'] = True
-            _args['since'] = _start_date
-            _args['until'] = _finish_date
-            momend_cryptic_id = dm.create_momend(name=_momend_name, duration=30, privacy=_privacy,
-                theme=Theme.objects.get(pk=form.cleaned_data['momend_theme']), **_args)
-        except NotImplementedError as e:
-            Log.error('Error while creating the momend: '+str(e))
-            messages.error(self.request, 'Error while creating the momend')
-            self.success_url = reverse('momends:home-screen' ) #Redirect back to home screen in case of exception
-            return super(HomePageLoggedFormView,self).form_valid(form)
-
-        status = dm.get_last_status()
-        has_data = False
-        for key,value in status.iteritems():
-            if status[key] == 'Success':
-                has_data = True
-                break
-        if not has_data:
-            messages.warning(self.request, 'Could not collect any data')
-            self.success_url = reverse('momends:home-screen' )
-        else: #Collected some data and created momend, append status and redirect to show page
-            messages.info(self.request, status)
-            self.success_url = reverse('momends:show-momend', args = ('m', momend_cryptic_id,) )
-        return super(HomePageLoggedFormView,self).form_valid(form)
-
 class HomePageNotLoggedView(TemplateView):
     template_name = 'BasicMainPageTemplate.html'
     def get_context_data(self, *args, **kwargs):
         context = super(HomePageNotLoggedView, self).get_context_data(**kwargs)
         context['public_top_momends'] = EnrichDataWorker.get_top_public_momends(max_count=20)
         context['should_create_automatically'] = False
-        return context
-
-class NewUserLoggedView(TemplateView):
-    template_name = 'BasicMainPageTemplate.html'
-    def get_context_data(self, **kwargs):
-        context = super(NewUserLoggedView, self).get_context_data(**kwargs)
-        context['should_create_automatically'] = True
         return context
 
 class MomendPlayerView(TemplateView):
@@ -145,6 +101,12 @@ class ShowMomendView(TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(ShowMomendView, self).get_context_data(**kwargs)
+
+        if not self.request.user.is_anonymous(): #Put authentication details even if momend is not exists!
+            print 'not anonymous'
+            providers = UserSocialAuth.objects.filter(user=self.request.user)
+            context['providers'] = [pr.provider for pr in providers]
+
         decoded_id = decode_id(kwargs['id'])
         if decoded_id: #Show only if id is valid
             if kwargs['type'] == 'm':
@@ -159,6 +121,7 @@ class ShowMomendView(TemplateView):
             context['momend'] = _momend
             context['interactions'] = UserInteraction.objects.filter(momend = _momend)
             context['related_momends'] = EnrichDataWorker.get_related_momends(momend=_momend, max_count=10, get_private=True)
+
             _all_dis = OutData.objects.filter(owner_layer__momend=_momend).values('raw').distinct()
             _icons = ['icon-picture', 'icon-comment', 'icon-pushpin', 'icon-desktop', ' icon-music']
             _used_media = []
@@ -175,9 +138,6 @@ class ShowMomendView(TemplateView):
                     _tmp['original_path'] = _obj.original_path
                     _used_media.append(_tmp)
             context['used_media'] = _used_media
-            if self.request.user.is_active:
-                providers = UserSocialAuth.objects.filter(user=self.request.user)
-                context['providers'] = [pr.provider for pr in providers]
         else:
             context['error'] = 2
         return context
@@ -226,6 +186,19 @@ class SaveInteractionView(View):
             return _generate_json_response(True, 'Interaction Saved', url=str(reverse_lazy('momends:show-momend',args=('i',interaction.cryptic_id))))
         except Exception as e:
             return _generate_json_response(False, 'Error while saving interaction: '+str(e), 'Try Again')
+
+class SendAnimationAsMail(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            _type = request.POST['type']
+            _cryptic_id = request.POST['cid']
+            _email = request.POST['email']
+        except:
+            return _generate_json_response(False, 'Missing argument on share mail', 'Missing argument')
+        _url = reverse('momends:show-momend', args = (_type, _cryptic_id,))
+        if DataManagerUtil.send_share_email(self.request.user, _email.split(','), _url):
+            return _generate_json_response(True, 'Send mail success')
+        return _generate_json_response(False, user_msg='Send mail failed. Please try again!') #Error logged on the send mail side
 
 class CreateMomendView(View):
     def post(self, request, *args, **kwargs):

@@ -2,7 +2,10 @@
 {% load url from future %}
 {% block include %}
     <link href="{{ STATIC_URL }}basicmain_style.css" rel="stylesheet">
-{% endblock include %}
+{% endblock include %},
+{% block meta %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+{% endblock meta %}
 {% block heading %} {% endblock heading %}
 
 {% block content %}
@@ -28,7 +31,7 @@
                     <b style="font-size: 20px;color: #ffffff; margin: 0 9px 0 9px">|</b> <!-- I had to! (pixel perfection :)) -->
                     <a href="#" class="white-link" onclick='showAuthModal("{% url 'auth_login' %}","Sign in")'>Get yours now!</a>
                 {% else %}
-                    <a href="#" class="white-link" onclick='showCreateModal()'>Hello {{ user.username }}, create a momend?</a>
+                    <a href="#" class="white-link" onclick='showCreateModal()'>Hello {{ user.username }}, click to create a momend?</a>
                 {% endif %}
             </div>
         </div>
@@ -45,10 +48,9 @@
             <div class="modal-body" id="create-modal-body-mini">
 
                 <div class="span6">
-                    {{ form.non_field_errors }}
-                        {{ form.momend_name.as_hidden }}
-                        {{ form.momend_theme.as_hidden }}
-                        {{ form.privacy_type.as_hidden }}
+                    <input type="hidden" name="momend_name" id="id_momend_name">
+                    <input type="hidden" name="momend_theme" id="id_momend_theme">
+                    <input type="hidden" name="privacy_type" id="id_privacy_type">
                     <div class="create-social-media">
                                 <i class="icon-facebook icon-3x create-social-button" id="create-social-facebook" onclick="socialToggle('facebook')"></i>
                                 <i class="icon-twitter icon-3x create-social-button" id="create-social-twitter" onclick="socialToggle('twitter')"></i>
@@ -57,7 +59,7 @@
                     <div class="pagination">
                         <ul>
                             <li><a id="date-1y" class="date-selector-link selected"href="#" onclick="dateSelected('year')">Last Year</a> </li>
-                            <li><a id="date-6m" class="date-selector-link" href="#" onclick="dateSelected('6mon')">Last 6 Month</a> </li>
+                            <li><a id="date-6m" class="date-selector-link" href="#" onclick="dateSelected('6mon')">Last 6 Months</a> </li>
                             <li><a id="date-1m" class="date-selector-link" href="#" onclick="dateSelected('1mon')">Last Month</a> </li>
                             <li><a id="date-custom" class="date-selector-link" href="#" onclick="dateSelected('custom')">Custom</a> </li>
                         </ul>
@@ -65,13 +67,11 @@
                     <div class="modal-group-container">
                         <div class="modal-tab-content span8">
                             <div id="date-content" style="display: none">
-                                {{ form.start_date.errors }}
                                 <label for="id_start_date" class="modal-form-item">From:</label>
-                                {{ form.start_date }}
+                                <input id="id_start_date" type="text" class="modal-form-item-medium modal-date-input" name="start_date">
                                 <br/>
-                                {{ form.finish_date.errors }}
                                 <label for="id_finish_date" class="modal-form-item">To:</label>
-                                {{ form.finish_date }}
+                                <input id="id_finish_date" type="text" class="modal-form-item-medium modal-date-input" name="finish_date">
                             </div>
                         </div>
                     </div>
@@ -187,7 +187,7 @@
                         var seconds = Math.floor((end - start) / 1000);
                         _gaq.push(['_trackEvent', 'Page', 'Momend', 'Created',seconds]);
                         creatingDialogBg.fadeOut();
-                        $('#create-modal-mini').hide();
+                        $('#create-modal-mini').modal("hide");
                         playMomend(result.cid);
                     }else{
                         _trackPageEvent('Momend', 'CreateFailed');
@@ -291,6 +291,12 @@
             for(var i = 0;i<auth.length; i++){ //Mark authenticated providers as active
                 $('#create-social-'+auth[i]).addClass('active');
             }
+            var _start = $('#id_start_date');  //Assing initial values of date boxes
+            var _finish =$('#id_finish_date');
+            var date = new Date();
+            _finish.val($.datepicker.formatDate("d M, yy", date));
+            date.setDate(date.getDate() -365 ); //Go back 1 year fo start date
+            _start.val($.datepicker.formatDate("d M, yy", date));
         }
 
         function animateCollectingText(state){
@@ -341,7 +347,7 @@
                 return;
             }
             console.log(provider);
-            if($.inArray(provider, auth)){
+            if($.inArray(provider, auth) >= 0){
                 var _button = $('#create-social-'+provider);
                 if(_button.hasClass('active')){
                     _button.removeClass('active');
