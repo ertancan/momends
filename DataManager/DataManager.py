@@ -12,11 +12,6 @@ from LogManagers.Log import Log
 from DataManagerUtil import DataManagerUtil
 from django.db.models import Q
 from django.conf import settings
-from django.template.loader import render_to_string
-from django.core.mail import EmailMultiAlternatives
-from django.utils.html import strip_tags
-from django.core.urlresolvers import reverse_lazy
-from django.conf import settings
 
 
 
@@ -47,7 +42,8 @@ class DataManager:
 
         score = MomendScore(momend = self.momend, provider_score = self._calculate_provider_score())
         score.save()
-        self.send_momend_created_email(self.momend)
+        DataManagerUtil.send_momend_created_email(self.momend)
+        self.momend.owner.get_full_name()
         return self.momend.cryptic_id
 
     def collect_user_data(self, inc_photo, inc_status, inc_checkin, **kwargs): #TODO concatenation fail if cannot connect to facebook or twitter (fixed on status)
@@ -130,25 +126,5 @@ class DataManager:
             _score += _out_data.raw.like_count
 
         return _score
-
-    def send_momend_created_email(self, momend):
-        ctx_dict = {'momend_url' : str(reverse_lazy('momends:show-momend',args=('m',momend.cryptic_id))),
-                    'owner' : momend.owner,
-                    'STATIC_URL' : settings.STATIC_URL,
-                    'HOST_URL' : settings.HOST_URL
-                    }
-        subject = render_to_string('MomendCreatedMailSubjectTemplate.html', ctx_dict)
-        # Email subject *must not* contain newlines
-        subject = ''.join(subject.splitlines())
-
-        message = render_to_string('MomendCreatedMailTemplate.html', ctx_dict)
-        text_content = strip_tags(message)
-        msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [self.user.email])
-        msg.attach_alternative(message, "text/html")
-        try:
-            msg.send()
-        except Exception as e:
-            Log.error('Error while sending momend created email: '+str(e))
-        #self.user.email_user(subject, message, settings.DEFAULT_FROM_EMAIL)
 
 
