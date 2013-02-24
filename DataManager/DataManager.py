@@ -12,11 +12,6 @@ from LogManagers.Log import Log
 from DataManagerUtil import DataManagerUtil
 from django.db.models import Q
 from django.conf import settings
-from django.template.loader import render_to_string
-from django.core.mail import EmailMultiAlternatives
-from django.utils.html import strip_tags
-from django.core.urlresolvers import reverse_lazy
-from django.conf import settings
 
 
 
@@ -34,27 +29,41 @@ class DataManager:
                       privacy=Momend.PRIVACY_CHOICES['Private'], inc_photo=True, inc_status=True, inc_checkin=True,
                       enrichment_method=None, theme=None, scenario=None, **kwargs):
         raw_data = self.collect_user_data(inc_photo, inc_status, inc_checkin, **kwargs)
+        if len(raw_data) < 15:
+            self.status = 'Could not collect enough data to create a momend! Please select a wider time frame'
+            return None
         enriched_data = self.enrich_user_data(raw_data, enrichment_method)
         self.momend = Momend(owner=self.user, name=name, privacy=privacy)
-        if(kwargs['is_date']):
-            self.momend.momend_start_date = kwargs['since']
-            self.momend.momend_end_date = kwargs['until']
+        if kwargs['is_date']:
+            try:
+                self.momend.momend_start_date = kwargs['since']
+                self.momend.momend_end_date = kwargs['until']
+            except KeyError:
+                self.status = 'Missing parameters for date option'
+                return None
+        else:
+            self.status = 'Not supported yet!'
+            return None
         self.momend.save()
         animation_worker = AnimationManagerWorker(self.momend)
         generated_layer, duration = animation_worker.generate_output(enriched_data, duration, theme, scenario)
+        if duration == 0 or not generated_layer:
+            self.status = 'Could not create momend! Please try again.'
+            return None
         self._create_momend_thumbnail()
         self.momend.save()
 
         score = MomendScore(momend = self.momend, provider_score = self._calculate_provider_score())
         score.save()
-        self.send_momend_created_email(self.momend)
+        DataManagerUtil.send_momend_created_email(self.momend)
+        self.status = 'Success'
         return self.momend.cryptic_id
 
     def collect_user_data(self, inc_photo, inc_status, inc_checkin, **kwargs): #TODO concatenation fail if cannot connect to facebook or twitter (fixed on status)
         _raw_data = []
         _collect_count = dict()
         for _provider in Provider.objects.all():
-            if UserSocialAuth.objects.filter(provider=str(_provider).lower()).filter(user=self.user).count()>0:
+            if UserSocialAuth.objects.filter(provider=str(_provider).lower()).filter(user=self.user).count() > 0:
                 worker = self._instantiate_provider_worker(_provider)
                 if inc_photo and issubclass(worker.__class__,BasePhotoProviderWorker):
                     _collected = worker.collect_photo(self.user, **kwargs)
@@ -130,25 +139,5 @@ class DataManager:
             _score += _out_data.raw.like_count
 
         return _score
-
-    def send_momend_created_email(self, momend):
-        ctx_dict = {'momend_url' : str(reverse_lazy('momends:show-momend',args=('m',momend.cryptic_id))),
-                    'owner' : momend.owner,
-                    'STATIC_URL' : settings.STATIC_URL,
-                    'HOST_URL' : settings.HOST_URL
-                    }
-        subject = render_to_string('MomendCreatedMailSubjectTemplate.html', ctx_dict)
-        # Email subject *must not* contain newlines
-        subject = ''.join(subject.splitlines())
-
-        message = render_to_string('MomendCreatedMailTemplate.html', ctx_dict)
-        text_content = strip_tags(message)
-        msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [self.user.email])
-        msg.attach_alternative(message, "text/html")
-        try:
-            msg.send()
-        except Exception as e:
-            Log.error('Error while sending momend created email: '+str(e))
-        #self.user.email_user(subject, message, settings.DEFAULT_FROM_EMAIL)
 
 

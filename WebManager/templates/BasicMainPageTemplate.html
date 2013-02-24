@@ -2,7 +2,10 @@
 {% load url from future %}
 {% block include %}
     <link href="{{ STATIC_URL }}basicmain_style.css" rel="stylesheet">
-{% endblock include %}
+{% endblock include %},
+{% block meta %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+{% endblock meta %}
 {% block heading %} {% endblock heading %}
 
 {% block content %}
@@ -28,7 +31,7 @@
                     <b style="font-size: 20px;color: #ffffff; margin: 0 9px 0 9px">|</b> <!-- I had to! (pixel perfection :)) -->
                     <a href="#" class="white-link" onclick='showAuthModal("{% url 'auth_login' %}","Sign in")'>Get yours now!</a>
                 {% else %}
-                    <a href="#" class="white-link" onclick='showCreateModal()'>Hello {{ user.username }}, create a momend?</a>
+                    <a href="#" class="white-link" onclick='showCreateModal()'>Hello {{ user.username }}, click to create a momend?</a>
                 {% endif %}
             </div>
         </div>
@@ -45,10 +48,9 @@
             <div class="modal-body" id="create-modal-body-mini">
 
                 <div class="span6">
-                    {{ form.non_field_errors }}
-                        {{ form.momend_name.as_hidden }}
-                        {{ form.momend_theme.as_hidden }}
-                        {{ form.privacy_type.as_hidden }}
+                    <input type="hidden" name="momend_name" id="id_momend_name">
+                    <input type="hidden" name="momend_theme" id="id_momend_theme">
+                    <input type="hidden" name="privacy_type" id="id_privacy_type">
                     <div class="create-social-media">
                                 <i class="icon-facebook icon-3x create-social-button" id="create-social-facebook" onclick="socialToggle('facebook')"></i>
                                 <i class="icon-twitter icon-3x create-social-button" id="create-social-twitter" onclick="socialToggle('twitter')"></i>
@@ -57,7 +59,7 @@
                     <div class="pagination">
                         <ul>
                             <li><a id="date-1y" class="date-selector-link selected"href="#" onclick="dateSelected('year')">Last Year</a> </li>
-                            <li><a id="date-6m" class="date-selector-link" href="#" onclick="dateSelected('6mon')">Last 6 Month</a> </li>
+                            <li><a id="date-6m" class="date-selector-link" href="#" onclick="dateSelected('6mon')">Last 6 Months</a> </li>
                             <li><a id="date-1m" class="date-selector-link" href="#" onclick="dateSelected('1mon')">Last Month</a> </li>
                             <li><a id="date-custom" class="date-selector-link" href="#" onclick="dateSelected('custom')">Custom</a> </li>
                         </ul>
@@ -65,13 +67,11 @@
                     <div class="modal-group-container">
                         <div class="modal-tab-content span8">
                             <div id="date-content" style="display: none">
-                                {{ form.start_date.errors }}
                                 <label for="id_start_date" class="modal-form-item">From:</label>
-                                {{ form.start_date }}
+                                <input id="id_start_date" type="text" class="modal-form-item-medium modal-date-input" name="start_date">
                                 <br/>
-                                {{ form.finish_date.errors }}
                                 <label for="id_finish_date" class="modal-form-item">To:</label>
-                                {{ form.finish_date }}
+                                <input id="id_finish_date" type="text" class="modal-form-item-medium modal-date-input" name="finish_date">
                             </div>
                         </div>
                     </div>
@@ -106,6 +106,7 @@
         var _type = '{{ params.type }}';
         var _cid = '{{ params.id }}';
         var user_momend_count = {% if user.is_authenticated %} {{ user_top_momends|length }};{% else %}false;{% endif %}
+        var _dialogId = 0;
         $('body').ready(function(){
             for(var i=0;i<5;i++){
                 bgArr.push(STATIC_URL+'img/carousel'+(i+1)+'.jpg');
@@ -151,11 +152,11 @@
          */
         function welcome(){
             _trackPageEvent('Page', 'Welcome');
-            var _date = new Date();
-            _date.setDate(_date.getDate() -365 );
-            $.datepicker.formatDate("d M, yy", _date);
+            var date = new Date();
+            date.setDate(date.getDate() -365 );
+            $.datepicker.formatDate("d M, yy", date);
             var postData = {'momend_name':"{{user.username}}'s first momend",
-                'start_date': $.datepicker.formatDate("d M, yy", _date),
+                'start_date': $.datepicker.formatDate("d M, yy", date),
                 'finish_date': $.datepicker.formatDate("d M, yy", new Date()), //Today
                 'momend_theme': 0,
                 'privacy_type': 1,
@@ -187,16 +188,18 @@
                         var seconds = Math.floor((end - start) / 1000);
                         _gaq.push(['_trackEvent', 'Page', 'Momend', 'Created',seconds]);
                         creatingDialogBg.fadeOut();
-                        $('#create-modal-mini').hide();
+                        $('#create-modal-mini').modal("hide");
                         playMomend(result.cid);
                     }else{
                         _trackPageEvent('Momend', 'CreateFailed');
                         creatingDialogBg.fadeOut();
+                        _showToast(result.message, '110px');
                     }
                 },
                 error: function(msg){
                     _trackPageEvent('Momend', 'CreateServerError');
                     creatingDialogBg.fadeOut();
+                    _showToast('An error occurred! Please try again later.', '90px');
                 }
             });
         }
@@ -209,22 +212,22 @@
             if(lastLoaded == bgArr.length-1){
                 return;
             }
-            var _cont = jQuery('<div/>',{
+            var bgContainer = jQuery('<div/>',{
                 id : 'bg-container'+(lastLoaded+1),
                 class : 'scene-background'
             }).appendTo('#maindiv');
-            bgDivArr.push(_cont);
-            var _img = jQuery('<img/>',{
+            bgDivArr.push(bgContainer);
+            var bgImg = jQuery('<img/>',{
                 id : 'bg-img'+(lastLoaded+1),
                 class : 'background-image',
                 src : bgArr[lastLoaded+1]
-            }).appendTo(_cont);
-            _img.ready(function(){
+            }).appendTo(bgContainer);
+            bgImg.ready(function(){
                 lastLoaded++;
                 console.log('loaded:'+lastLoaded);
                 loadNext();
                 if(lastLoaded>0){
-                    _cont.hide();
+                    bgContainer.hide();
                 }else{
                     nextAnimation();
                 }
@@ -242,21 +245,21 @@
                 setTimeout(nextAnimation, animationInterval);
                 return;
             }
-            var _cur = currentBg;
-            currentBg = _cur + 1;
+            var cur = currentBg;
+            currentBg = cur + 1;
             if(currentBg == bgDivArr.length){
                 currentBg = 0;
             }
-            var _appear = bgDivArr[currentBg];
-            _appear.css({'opacity':0});
-            _appear.show();
-            _appear.animate({
+            var appear = bgDivArr[currentBg];
+            appear.css({'opacity':0});
+            appear.show();
+            appear.animate({
                 opacity:1
             },{duration:1500,complete:function(){
                 setTimeout(nextAnimation, animationInterval);
             }});
-            var _disappear = bgDivArr[_cur];
-            _disappear.animate({
+            var disappear = bgDivArr[cur];
+            disappear.animate({
                 opacity:0
             },{duration:1500,complete:function(){
                 $(this).hide();
@@ -285,12 +288,18 @@
 
         function showCreateModal(){
             _trackPageEvent('Create', 'ShowDialog');
-            var _modal = $('#create-modal-mini');
-            _modal.css('margin-left',_modal.outerWidth()/-2);
-            _modal.modal();
+            var modal = $('#create-modal-mini');
+            modal.css('margin-left',modal.outerWidth()/-2);
+            modal.modal();
             for(var i = 0;i<auth.length; i++){ //Mark authenticated providers as active
                 $('#create-social-'+auth[i]).addClass('active');
             }
+            var start = $('#id_start_date');  //Assing initial values of date boxes
+            var finish =$('#id_finish_date');
+            var date = new Date();
+            finish.val($.datepicker.formatDate("d M, yy", date));
+            date.setDate(date.getDate() -365 ); //Go back 1 year fo start date
+            start.val($.datepicker.formatDate("d M, yy", date));
         }
 
         function animateCollectingText(state){
@@ -315,7 +324,7 @@
                 'class' : 'modal hide fade',
                 'tabindex' : '-1',
                 'role' : 'dialog',
-                'aria-lablledby' : 'modal-label',
+                'aria-labelledby' : 'modal-label',
                 'aria-hidden' : 'true'
             }).appendTo('body');
             var header = jQuery('<div/>',{
@@ -340,46 +349,46 @@
             if(provider === 'facebook'){
                 return;
             }
-            console.log(provider);
-            if($.inArray(provider, auth)){
-                var _button = $('#create-social-'+provider);
-                if(_button.hasClass('active')){
-                    _button.removeClass('active');
+            if($.inArray(provider, auth) >= 0){
+                var button = $('#create-social-'+provider);
+                if(button.hasClass('active')){
+                    button.removeClass('active');
                 }else{
-                    _button.addClass('active');
+                    button.addClass('active');
                 }
             }else{ //Show authentication dialog
-                var _twitterConnectURL = HOST_URL + '{% url 'socialauth_begin' 'twitter' %}';
-                window.location.replace(_twitterConnectURL);
+                var twitterConnectURL = HOST_URL + '{% url 'socialauth_begin' 'twitter' %}';
+                window.location.replace(twitterConnectURL);
             }
         }
         function dateSelected(type){
             $('.date-selector-link').removeClass('selected');
-            $('#date-content').hide();
-            var _start = $('#id_start_date');
+            var dateContent = $('#date-content');
+            dateContent.hide();
+            var start = $('#id_start_date');
             var date = new Date();
             switch (type){
                 case 'year':
                     date.setDate(date.getDate() -365 );
-                    _start.val($.datepicker.formatDate("d M, yy", date));
+                    start.val($.datepicker.formatDate("d M, yy", date));
                     $('#date-1y').addClass('selected');
                     modalResize(false);
                     break;
                 case '6mon':
                     date.setDate(date.getDate() -180 );
-                    _start.val($.datepicker.formatDate("d M, yy", date));
+                    start.val($.datepicker.formatDate("d M, yy", date));
                     $('#date-6m').addClass('selected');
                     modalResize(false);
                     break;
                 case '1mon':
                     date.setDate(date.getDate() -30 );
-                    _start.val($.datepicker.formatDate("d M, yy", date));
+                    start.val($.datepicker.formatDate("d M, yy", date));
                     $('#date-1m').addClass('selected');
                     modalResize(false);
                     break;
                 case 'custom':
                     $('#date-custom').addClass('selected');
-                    $('#date-content').show();
+                    dateContent.show();
                     modalResize(true);
             }
         }
@@ -430,14 +439,14 @@
                         id : 'header'
                     }).appendTo('#maindiv');
                 }
-                var _showAgainButton = jQuery('<a/>',{
+                var showAgainButton = jQuery('<a/>',{
                     text : 'Show momend',
                     class : 'basic-show-again-link',
                     id :'show-again',
                     href : '#'
                 }).appendTo('#header');
                 $('#basic-logout-link').css({float:'right'}); // to send Logout to the right most side again
-                _showAgainButton.click(function(event){
+                showAgainButton.click(function(event){
                     event.preventDefault();
                     playBG.fadeIn();
                     setTimeout(function(){
@@ -448,6 +457,26 @@
             }
         });
     }
+        function _showToast(_text, _height){
+            var dialog = $('<div/>',{
+                class : 'basic-dialog',
+                id : 'dialog-'+_dialogId,
+                style : 'height: '+_height,
+            }).appendTo('body');
+            $('<p/>',{
+                text : _text
+            }).appendTo(dialog);
+            var closeButton = $('<button/>',{
+                class : 'button orange basic-dialog-close',
+                id : 'close-'+_dialogId,
+                text : 'OK'
+            }).appendTo(dialog);
+            closeButton.click(function(){
+                dialog.fadeOut();
+            });
+            dialog.fadeIn();
+            _dialogId++;
+        }
         function _trackPageEvent(_group, _event){
             _gaq.push(['_trackEvent', 'Page', _group, _event])
         }
@@ -472,13 +501,15 @@
         }
         function fullscreen(){
             momendManager.fullscreenToggle();
-            var _player = $('#momend-player');
+            var player = $('#momend-player');
             if(!fullscreen_on){
-                _player.addClass('fullscreen');
-                _player.removeClass('regular');
+                player.addClass('fullscreen');
+                player.removeClass('regular');
+                _trackPageEvent('Fullscreen', 'On');
             }else{
-                _player.removeClass('fullscreen');
-                _player.addClass('regular');
+                player.removeClass('fullscreen');
+                player.addClass('regular');
+                _trackPageEvent('Fullscreen', 'Off');
             }
             fullscreen_on = !fullscreen_on;
         }

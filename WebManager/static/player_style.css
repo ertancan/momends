@@ -111,6 +111,13 @@
     position: relative;
     top: -7px;
 }
+.finished-modal-button.darkred{
+    background-color: darkred;
+ }
+.finished-modal-button.darkred:hover{
+    background-color: #6b0000;
+ }
+
 .loaded-modal{
     display: none;
     position: absolute;
@@ -221,6 +228,25 @@ input.momend-link{
     -moz-user-select:text;
     -ms-user-select:text;
     -webkit-user-select:text;
+}
+input.momend-mail{
+    display: block;
+    border:none;
+    width:90%;
+    font-size:18px;
+    padding:10px;
+    margin-left: auto;
+    margin-right: auto;
+    -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+    border-radius:3px;
+    -moz-user-select:text;
+    -ms-user-select:text;
+    -webkit-user-select:text;
+}
+.modal-panel.mail-modal{
+    height: 105px;
+    margin-top: 20%;
 }
 hr{
     border-color: rgba(150, 150, 150, 0.8);

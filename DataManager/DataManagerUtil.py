@@ -5,6 +5,11 @@ import abc
 import subprocess
 import os
 from django.conf import settings
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from django.utils.html import strip_tags
+from django.core.urlresolvers import reverse_lazy
+
 from LogManagers.Log import Log
 
 class DataManagerUtil:
@@ -63,3 +68,50 @@ class DataManagerUtil:
                 _local_file.write(chunk)
             _local_file.close()
         return _file_path
+
+    @staticmethod
+    def send_momend_created_email(momend):
+        ctx_dict = {'momend_url' : str(reverse_lazy('momends:show-momend',args=('m',momend.cryptic_id))),
+                    'owner' : momend.owner,
+                    'STATIC_URL' : settings.STATIC_URL,
+                    'HOST_URL' : settings.HOST_URL
+        }
+        subject = render_to_string('MomendCreatedMailSubjectTemplate.html', ctx_dict)
+        # Email subject *must not* contain newlines
+        subject = ''.join(subject.splitlines())
+
+        message = render_to_string('MomendCreatedMailTemplate.html', ctx_dict)
+        text_content = strip_tags(message)
+        msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [momend.owner.email])
+        msg.attach_alternative(message, "text/html")
+        try:
+            msg.send()
+            return True
+        except Exception as e:
+            Log.error('Error while sending momend created email: '+str(e))
+            return False
+
+    @staticmethod
+    def send_share_email(sender, receivers, url):
+        sender_name = 'someone'
+        if not sender.is_anonymous():
+            sender_name = sender.get_full_name() + ' ('+sender.email+')'
+        ctx_dict = {'momend_url' : url,
+                    'sender' : sender_name,
+                    'STATIC_URL' : settings.STATIC_URL,
+                    'HOST_URL' : settings.HOST_URL
+        }
+        subject = render_to_string('MomendShareMailSubjectTemplate.html', ctx_dict)
+        # Email subject *must not* contain newlines
+        subject = ''.join(subject.splitlines())
+
+        message = render_to_string('MomendShareMailTemplate.html', ctx_dict)
+        text_content = strip_tags(message)
+        msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, receivers)
+        msg.attach_alternative(message, "text/html")
+        try:
+            msg.send()
+            return True
+        except Exception as e:
+            Log.error('Error while sending momend share email: '+str(e))
+            return False

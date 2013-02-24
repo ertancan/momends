@@ -35,7 +35,7 @@
                 <div id="volume-slider"></div>
             </div>
             <div class="momend-button-group right-group">
-                <button class="icon-heart player-button" id="button-like"></button>
+                <button class="icon-heart player-button" style="display: none" id="button-like"></button>
                 <button class="icon-share player-button" id="button-share"></button>
                 <button class="icon-fullscreen player-button" href="#" id="button-fullscreen"></button>
             </div>
@@ -57,15 +57,15 @@
                     <span class="finished-modal-button-text" >Share on Twitter</span>
                 </div>
                 <br/>
-                <div id="final-share-button-another" onclick="getAnother()" class="finished-modal-button">
-                    <i class="modal-icon"></i>
-                    <span class="finished-modal-button-text" >Get another one</span>
+                <div id="final-share-button-another" onclick="getAnother()" class="finished-modal-button darkred">
+                    <i class="icon-plus modal-icon"></i>
+                    <span class="finished-modal-button-text" style="color: white">Get another one</span>
                 </div>
                 <div id="final-share-button-link" onclick="showLink()" class="finished-modal-button">
                     <i class="modal-icon icon-link"></i>
                     <span class="finished-modal-button-text" >Link to momend</span>
                 </div>
-                <div id="final-share-button-mail" onclick="sendMail()" class="finished-modal-button">
+                <div id="final-share-button-mail" onclick="showMail()" class="finished-modal-button">
                     <i class="modal-icon icon-envelope"></i>
                     <span class="finished-modal-button-text" >Mail this momend</span>
                 </div>
@@ -215,7 +215,7 @@
                 var tooltip = $('#'+id+'-tooltip');
                 if(tooltip.is('*')){
                     tooltip.css({ //Location may need to change with fullscreen
-                        left:Math.min(item.offset().left + item.outerWidth()/2 -40 , $('.scene').outerWidth()-83),
+                        left:Math.min(item.offset().left + item.outerWidth()/2 -40 , $('.scene').outerWidth()-83), //Math.min to be sure tooltip not exceeds screen boundaries
                         width:80,
                         height:20
                     });
@@ -325,6 +325,79 @@
             link.select();
         }
 
+        /**
+         * Displays an input dialog in order to collect email addresses to send this momend's link
+         */
+        function showMail(){
+            _trackPlayerEvent('finish', 'ShowMail');
+            var linkModal = jQuery('<div/>',{
+                class : 'modal-panel mail-modal',
+                id : 'mail-modal'
+            }).appendTo('#finished-modal');
+            var close =  jQuery('<a/>',{
+                href : '#',
+                style : 'float: right;margin-right: 3%;color: white;',
+                text : 'Close'
+            }).appendTo(linkModal);
+            close.click(function(event){
+                event.preventDefault();
+                linkModal.remove();
+            });
+            var mailText = jQuery('<label/>',{
+                text: 'Enter mail address (You can use commas)',
+                style : 'color:white'
+            }).appendTo(linkModal);
+
+            var mails = jQuery('<input/>',{
+                type: 'text',
+                class : 'momend-mail',
+                id : 'momend-mail'
+            }).appendTo(linkModal);
+
+            var sendButton = jQuery('<input/>',{
+                type : 'button',
+                onclick : "sendMail()",
+                value : 'Send!',
+                style : 'margin:10px 0 0 35%; width:30%',
+                id : 'mail-send-button'
+            }).appendTo(linkModal);
+        }
+
+        function sendMail(){
+            var _button = $('#mail-send-button');
+            _button.val('Sending...');
+            _button.attr('disabled','disabled');
+            var _addresses = $('#momend-mail').val();
+            if(_addresses.length == 0){
+                alert('Please enter a mail address');
+                return;
+            }
+            var token = $('[name="csrfmiddlewaretoken"]')[0].value;
+            $.ajax({
+                type: 'POST',
+                url: '{% url 'momends:send-mail'%}',
+                beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', token);},
+                data: {
+                    'type' : '{{ params.type }}',
+                    'cid' : '{{ params.id }}',
+                    'email' : _addresses
+                },
+                success: function(msg){
+                    _button.removeAttr('disabled');
+                    var data = jQuery.parseJSON(msg);
+                    if(data.resp === true){
+                        $('#mail-modal').fadeOut(function(){$(this).remove()});
+                    }else{
+                        _button.val('Try Again');
+                    }
+                },
+                error: function(msg){
+                    _button.removeAttr('disabled');
+                    _button.val('Try Again');
+                    var data = jQuery.parseJSON(msg);
+                }
+            });
+        }
         /**
          * Navigates to main page to create another momend
          */
