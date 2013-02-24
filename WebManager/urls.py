@@ -5,7 +5,6 @@ from django.conf.urls import url
 from views import HomePageLoggedFormView
 from views import HomePageNotLoggedView
 from views import MainRedirectView
-from views import NewUserLoggedView
 from views import ShowMomendView
 from views import GetMomendView
 from views import SaveInteractionView
@@ -16,6 +15,7 @@ from views import UploadFormView
 from views import MomendPlayerView
 from views import FileUploadView
 from views import DeleteMomendView
+from views import SendAnimationAsMail
 from django.contrib.auth.decorators import login_required
 from registration.backends.default.urls import *
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
@@ -26,7 +26,6 @@ urlpatterns = patterns('',
     url(r'^$', MainRedirectView.as_view(), name='front-page'),  #redirect to /home if auth is ok, otherwise redirect to /main
     url(r'^main/$', HomePageNotLoggedView.as_view(), name='main-screen'),
     url(r'^home/$', login_required(HomePageLoggedFormView.as_view()), name='home-screen'),
-    url(r'^welcome/$', login_required(NewUserLoggedView.as_view()), name='new-user'),
     url(r'^user/(?P<id>\d+)/$', login_required(UserProfileTemplateView.as_view()), name='user-screen'),
     url(r'^user/(?P<username>\w+)/$', login_required(UserProfileTemplateView.as_view()), name='user-screen'),
     url(r'^settings/$', login_required(SettingsFormView.as_view()), name='settings-screen'),
@@ -37,6 +36,7 @@ urlpatterns = patterns('',
     url(r'^postplay/(?P<id>[\w\-=]+)/$', login_required(SaveInteractionView.as_view()), name='save-interaction'),
     url(r'^create/$', login_required(CreateMomendView.as_view()), name='create-momend'),
     url(r'^fileupload/$', login_required(FileUploadView.as_view()), name='file-upload'),
+    url(r'^send/$', SendAnimationAsMail.as_view(), name='send-mail'),
     url(r'^upload/$', login_required(UploadFormView.as_view()), name='upload'),
 )
 urlpatterns += staticfiles_urlpatterns()
