@@ -35,7 +35,7 @@
                 <div id="volume-slider"></div>
             </div>
             <div class="momend-button-group right-group">
-                <button class="icon-heart player-button" id="button-like"></button>
+                <button class="icon-heart player-button" style="display: none" id="button-like"></button>
                 <button class="icon-share player-button" id="button-share"></button>
                 <button class="icon-fullscreen player-button" href="#" id="button-fullscreen"></button>
             </div>
@@ -57,9 +57,9 @@
                     <span class="finished-modal-button-text" >Share on Twitter</span>
                 </div>
                 <br/>
-                <div id="final-share-button-another" onclick="getAnother()" class="finished-modal-button green">
+                <div id="final-share-button-another" onclick="getAnother()" class="finished-modal-button darkred">
                     <i class="icon-plus modal-icon"></i>
-                    <span class="finished-modal-button-text" >Get another one</span>
+                    <span class="finished-modal-button-text" style="color: white">Get another one</span>
                 </div>
                 <div id="final-share-button-link" onclick="showLink()" class="finished-modal-button">
                     <i class="modal-icon icon-link"></i>
@@ -215,7 +215,7 @@
                 var tooltip = $('#'+id+'-tooltip');
                 if(tooltip.is('*')){
                     tooltip.css({ //Location may need to change with fullscreen
-                        left:Math.min(item.offset().left + item.outerWidth()/2 -40 , $('.scene').outerWidth()-83),
+                        left:Math.min(item.offset().left + item.outerWidth()/2 -40 , $('.scene').outerWidth()-83), //Math.min to be sure tooltip not exceeds screen boundaries
                         width:80,
                         height:20
                     });

@@ -6,10 +6,7 @@
 {% block footer %} {# empty for login #}  {% endblock footer %}
 {% block jquery %} {# empty for login #} {% endblock jquery %}
 {% block content %}
-    <a href="{% url 'socialauth_begin' 'facebook' %}">Login with Facebook</a>
-    <a href="{% url 'registration_register' %}">Register</a>
-    <a href="{% url 'auth_password_reset' %}">Forgot Password</a>
-
+     <a href="{% url 'socialauth_begin' 'facebook' %}"><img src="{{ STATIC_URL }}img/facebook.png"></img></a>
     <form name="login_form" action="{% url 'auth_login' %}" method="post" style="display: none">{% csrf_token %}
         {{ form.non_field_errors }}
 
