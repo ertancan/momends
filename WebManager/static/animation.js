@@ -477,7 +477,7 @@ var JSAnimate = (function(){
      * !Also informs finish observers!
      */
     function _finish(){
-        $('#finished-bg').show();
+        $('#finished-bg').fadeIn();
         if(currentMusicObj){
             __musicFade(currentMusicObj, false,1/(2000/MUSIC_ANIMATION_INTERVAL), false); //Fadeout animation for 2 seconds
         }
