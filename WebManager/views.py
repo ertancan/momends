@@ -44,6 +44,7 @@ class HomePageLoggedFormView(TemplateView):
         context['should_create_automatically'] = False
         providers = UserSocialAuth.objects.filter(user=self.request.user)
         context['providers'] = [pr.provider for pr in providers]
+        context['home'] = True
         return context
 
 

@@ -120,6 +120,7 @@
         var _cid = '{{ params.id }}';
         var user_momend_count = {% if user.is_authenticated %} {{ user_top_momends|length }};{% else %}false;{% endif %}
         var _dialogId = 0;
+        var home = '{{ home }}';
         $('body').ready(function(){
             for(var i=0;i<5;i++){
                 bgArr.push(STATIC_URL+'img/carousel'+(i+1)+'.jpg');
@@ -152,7 +153,7 @@
             });
             if(_cid){ //If we have a video to show
                 playMomend(_cid, _type === 'i');
-            }else if(user_momend_count === 0){ //If home page & user logged in and has no momends
+            }else if(user_momend_count === 0 && home === 'True'){ //If home page & user logged in and has no momends
                 welcome();
             }else if(getURLParameter('create') === 'true'){ //Someone told me to show create modal
                 showCreateModal();
