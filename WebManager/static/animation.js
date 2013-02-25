@@ -327,10 +327,8 @@ var JSAnimate = (function(){
             _obj.show();
         }else if(_type==='hide'){ //Hide given object but perform the given animation if exists
             if(_duration > 0){
-                console.log('hide with delay:'+_delay);
                 var _hideAnimation = [];
                 if(_delay > 0){ //Sleep first if hide animation has delay, to come back here after given delay, we add another animation object to the queue
-                    console.log('god damn sleep')
                     _hideAnimation.push({'animation':{'type':'sleep', 'duration':_delay, 'name':'hide delay'}});
                 }
                 _hideAnimation.push({'animation':{'type':'animation', 'duration':_duration, 'object':_obj, 'waitPrev':true, 'name': 'hide animation'}}); //Create an empty animation
@@ -528,7 +526,7 @@ var JSAnimate = (function(){
                 }
                 node = $.extend(node, {}, true);
 
-                var passed = pauseTime - currentAnimation[i][j]['startTime'];
+                var passed = pauseTime - currentAnimation[i][j]['startTime']; //Time passed since the animation start
                 node['duration'] = node['duration'] - passed; //Assign remaining time
 
                 if('object' in node){
@@ -538,7 +536,11 @@ var JSAnimate = (function(){
                     }
                 }
                 if(_obj && node['type']==='animation'){
-                    _obj.stop();
+                    if(node['extended_animation']){
+                        _obj.transitStop(); //!! this function was not approved yet and may be changed in next jquery.transit update
+                    }else{ //Regular animation (plain jQuery)
+                        _obj.stop();
+                    }
                     pauseQueue[i].push(node);
                     $(_obj[0].lastChild).stop();
                 }
@@ -552,7 +554,9 @@ var JSAnimate = (function(){
         for(var i = 0; i < animationQueue.length; i++){
             currentAnimation.push([]);
         }
-        currentMusicObj.jPlayer('pause');
+        if(currentMusicObj){
+            currentMusicObj.jPlayer('pause');
+        }
         _isPlaying = false;
         _togglePlayButton(true);
 
@@ -574,7 +578,9 @@ var JSAnimate = (function(){
                 __handleNode(node,i, 'Resume');
             }
         }
-        currentMusicObj.jPlayer('play');
+        if(currentMusicObj){
+            currentMusicObj.jPlayer('play');
+        }
         _isPlaying = true;
         _togglePlayButton(false);
     }
@@ -617,7 +623,7 @@ var JSAnimate = (function(){
      * @param _val Current value of the slider
      */
     function _volumeSliderChanged(_val){
-        if(!soundAnimationInProcess){
+        if(!soundAnimationInProcess && currentMusicObj){
             currentMusicObj.jPlayer('volume',_val/100);
         }
         volume = _val;
