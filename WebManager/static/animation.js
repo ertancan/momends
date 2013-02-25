@@ -36,7 +36,7 @@ var JSAnimate = (function(){
         $(window).resize(function(){
             _reCalculateDimensions();
         });
-        volume = 100; //TODO read from cookie
+        volume = 100; //Default value if there is no cookie and so the callback won't be called
     }
     /**
      * Instantiates global variables according to number of levels needed.
@@ -84,6 +84,10 @@ var JSAnimate = (function(){
         _isPlaying = true;
     }
 
+    /**
+     * Sets the running status of all queues to false, but not actually stops the current animations,
+     * however, next animations will not be performed.
+     */
     function _stopAllQueues(){
         for(var i = 0; i<queueOnAction.length; i++){
             queueOnAction[i] = false;
@@ -188,9 +192,16 @@ var JSAnimate = (function(){
      *          [breakpoint]:(bool) if given true, current layer will wait until a breakpoint occurs in the target layer
      *          target:(int) targeted layer
      *      breakpoint: Triggers the other layers which were waiting for current layer for a breakpoint
+     *      trigger: Triggers any layer whether or not it was waiting a trigger; performs the next animation on the given layer
+     *          target:(int) targeted layer
      *      click/hover: Performs click and hover animations on the object
+     *      hide: Hides the given objects.
+     *          it will perform 1 animation which is also given in the same node if the duration specified
+     *          **Currently only action that supports 'delay' parameter which performs the action after given time
+     *          **!!For now, 'duration' parameter is also required for delay, however this necessity will be removed after
+     *              making delay globally supported option
      */
-    function __handleNode(_node,_level, _caller){ //TODO should handle dynamic values also, e.g., screenWidth, screenHeight
+    function __handleNode(_node,_level, _caller){
         var _animation = _node;
         if('animation' in _node){
             _animation = _node['animation']
@@ -244,7 +255,10 @@ var JSAnimate = (function(){
         if('delay' in _animation){
             _delay = _animation['delay'];
         }
-
+        var _target = null;
+        if('target' in _animation){
+            _target=_animation['target'];
+        }
         if(_type==='animation'){
             var _shadow = shadowData[_obj[0].id];
             currentAnimation[_level].push(_node);
@@ -303,7 +317,11 @@ var JSAnimate = (function(){
                 if(_x || _y){ //If one of them animating
                     var _shadowStr = __generateShadowStr(_obj, _shadow, _x, _y);
                     console.log('shadow animation for moving obj:'+_shadowStr);
-                    $(_obj[0].lastChild).animate({'box-shadow': _shadowStr},{duration:_duration, queue:false, easing:_easing}); //Apply to image directly not to the div
+                    if(_animation['extended_animation']){ //To support custom cubic-bezier easing on shadows
+                        $(_obj[0].lastChild).transition({'box-shadow': _shadowStr}, _duration, _easing);
+                    }else{
+                        $(_obj[0].lastChild).animate({'box-shadow': _shadowStr},{duration:_duration, queue:false, easing:_easing}); //Apply to image directly not to the div
+                    }
                 }
             }
             if(_animation['extended_animation']){
@@ -332,16 +350,20 @@ var JSAnimate = (function(){
                     _hideAnimation.push({'animation':{'type':'sleep', 'duration':_delay, 'name':'hide delay'}});
                 }
                 _hideAnimation.push({'animation':{'type':'animation', 'duration':_duration, 'object':_obj, 'waitPrev':true, 'name': 'hide animation'}}); //Create an empty animation
+                var _animationIndex = _hideAnimation.length-1;
                 if('pre' in _animation){ //Assign hide animation's pre and anim if they exists
-                    _hideAnimation[1]['animation']['pre'] = _animation['pre'];
+                    _hideAnimation[_animationIndex]['animation']['pre'] = _animation['pre'];
                 }
                 if('anim' in _animation){
-                    _hideAnimation[1]['animation']['anim'] = _animation['anim'];
+                    _hideAnimation[_animationIndex]['animation']['anim'] = _animation['anim'];
                 }
                 if(_animation['extended_animation']){
-                    _hideAnimation[1]['animation']['extended_animation'] = true;
+                    _hideAnimation[_animationIndex]['animation']['extended_animation'] = true;
                 }
-                _hideAnimation.push({'animation':{'type':'hide', 'duration':0, 'object':_obj, 'triggerNext': triggerNext, 'waitPrev':true, 'name':'Hide after delay'}}); //Insert an empty hide animation to hide the object after animation
+                _hideAnimation.push({'animation':{'type':'hide', 'duration':0, 'object':_obj, 'waitPrev':true, 'name':'Hide after delay'}}); //Insert an empty hide animation to hide the object after animation
+                if(triggerNext){ //If hide animation should trigger the main queue(the queue which it was on)
+                    _hideAnimation.push({'animation':{'type':'trigger', 'target':_level, 'waitPrev':true, 'name':'trigger main queue'}});
+                }
                 __addInteractionAnimationLayerForObject(_hideAnimation);
                 console.log('added hide animation:');
                 console.dir(_hideAnimation)
@@ -351,9 +373,9 @@ var JSAnimate = (function(){
                 console.dir(_obj);
                 console.log('layer:'+_level);
                 _obj.hide();
+                console.log('Trigger next:'+triggerNext);
             }
         }else if(_type==='block'){
-            var _target=_animation['target'];
             if(typeof _target != 'number'){
                 _target=_level;
             }
@@ -362,14 +384,12 @@ var JSAnimate = (function(){
                 currentAnimation[_target]['object'].stop();
             }
         }else if(_type==='unblock'){
-            var _target=_animation['target'];
             if(typeof _target != 'number'){
                 _target=_level;
             }
             _startQueue(_target);
         }else if(_type==='wait'){
             triggerNext=false;
-            var _target=_animation['target'];
             if(_target!==_level){
                 queueOnAction[_level]=false;
                 if(_animation['breakpoint']===true){ //Waiting for a break point on the target queue
@@ -383,7 +403,10 @@ var JSAnimate = (function(){
                 _target=_layerBreakPointWaitQueue[_level].shift();
                 _startQueue(_target);
             }
-        }else if(_type==='click'){
+        }else if(_type==='trigger'){
+            _nextAnimation(_target, _node);
+        }
+        else if(_type==='click'){
             _obj.click();
         }else if(_type==='hover'){
             _obj.mouseenter();
@@ -411,7 +434,6 @@ var JSAnimate = (function(){
         }else if(_type ==='music-stop'){
             _obj.jPlayer("stop");
         }else if(_type === 'music-volume'){
-            var _target = _animation['target'];
             var vol = parseFloat(_target);
             if(!isNaN(vol)){
                 _obj.jPlayer("volume",vol*(volume/100)); //proportional to the volume slider's current value
