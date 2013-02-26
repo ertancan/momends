@@ -159,6 +159,8 @@
             var _value = $.cookie('volume-slider-value');
             if(typeof _value === 'undefined'){
                 _value = 100;
+            }else{
+                momendManager.jsAnimate.volumeSliderChanged(_value);
             }
             $('#volume-slider').slider({
                 min : 0,
