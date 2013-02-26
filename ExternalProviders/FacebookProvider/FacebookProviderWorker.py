@@ -80,7 +80,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 _raw.provider = provider
                 _raw.original_path = obj['images'][0]['source']
                 if 'name' in obj:
-                    _raw.title = obj['name']
+                    _raw.title = obj['name'][:255] #first 255 chars of title
                 if 'likes' in obj:
                     _raw.like_count = len(obj['likes'])
                 if 'sharedposts' in obj:
