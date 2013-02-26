@@ -30,9 +30,9 @@ class DataManager:
                       privacy=Momend.PRIVACY_CHOICES['Private'], inc_photo=True, inc_status=True, inc_checkin=True,
                       enrichment_method=None, theme=None, scenario=None, **kwargs):
         _time_limit = datetime.datetime.now().replace(tzinfo= pytz.UTC) - datetime.timedelta(minutes=15)
-        if Momend.objects.filter(owner = self.user).filter(thumbnail=None).filter(create_date__gt = _time_limit ).count() > 0:
-            self.status = 'You are creating another momend right now. Please wait until it is ready.'
-            return None
+        ##if Momend.objects.filter(owner = self.user).filter(thumbnail=None).filter(create_date__gt = _time_limit ).count() > 0:
+        ##    self.status = 'You are creating another momend right now. Please wait until it is ready.'
+        ##    return None
         raw_data = self.collect_user_data(inc_photo, inc_status, inc_checkin, **kwargs)
         if len(raw_data) < 15:
             self.status = 'Could not collect enough data to create a momend! Please select a wider time frame'
