@@ -9,6 +9,8 @@ class ImageEnhancementUtility(object):
     @staticmethod
     def applyThemeEnhancementsOnImage(filename, enhancement_str, file_prefix, theme_data_manager):
         if len(enhancement_str) == 0:
+            filename = filename.replace(settings.SAVE_PREFIX,'')
+            Log.debug('Not applying enhancement returning filename: '+filename)
             return filename
         os.environ['PATH'] += ':/usr/local/bin' #TODO: remove this on prod For mac os
         enhancement_objects = []
