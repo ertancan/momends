@@ -62,14 +62,13 @@ class ThemeManagerWorker:
             _raw.data = DataManagerUtil.download_raw_data(_raw)
             _raw.save()
 
-        rand_enhancement = self.theme.enhancement_groups.filter(post_enhancement=False).filter(applicable_to=RawData.DATA_TYPE['Photo']).order_by('?')
+        rand_enhancement = self.theme.enhancement_groups.filter(post_enhancement=False).filter(applicable_to=RawData.DATA_TYPE['Photo']).order_by('?')[0]
         if not rand_enhancement: #Check if there is a theme enhancement, set final data to raw data otherwise
             outdata.final_data_path = outdata.raw.data
-            outdata.save()
             return outdata
-        rand_enhancement = rand_enhancement[0]
 
         raw_filename= outdata.raw.data
+
         if raw_filename in self.enhancement_applied_objects: #Don't apply enhancement on the same object twice
             Log.debug('Image already enhanced')
             outdata.final_data_path = self.enhancement_applied_objects[raw_filename]
