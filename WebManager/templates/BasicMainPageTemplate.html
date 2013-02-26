@@ -121,6 +121,15 @@
         var user_momend_count = {% if user.is_authenticated %} {{ user_top_momends|length }};{% else %}false;{% endif %}
         var _dialogId = 0;
         var home = '{{ home }}';
+        var animationId;
+        var momendPlaying = false;
+
+        window.onpopstate = function(e){ //Play momend if the url bar changed after create and user coming back from history
+            if(e.state){
+                playMomend(e.state.cid, e.state.type === 'i');
+            }
+        };
+
         $('body').ready(function(){
             for(var i=0;i<5;i++){
                 bgArr.push(STATIC_URL+'img/carousel'+(i+1)+'.jpg');
@@ -204,6 +213,11 @@
                         _gaq.push(['_trackEvent', 'Page', 'Momend', 'Created',seconds]);
                         creatingDialogBg.fadeOut();
                         $('#create-modal-mini').modal("hide");
+                        try{
+                            window.history.pushState({'type':'m','cid':result.cid},"", HOST_URL+'/show/m/'+result.cid);
+                        }catch(e){
+                            console.log('Different domain?');
+                        }
                         playMomend(result.cid);
                     }else{
                         _trackPageEvent('Momend', 'CreateFailed');
@@ -253,7 +267,7 @@
          * Handles fadein - fadeout animations of background images
          */
         function nextAnimation(){
-            if($('#momend-player').is(':visible')){ //Do not animate if player is active
+            if(momendPlaying){ //Do not animate if player is active
                 return;
             }
             if(lastLoaded != bgDivArr.length-1 && lastLoaded < currentBg+1){ //next item not loaded yet
@@ -432,6 +446,7 @@
         }
     }
     function playMomend(cid, isInteraction){
+        momendPlaying = true;
         var mainURL = '{% url 'momends:play-momend' 'm' 'dummy' %}';
         var momendURL = mainURL.replace('dummy', cid);
         if(isInteraction === true){
@@ -457,6 +472,7 @@
             $('#momend-player').animate({'width':0,'height':0,'top':0,'left':'35%'},500);
             setTimeout(function(){
                 playBG.fadeOut(function(){
+                    momendPlaying = false;
                     nextAnimation();
                 });
             },300);
