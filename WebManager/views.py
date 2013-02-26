@@ -44,6 +44,7 @@ class HomePageLoggedFormView(TemplateView):
         context['should_create_automatically'] = False
         providers = UserSocialAuth.objects.filter(user=self.request.user)
         context['providers'] = [pr.provider for pr in providers]
+        context['home'] = True
         return context
 
 
@@ -218,7 +219,7 @@ class CreateMomendView(View):
                 _args['is_date'] = True
                 _args['since'] = _start_date
                 _args['until'] = _finish_date
-                momend_cryptic_id = dm.create_momend(name=_momend_name, duration=30, privacy=_privacy,
+                momend_cryptic_id = dm.create_momend(name=_momend_name, duration=60, privacy=_privacy,
                     theme=Theme.objects.get(pk= _theme), **_args)
                 if momend_cryptic_id: #If created momend successfully
                     Log.info('Momend created in: '+str(time.clock() - _create_start))
