@@ -1,7 +1,5 @@
 from django.db import IntegrityError
-
-__author__ = 'goktan'
-
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
@@ -101,7 +99,7 @@ class ShowMomendView(TemplateView):
             try:
                 play_stat.save()
             except IntegrityError:
-                Log.debug('Trying to view nonexistent momend')
+                Log.debug('Trying to view nonexistent momend, so not saving play stat')
 
         return super(ShowMomendView, self).dispatch(request, *args, **kwargs)
 
@@ -115,11 +113,16 @@ class ShowMomendView(TemplateView):
 
         decoded_id = decode_id(kwargs['id'])
         if decoded_id: #Show only if id is valid
-            if kwargs['type'] == 'm':
-                _momend = Momend.objects.get(pk =decoded_id )
-            elif kwargs['type'] == 'i':
-                _momend = UserInteraction.objects.get(pk = decoded_id).momend
-            else:
+            try:
+                if kwargs['type'] == 'm':
+                    _momend = Momend.objects.get(pk =decoded_id )
+                elif kwargs['type'] == 'i':
+                    _momend = UserInteraction.objects.get(pk = decoded_id).momend
+                else:
+                    context['error'] = 1
+                    return context
+            except ObjectDoesNotExist:
+                Log.warn('Momend or interaction does not exists:('+kwargs['type']+'-'+str(decoded_id)) #TODO change to debug after introducing delete
                 context['error'] = 1
                 return context
 
