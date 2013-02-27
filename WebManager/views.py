@@ -24,7 +24,6 @@ from DataManager.DataEnrich.EnrichDataWorker import EnrichDataWorker
 from social_auth.db.django_models import UserSocialAuth
 from datetime import datetime
 import pytz
-from django.core.exceptions import ObjectDoesNotExist
 from LogManagers.Log import Log
 from django.utils import simplejson
 from django.contrib import messages
@@ -34,6 +33,11 @@ from django.conf import settings
 import traceback
 import time
 
+ERROR_TYPES = {
+    'WRONG_PARAMETER' : 0,
+    'MISSING_PARAMETER' : 1,
+    'NOT_FOUND' : 2,
+}
 class HomePageLoggedFormView(TemplateView):
     template_name = 'BasicMainPageTemplate.html'
     def get_context_data(self, **kwargs):
@@ -62,16 +66,20 @@ class MomendPlayerView(TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super(MomendPlayerView, self).get_context_data(**kwargs)
         decoded_id = decode_id(kwargs['id'])
+        _momend = None
         if decoded_id:
-            if kwargs['type'] == 'm':
-                _momend = Momend.objects.get(pk = decoded_id)
-            elif kwargs['type'] == 'i':
-                _momend = UserInteraction.objects.get(pk = decoded_id).momend
-            else:
-                context['error'] = 1
-                return context
+            try:
+                if kwargs['type'] == 'm':
+                    _momend = Momend.objects.get(pk = decoded_id)
+                elif kwargs['type'] == 'i':
+                    _momend = UserInteraction.objects.get(pk = decoded_id).momend
+                else:
+                    context['error'] = ERROR_TYPES['WRONG_PARAMETER']
+                    return context
+            except ObjectDoesNotExist:
+                context['error'] = ERROR_TYPES['NOT_FOUND']
         else:
-            context['error'] = 2 #TODO error message
+            context['error'] = ERROR_TYPES['WRONG_PARAMETER']
             return context
         context['error'] = 0
         context['momend'] = _momend
@@ -119,11 +127,11 @@ class ShowMomendView(TemplateView):
                 elif kwargs['type'] == 'i':
                     _momend = UserInteraction.objects.get(pk = decoded_id).momend
                 else:
-                    context['error'] = 1
+                    context['error'] = ERROR_TYPES['WRONG_PARAMETER']
                     return context
             except ObjectDoesNotExist:
                 Log.warn('Momend or interaction does not exists:('+kwargs['type']+'-'+str(decoded_id)) #TODO change to debug after introducing delete
-                context['error'] = 1
+                context['error'] = ERROR_TYPES['NOT_FOUND']
                 return context
 
             context['error']  = '0'
@@ -147,8 +155,8 @@ class ShowMomendView(TemplateView):
                     _tmp['original_path'] = _obj.original_path
                     _used_media.append(_tmp)
             context['used_media'] = _used_media
-        else:
-            context['error'] = 2
+        else: #If id is wrong (decoded_id is none)
+            context['error'] = ERROR_TYPES['WRONG_PARAMETER']
         return context
 
 class GetMomendView(TemplateView):
@@ -227,11 +235,11 @@ class CreateMomendView(View):
                 _args['is_date'] = True
                 _args['since'] = _start_date
                 _args['until'] = _finish_date
-                momend_cryptic_id = dm.create_momend(name=_momend_name, duration=60, privacy=_privacy,
+                momend = dm.create_momend(name=_momend_name, duration=60, privacy=_privacy,
                     theme=Theme.objects.get(pk= _theme), **_args)
-                if momend_cryptic_id: #If created momend successfully
+                if momend: #If created momend successfully
                     Log.info('Momend created in: '+str(time.clock() - _create_start))
-                    return _generate_json_response(True, 'Created momend', cid=momend_cryptic_id)
+                    return _generate_json_response(True, 'Created momend', cid=momend.cryptic_id)
                 _error_msg = dm.get_last_status()
                 return _generate_json_response(False, 'Create momend failed with error message: '+_error_msg, _error_msg)
             except Exception as e:

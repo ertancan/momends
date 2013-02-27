@@ -12,6 +12,7 @@ from LogManagers.Log import Log
 from DataManagerUtil import DataManagerUtil
 from django.db.models import Q
 from django.conf import settings
+import traceback
 import datetime
 import pytz
 
@@ -29,40 +30,52 @@ class DataManager:
     def create_momend(self, name, duration,
                       privacy=Momend.PRIVACY_CHOICES['Private'], inc_photo=True, inc_status=True, inc_checkin=True,
                       enrichment_method=None, theme=None, scenario=None, **kwargs):
-        _time_limit = datetime.datetime.now().replace(tzinfo= pytz.UTC) - datetime.timedelta(minutes=15)
-        ##if Momend.objects.filter(owner = self.user).filter(thumbnail=None).filter(create_date__gt = _time_limit ).count() > 0:
-        ##    self.status = 'You are creating another momend right now. Please wait until it is ready.'
-        ##    return None
-        raw_data = self.collect_user_data(inc_photo, inc_status, inc_checkin, **kwargs)
-        if len(raw_data) < 15:
-            self.status = 'Could not collect enough data to create a momend! Please select a wider time frame'
-            return None
-        enriched_data = self.enrich_user_data(raw_data, enrichment_method)
-        self.momend = Momend(owner=self.user, name=name, privacy=privacy)
-        if kwargs['is_date']:
-            try:
-                self.momend.momend_start_date = kwargs['since']
-                self.momend.momend_end_date = kwargs['until']
-            except KeyError:
-                self.status = 'Missing parameters for date option'
+        try:
+            _time_limit = datetime.datetime.now().replace(tzinfo= pytz.UTC) - datetime.timedelta(minutes=15)
+            if Momend.objects.filter(owner = self.user).filter(thumbnail=None).filter(create_date__gt = _time_limit ).count() > 0:
+                self.status = 'You are creating another momend right now. Please wait until it is ready.'
                 return None
-        else:
-            self.status = 'Not supported yet!'
+
+            self.momend = Momend(owner=self.user, name=name, privacy=privacy)
+            if kwargs['is_date']:
+                try:
+                    self.momend.momend_start_date = kwargs['since']
+                    self.momend.momend_end_date = kwargs['until']
+                except KeyError:
+                    self.status = 'Missing parameters for date option'
+                    return None
+            else:
+                self.status = 'Not supported yet!'
+                return None
+            self.momend.save()
+
+            raw_data = self.collect_user_data(inc_photo, inc_status, inc_checkin, **kwargs)
+            if len(raw_data) < 15:
+                self.status = 'Could not collect enough data to create a momend! Please select a wider time frame'
+                return None
+
+            enriched_data = self.enrich_user_data(raw_data, enrichment_method)
+
+            animation_worker = AnimationManagerWorker(self.momend)
+            generated_layer, duration = animation_worker.generate_output(enriched_data, duration, theme, scenario)
+            if duration == 0 or not generated_layer:
+                self.status = 'Could not create momend! Please try again.'
+                self.momend.delete()
+                return None
+            self._create_momend_thumbnail()
+            self.momend.save()
+        except Exception as e:
+            self.status = 'Error while creating the momend. Please try again!'
+            Log.error(traceback.format_exc())
+            if self.momend.id:
+                self.momend.delete()
             return None
-        self.momend.save()
-        animation_worker = AnimationManagerWorker(self.momend)
-        generated_layer, duration = animation_worker.generate_output(enriched_data, duration, theme, scenario)
-        if duration == 0 or not generated_layer:
-            self.status = 'Could not create momend! Please try again.'
-            return None
-        self._create_momend_thumbnail()
-        self.momend.save()
 
         score = MomendScore(momend = self.momend, provider_score = self._calculate_provider_score())
         score.save()
         DataManagerUtil.send_momend_created_email(self.momend)
         self.status = 'Success'
-        return self.momend.cryptic_id
+        return self.momend
 
     def collect_user_data(self, inc_photo, inc_status, inc_checkin, **kwargs): #TODO concatenation fail if cannot connect to facebook or twitter (fixed on status)
         _raw_data = []
