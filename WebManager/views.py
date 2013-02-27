@@ -1,3 +1,5 @@
+from django.db import IntegrityError
+
 __author__ = 'goktan'
 
 from django.contrib.auth.models import User
@@ -96,7 +98,10 @@ class ShowMomendView(TemplateView):
                 play_stat.redirect_url = 'Direct'
             if not request.user.is_anonymous():
                 play_stat.user = request.user
-            play_stat.save()
+            try:
+                play_stat.save()
+            except IntegrityError:
+                Log.debug('Trying to view nonexistent momend')
 
         return super(ShowMomendView, self).dispatch(request, *args, **kwargs)
 
