@@ -74,23 +74,26 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         for obj in result['data']:
             if not RawData.objects.filter(original_id=obj['id']).filter(provider=provider).exists():
                 _raw = RawData()
-                _raw.original_id = obj['id']
                 _raw.owner = user
                 _raw.type=RawData.DATA_TYPE['Photo']
                 _raw.provider = provider
-                _raw.original_path = obj['images'][0]['source']
-                if 'name' in obj:
-                    _raw.title = obj['name'][:255] #first 255 chars of title
-                if 'likes' in obj:
-                    _raw.like_count = len(obj['likes'])
-                if 'sharedposts' in obj:
-                    _raw.share_count = len(obj['sharedposts'])
-                if 'comments' in obj:
-                    _raw.comment_count = len(obj['comments'])
-                _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
-                #TODO error handling (goktan)
-                #_raw.thumbnail = DataManagerUtil.create_photo_thumbnail(settings.SAVE_PREFIX + _raw.data, str(_raw)+ '_thumb'+ _ext_part)
-                Log.debug(_raw)
+                try:
+                    _raw.original_id = obj['id']
+                    _raw.original_path = obj['images'][0]['source']
+                    if 'name' in obj:
+                        _raw.title = obj['name'][:255] #first 255 chars of title
+                    if 'likes' in obj:
+                        _raw.like_count = len(obj['likes'])
+                    if 'sharedposts' in obj:
+                        _raw.share_count = len(obj['sharedposts'])
+                    if 'comments' in obj:
+                        _raw.comment_count = len(obj['comments'])
+                    _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
+                    #TODO error handling (goktan)
+                    #_raw.thumbnail = DataManagerUtil.create_photo_thumbnail(settings.SAVE_PREFIX + _raw.data, str(_raw)+ '_thumb'+ _ext_part)
+                    Log.debug(_raw)
+                except:
+                    Log.error('Could not fetch Facebook photo')
             else:
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
                 Log.debug(_raw.original_id + ' found in DB')
@@ -126,15 +129,18 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 _raw.owner = user
                 _raw.type=RawData.DATA_TYPE['Status']
                 _raw.provider = provider
-                _raw.data = obj['message']
-                if 'likes' in obj:
-                    _raw.like_count = len(obj['likes'])
-                if 'sharedposts' in obj:
-                    _raw.share_count = len(obj['sharedposts'])
-                if 'comments' in obj:
-                    _raw.comment_count = len(obj['comments'])
-                _raw.create_date = datetime.datetime.strptime(obj['updated_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
-                _raw.original_id = obj['id']
+                try:
+                    _raw.data = obj['message']
+                    if 'likes' in obj:
+                        _raw.like_count = len(obj['likes'])
+                    if 'sharedposts' in obj:
+                        _raw.share_count = len(obj['sharedposts'])
+                    if 'comments' in obj:
+                        _raw.comment_count = len(obj['comments'])
+                    _raw.create_date = datetime.datetime.strptime(obj['updated_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
+                    _raw.original_id = obj['id']
+                except:
+                    Log.error('Could not fetch Facebook status')
                 _return_data.append(_raw)
             else:
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
@@ -206,14 +212,17 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 _raw.owner = user
                 _raw.type = RawData.DATA_TYPE['Checkin']
                 _raw.provider = provider
-                _raw.data = obj['place']['name']
-                if 'likes' in obj:
-                    _raw.like_count = len(obj['likes'])
-                if 'comments' in obj:
-                    _raw.comment_count = len(obj['comments'])
-                _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
-                _raw.original_id = obj['id']
-                _return_data.append(_raw)
+                try:
+                    _raw.data = obj['place']['name']
+                    if 'likes' in obj:
+                        _raw.like_count = len(obj['likes'])
+                    if 'comments' in obj:
+                        _raw.comment_count = len(obj['comments'])
+                    _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
+                    _raw.original_id = obj['id']
+                    _return_data.append(_raw)
+                except:
+                    Log.error('Could not fetch Facebook checkin')
             else:
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
                 Log.debug( _raw.original_id + ' found in DB')
