@@ -235,11 +235,11 @@ class CreateMomendView(View):
                 _args['is_date'] = True
                 _args['since'] = _start_date
                 _args['until'] = _finish_date
-                momend_cryptic_id = dm.create_momend(name=_momend_name, duration=60, privacy=_privacy,
+                momend = dm.create_momend(name=_momend_name, duration=60, privacy=_privacy,
                     theme=Theme.objects.get(pk= _theme), **_args)
-                if momend_cryptic_id: #If created momend successfully
+                if momend: #If created momend successfully
                     Log.info('Momend created in: '+str(time.clock() - _create_start))
-                    return _generate_json_response(True, 'Created momend', cid=momend_cryptic_id)
+                    return _generate_json_response(True, 'Created momend', cid=momend.cryptic_id)
                 _error_msg = dm.get_last_status()
                 return _generate_json_response(False, 'Create momend failed with error message: '+_error_msg, _error_msg)
             except Exception as e:
