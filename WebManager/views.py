@@ -1,3 +1,4 @@
+from django.core.mail import EmailMultiAlternatives
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
@@ -14,7 +15,7 @@ from DataManager.DataManager import DataManager
 from DataManager.models import Momend
 from DataManager.models import DeletedMomend
 from DataManager.models import RawData
-from DataManager.models import encode_id, decode_id
+from DataManager.models import  decode_id
 from Outputs.AnimationManager.models import UserInteraction
 from Outputs.AnimationManager.models import DeletedUserInteraction
 from Outputs.AnimationManager.models import OutData
@@ -26,7 +27,6 @@ from datetime import datetime
 import pytz
 from LogManagers.Log import Log
 from django.utils import simplejson
-from django.contrib import messages
 from django.core.files.uploadedfile import UploadedFile
 from DataManager.DataManagerUtil import DataManagerUtil
 from django.conf import settings
@@ -221,7 +221,7 @@ class CreateMomendView(View):
     def post(self, request, *args, **kwargs):
         try:
             Log.debug('Create momend request')
-            _create_start = time.clock()
+            _create_start = time.time()
             _momend_name = request.POST['momend_name']
             _start_date =  datetime.strptime(request.POST['start_date'], '%d %b, %Y').replace(tzinfo= pytz.UTC)
             _finish_date = datetime.strptime(request.POST['finish_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
@@ -243,13 +243,13 @@ class CreateMomendView(View):
                 _error_msg = dm.get_last_status()
                 return _generate_json_response(False, 'Create momend failed with error message: '+_error_msg, _error_msg)
             except Exception as e:
-                Log.error(traceback.format_exc())
+                _log_critical_error('Exception while creating the momend', True, request.POST, request.user, traceback.format_exc())
                 return _generate_json_response(False, 'Error while creating momend: '+str(e), 'An error occurred. Please try again') #Could be any error
         except KeyError as e:
             Log.error(traceback.format_exc())
             return _generate_json_response(False, 'Error while creating momend: '+str(e), str(e)) #One of the parameters is missing
         except Exception as e:
-            Log.error(traceback.format_exc())
+            _log_critical_error('Impossible exception occurred while creating momend', True, request.POST, request.user, traceback.format_exc())
             return _generate_json_response(False, 'Error while creating momend (impossible): '+str(e), 'An error occurred. Please try again after a while')
 
 class DeleteMomendView(View):
@@ -394,3 +394,24 @@ def _generate_json_response(success, log_message=None, user_msg=None, **kwargs):
         _response[key] = value
     json = simplejson.dumps(_response)
     return HttpResponse(json)
+
+def _log_critical_error(message, send_mail, parameters=None, request_user=None, stack_trace=None):
+    Log.fatal(message+':'+str(parameters))
+    if send_mail:
+        subject = 'Error on momends!'
+
+        mail_message = 'An error occurred:\n'
+        if request_user:
+            mail_message += 'While processing the request for '+request_user.username+'\n'
+        mail_message += message + '\n'
+        if parameters:
+            mail_message += 'Request parameters were:' +str(parameters)+'\n'
+        if stack_trace:
+            mail_message += str(stack_trace)
+
+        msg = EmailMultiAlternatives(subject, mail_message, settings.DEFAULT_FROM_EMAIL, settings.ERROR_EMAIL_RECEIVERS)
+        Log.debug('Sending mail with this body: '+mail_message)
+        try:
+            msg.send()
+        except Exception as e:
+            Log.error('Could not send error mail :) ->'+str(e))
