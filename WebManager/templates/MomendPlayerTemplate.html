@@ -96,6 +96,7 @@
     <script src="{{ STATIC_URL }}jquery.transit.min.js"></script>
     <script src="{{ STATIC_URL }}jquery.easing.1.3.js"></script>
     <script src="{{ STATIC_URL }}jquery.animate-shadow.min.js"></script>
+    <!--<script src="{{ STATIC_URL }}jquery.box2d.min.js"></script> -->
     <script src="{{ STATIC_URL }}jquery.cookie.js"></script>
     <script src="{{ STATIC_URL }}animation.js"></script>
     <script src="{{ STATIC_URL }}momend.js"></script>
@@ -150,7 +151,7 @@
 
         }
         function playerInit(){
-            momendManager = new Momend();
+            momendManager = Momend;
             momendManager.init();
             fetchMomendData();
             if ( window.self === window.top ) {

@@ -209,27 +209,27 @@ var JSAnimate = (function(){
         _node['startTime'] = new Date().getTime();
         //if(_level == 4){
         if(typeof _animation['name'] !=='undefined'){
-            console.log('starting:'+_animation['name']+' on layer:'+_level+ ' called by:');
+            //console.log('starting:'+_animation['name']+' on layer:'+_level+ ' called by:');
             if(typeof _caller === "string"){
-                console.log(_caller)
+                //console.log(_caller)
             }else{
-                console.dir(_caller);
+                //console.dir(_caller);
             }
         }else{
-            console.log('starting:'+_animation['type']+' on layer:'+_level+  ' called by:');
+            //console.log('starting:'+_animation['type']+' on layer:'+_level+  ' called by:');
             if(typeof _caller === "string"){
-                console.log(_caller)
+                //console.log(_caller)
             }else{
-                console.dir(_caller);
+                //console.dir(_caller);
             }
         }
-        console.dir(_animation);
+        //console.dir(_animation);
         //}
         if(_animation['type']==='sleep'){
             currentAnimation[_level].push(_node);
-            console.log('Layer '+_level+' now sleeping for '+_animation['duration']);
+            //console.log('Layer '+_level+' now sleeping for '+_animation['duration']);
             _animation['sleepTimer'] = setTimeout(function(){
-                console.log('Layer '+_level+ ' sleep finished');
+                //console.log('Layer '+_level+ ' sleep finished');
                 __removeNodeFromCurrentQueue(_level,_node);
                 _nextAnimation(_level,_node);
             },_animation['duration']);
@@ -278,6 +278,9 @@ var JSAnimate = (function(){
                     $(_obj[0].lastChild).css('box-shadow', _shadowStr); //Apply to image directly not to the div
                 }
             }
+            //if(_level ==1 && _animation['used_object_type'].indexOf('STATUS') == -1){ //Only first layer objects but statuses
+            //    $(_obj[0].lastChild).box2d({'density':0.2,'x-velocity':-1,'debug':true});
+            //}
             for(var key in _animation['anim']){
                 if(typeof _animation['anim'][key] === 'function'){
                     _animation['anim'][key]=_animation['anim'][key]();
@@ -291,7 +294,7 @@ var JSAnimate = (function(){
             if('easing' in _animation){
                 _easing = _animation['easing'];
             }
-            if(_shadow){
+            if(_shadow){ //Handling animated shadow
                 var _x = null, _y = null;
                 if(_animation['anim']['left']){ //If animating on x axis
                     _x = _animation['anim']['left'];
@@ -316,7 +319,7 @@ var JSAnimate = (function(){
                 }
                 if(_x || _y){ //If one of them animating
                     var _shadowStr = __generateShadowStr(_obj, _shadow, _x, _y);
-                    console.log('shadow animation for moving obj:'+_shadowStr);
+                    //console.log('shadow animation for moving obj:'+_shadowStr);
                     if(_animation['extended_animation']){ //To support custom cubic-bezier easing on shadows
                         $(_obj[0].lastChild).transition({'box-shadow': _shadowStr}, _duration, _easing);
                     }else{
@@ -365,15 +368,15 @@ var JSAnimate = (function(){
                     _hideAnimation.push({'animation':{'type':'trigger', 'target':_level, 'waitPrev':true, 'name':'trigger main queue'}});
                 }
                 __addInteractionAnimationLayerForObject(_hideAnimation);
-                console.log('added hide animation:');
-                console.dir(_hideAnimation)
+                //console.log('added hide animation:');
+                //console.dir(_hideAnimation)
                 return;
             }else{
-                console.log('Hiding now!!!');
-                console.dir(_obj);
-                console.log('layer:'+_level);
+                //console.log('Hiding now!!!');
+                //console.dir(_obj);
+                //console.log('layer:'+_level);
                 _obj.hide();
-                console.log('Trigger next:'+triggerNext);
+                //console.log('Trigger next:'+triggerNext);
             }
         }else if(_type==='block'){
             if(typeof _target != 'number'){
@@ -424,7 +427,7 @@ var JSAnimate = (function(){
                     _obj.jPlayer('volume', 0);
                 }
             }else{
-                console.log('Music not ready yet, waiting');
+                //console.log('Music not ready yet, waiting');
                 nodeWaitingToPlay=_node;
                 _pause();
                 return;
@@ -464,7 +467,7 @@ var JSAnimate = (function(){
      */
     function _nextAnimation(_level, _prev){
         if(currentAnimation.length!==animationQueue.length){
-            console.log('INCONSISTENCY!!!');
+            //console.log('INCONSISTENCY!!!');
         }
         if(animationQueue[_level].length===0){
             if(_level === 1){
@@ -488,8 +491,8 @@ var JSAnimate = (function(){
                 _nextAnimation(_level, 'Wait Prev False');
             }
         }catch(error){
-            console.log('Animation error on level:'+_level+' : '+error);
-            console.dir(animationQueue[_level][0]);
+            //console.log('Animation error on level:'+_level+' : '+error);
+            //console.dir(animationQueue[_level][0]);
         }
     }
     /**
@@ -660,7 +663,7 @@ var JSAnimate = (function(){
         }
         var click_time = new Date().getTime();
         var _node = __findObjectNode(_obj);
-        console.dir(_node);
+        //console.dir(_node);
         var click_animation = _node['animation']['click_animation'];
         for (var i = 0; i<click_animation['animations'].length;i++){
             click_animation['animations'][i]['anim'] = _parseStringToDict(click_animation['animations'][i]['anim']);
@@ -745,8 +748,8 @@ var JSAnimate = (function(){
      * @private
      */
     function __findObjectNode(_obj){
-        console.log('Looking for:');
-        console.log(_obj[0].id);
+        //console.log('Looking for:');
+        //console.log(_obj[0].id);
         var time = new Date().getTime();
         for(var i=0;i<_originalAnimationQueue.length;i++){
             for(var j=0;j<_originalAnimationQueue[i].length;j++){
@@ -755,13 +758,13 @@ var JSAnimate = (function(){
                 }
                 if(_originalAnimationQueue[i][j]['animation']['object'][0].children[0].id ===_obj[0].id){
                     var foundTime=new Date().getTime()
-                    console.log('Found in:'+(foundTime-time));
+                    //console.log('Found in:'+(foundTime-time));
                     return _originalAnimationQueue[i][j];
                 }
             }
         }
         var finishTime=new Date().getTime();
-        console.log('Node not found in:'+(finishTime-time));
+        //console.log('Node not found in:'+(finishTime-time));
     }
 
     /**
@@ -840,7 +843,7 @@ var JSAnimate = (function(){
             }else if(_targetX.indexOf('%')>0){ //Value is in pixels
                 _x = parseFloat(_targetX.replace('%','')) * screen.outerWidth() / 100; //Change % into px
             }else{
-                console.log('Not supported metric, expecting:int, px or %');
+                //console.log('Not supported metric, expecting:int, px or %');
                 return '';
             }
         }
@@ -854,7 +857,7 @@ var JSAnimate = (function(){
             }else if(_targetY.indexOf('%')>0){ //Value is in pixels
                 _y = parseFloat(_targetY.replace('%','')) * screen.outerHeight() / 100; //Change % into px
             }else{
-                console.log('Not supported metric, expecting:int, px or %');
+                //console.log('Not supported metric, expecting:int, px or %');
                 return '';
             }
         }
@@ -932,4 +935,4 @@ var JSAnimate = (function(){
         setShadowData : _setShadowData,
         isPlaying : _isPlaying
     }
-});
+}());

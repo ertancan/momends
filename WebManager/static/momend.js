@@ -1,5 +1,5 @@
 var Momend = (function(){
-    var _jsAnimate = new JSAnimate();
+    var _jsAnimate = JSAnimate;
     var _momendData;
     var _shadowData;
     var fullscreen = false;
@@ -8,6 +8,7 @@ var Momend = (function(){
     var totalObjects = 0;
     var loadedObjects = 0;
     var _loadCallback;
+    var musicObjects;
 
     function init(){
         _jsAnimate.initAnimation();
@@ -37,6 +38,10 @@ var Momend = (function(){
             }
         });
         setTimeout(function(){
+            for(var i = 0; i< musicObjects.length; i++){
+                musicObjects[i].jPlayer('play');
+                musicObjects[i].jPlayer('pause');
+            }
             _jsAnimate.startAllQueues();
         },500);
     }
@@ -99,6 +104,7 @@ var Momend = (function(){
     function _createObjectsFromData(load_callback){
         _loadCallback = load_callback;
         var created_objects = {};
+        musicObjects = [];
         _shadowData = {};
         for(var i = 0;i<_momendData['animation_layers'].length;i++){
             for(var j = 0;j < _momendData['animation_layers'][i].length;j++){
@@ -248,14 +254,14 @@ var Momend = (function(){
                         case '{{RAND_THEME_MUSIC}}':
                             totalObjects++; //Player should wait for item to load
                             var _id = 'music'+i+''+j;
-                            jQuery('<div/>',{
+                            var musicObj = jQuery('<div/>',{
                                 id: _id,
                                 class:'jp-jplayer'
                             }).appendTo('.music');
-                            var music_obj = $('#music'+i+''+j);
-                            music_obj[0]['filepath'] = node['final_data_path'];
+                            musicObjects.push(musicObj);
+                            musicObj[0]['filepath'] = node['final_data_path'];
                             var _parsed_paths = __parseMusicSources(node['final_data_path']);
-                            music_obj.jPlayer({
+                            musicObj.jPlayer({
                                 ready: function (event){
                                     var paths = __parseMusicSources(event.delegateTarget['filepath']);
                                     var _keys = Object.keys(paths);
@@ -280,7 +286,7 @@ var Momend = (function(){
                                 volume: 0.1,
                                 loop: true
                             });
-                            created_objects[node['final_data_path']] = music_obj;
+                            created_objects[node['final_data_path']] = musicObj;
                         case '{{THEME_MUSIC}}':
                         case '{{USER_MUSIC}}':
                             node['animation']['object'] = created_objects[node['final_data_path']];
@@ -415,7 +421,7 @@ var Momend = (function(){
         jsAnimate : _jsAnimate,
         isPlaying : _jsAnimate.isPlaying
     }
-});
+}());
 // !! UTILITY !!
 
 /**
