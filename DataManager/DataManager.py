@@ -1,3 +1,5 @@
+from django.db import IntegrityError
+
 __author__ = 'goktan'
 from models import Provider
 import importlib
@@ -111,7 +113,10 @@ class DataManager:
         Log.debug('status:'+str(self.status))
         Log.debug('Collected Objects:'+str(_collect_count))
         for _obj in _raw_data:
-            _obj.save()
+            try:
+                _obj.save()
+            except IntegrityError as e:
+                Log.debug('Raw data save error:'+str(e))
 
         return _raw_data
 
