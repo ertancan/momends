@@ -70,10 +70,20 @@ class ThemeDataManager(DataManagerModel):
         return self._last_obj
 
     def getRandData(self, type):
-        rand_index = random.randint(0,len(self.data[type])-1)
-        self.random_indexes[type] = rand_index
+        data_count = len(self.data[type])
+        if data_count == 0:
+            self._last_obj = None
+        elif data_count == 1:
+            self._last_obj = self.data[type][0]
+        else:
+            rand_index = self.random_indexes[type]
+            while rand_index == self.random_indexes[type]:
+                rand_index = random.randint(0,len(self.data[type])-1)
 
-        self._last_obj = self.data[type][rand_index]
+            self.random_indexes[type] = rand_index
+
+            self._last_obj = self.data[type][rand_index]
+
         return self._last_obj
 
     def replace_parameter_keywords(self, parameter):
