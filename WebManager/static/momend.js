@@ -283,8 +283,7 @@ var Momend = (function(){
                                 swfPath: STATIC_URL,
                                 supplied: Object.keys(_parsed_paths).toString(),
                                 wmode: 'window',
-                                volume: 0.1,
-                                preload: 'auto'
+                                volume: 0.1
                             });
                             created_objects[node['final_data_path']] = musicObj;
                         case '{{THEME_MUSIC}}':
