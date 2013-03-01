@@ -419,6 +419,11 @@ var JSAnimate = (function(){
 
         //Music animations below
         else if(_type === 'music-play'){
+            if(isiPad){
+                if(currentMusicObj){
+                    currentMusicObj.jPlayer('stop'); //iOS won't let more than 1 tracks to be played
+                }
+            }
             currentMusicLayer = _level;
             currentMusicObj = _obj;
             if(readyMusicCount>0){ //If the music player object loaded and ready TODO check first music instead of loaded count
@@ -628,13 +633,6 @@ var JSAnimate = (function(){
         if(isFadeIn){
             var targetVol = currentVol + step;
         }else{
-            if(isiPad){ //Since iOS don't allow more than 1 tracks disable fadeout animation
-                _obj.jPlayer('stop');
-                if(triggerNextAfterFinish){
-                    _nextAnimation(currentMusicLayer, 'music fade');
-                }
-                return;
-            }
             var targetVol = currentVol - step;
         }
         _obj.jPlayer('volume',targetVol);
