@@ -31,6 +31,8 @@ var JSAnimate = (function(){
 
     var volume;
 
+    var isiPad = navigator.userAgent.match(/iPad/i) != null;
+
     function _initAnimation(){
         $.cssEase._default = 'linear';
         $(window).resize(function(){
@@ -210,14 +212,14 @@ var JSAnimate = (function(){
         //if(_level == 4){
         if(typeof _animation['name'] !=='undefined'){
             //console.log('starting:'+_animation['name']+' on layer:'+_level+ ' called by:');
-            if(typeof _caller === "string"){
+            if(typeof _caller === 'string'){
                 //console.log(_caller)
             }else{
                 //console.dir(_caller);
             }
         }else{
             //console.log('starting:'+_animation['type']+' on layer:'+_level+  ' called by:');
-            if(typeof _caller === "string"){
+            if(typeof _caller === 'string'){
                 //console.log(_caller)
             }else{
                 //console.dir(_caller);
@@ -420,7 +422,7 @@ var JSAnimate = (function(){
             currentMusicLayer = _level;
             currentMusicObj = _obj;
             if(readyMusicCount>0){ //If the music player object loaded and ready TODO check first music instead of loaded count
-                _obj.jPlayer("play");
+                _obj.jPlayer('play');
                 nodeWaitingToPlay=null;
                 readyMusicCount--;
                 if(volume === 0){
@@ -433,18 +435,18 @@ var JSAnimate = (function(){
                 return;
             }
         }else if(_type === 'music-pause'){
-            _obj.jPlayer("pause");
+            _obj.jPlayer('pause');
         }else if(_type ==='music-stop'){
-            _obj.jPlayer("stop");
+            _obj.jPlayer('stop');
         }else if(_type === 'music-volume'){
             var vol = parseFloat(_target);
             if(!isNaN(vol)){
-                _obj.jPlayer("volume",vol*(volume/100)); //proportional to the volume slider's current value
+                _obj.jPlayer('volume',vol*(volume/100)); //proportional to the volume slider's current value
             }
         }
         else if(_type === 'music-fadein'){
             if(volume!== 0){
-                var currentVol = _obj.jPlayer("option","volume");
+                var currentVol = _obj.jPlayer('option','volume');
                 __musicFade(_obj, true, ((volume/100)-currentVol)/(_duration/MUSIC_ANIMATION_INTERVAL), triggerNext);
                 triggerNext = false; //Do not trigger next before music fade animation finishes.
             }
@@ -622,13 +624,20 @@ var JSAnimate = (function(){
      * @private
      */
     function __musicFade(_obj, isFadeIn, step, triggerNextAfterFinish){
-        var currentVol = _obj.jPlayer("option","volume");
+        var currentVol = _obj.jPlayer('option','volume');
         if(isFadeIn){
             var targetVol = currentVol + step;
         }else{
+            if(isiPad){ //Since iOS don't allow more than 1 tracks disable fadeout animation
+                _obj.jPlayer('stop');
+                if(triggerNextAfterFinish){
+                    _nextAnimation(currentMusicLayer, 'music fade');
+                }
+                return;
+            }
             var targetVol = currentVol - step;
         }
-        _obj.jPlayer("volume",targetVol);
+        _obj.jPlayer('volume',targetVol);
         if((isFadeIn && targetVol + step  <= (volume/100) ) //Fade-in animation and not completed yet
             || (!isFadeIn && targetVol - step >=0)){ //Fade-out animation and not completed yet
             setTimeout(function(){
