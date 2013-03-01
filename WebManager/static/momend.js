@@ -8,7 +8,6 @@ var Momend = (function(){
     var totalObjects = 0;
     var loadedObjects = 0;
     var _loadCallback;
-    var musicObjects;
 
     function init(){
         _jsAnimate.initAnimation();
@@ -38,10 +37,6 @@ var Momend = (function(){
             }
         });
         setTimeout(function(){
-            for(var i = 0; i< musicObjects.length; i++){
-                musicObjects[i].jPlayer('play');
-                musicObjects[i].jPlayer('pause');
-            }
             _jsAnimate.startAllQueues();
         },500);
     }
@@ -104,7 +99,6 @@ var Momend = (function(){
     function _createObjectsFromData(load_callback){
         _loadCallback = load_callback;
         var created_objects = {};
-        musicObjects = [];
         _shadowData = {};
         for(var i = 0;i<_momendData['animation_layers'].length;i++){
             for(var j = 0;j < _momendData['animation_layers'][i].length;j++){
@@ -258,7 +252,6 @@ var Momend = (function(){
                                 id: _id,
                                 class:'jp-jplayer'
                             }).appendTo('.music');
-                            musicObjects.push(musicObj);
                             musicObj[0]['filepath'] = node['final_data_path'];
                             var _parsed_paths = __parseMusicSources(node['final_data_path']);
                             musicObj.jPlayer({
@@ -283,8 +276,7 @@ var Momend = (function(){
                                 swfPath: STATIC_URL,
                                 supplied: Object.keys(_parsed_paths).toString(),
                                 wmode: 'window',
-                                volume: 0.1,
-                                loop: true
+                                volume: 0.1
                             });
                             created_objects[node['final_data_path']] = musicObj;
                         case '{{THEME_MUSIC}}':
