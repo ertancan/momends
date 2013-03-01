@@ -284,7 +284,7 @@ var Momend = (function(){
                                 supplied: Object.keys(_parsed_paths).toString(),
                                 wmode: 'window',
                                 volume: 0.1,
-                                preload: auto
+                                preload: 'auto'
                             });
                             created_objects[node['final_data_path']] = musicObj;
                         case '{{THEME_MUSIC}}':
