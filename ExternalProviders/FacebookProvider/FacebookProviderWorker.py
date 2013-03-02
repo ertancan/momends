@@ -125,11 +125,15 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         _return_data= []
         for obj in result['data']:
             if not RawData.objects.filter(original_id=obj['id']).filter(provider=provider).exists():
-                _raw = RawData()
-                _raw.owner = user
-                _raw.type=RawData.DATA_TYPE['Status']
-                _raw.provider = provider
                 try:
+                    _statusText = obj['message']
+                    if len(_statusText) > 150:
+                        Log.debug('Dropping too long user status')
+                        continue
+                    _raw = RawData()
+                    _raw.owner = user
+                    _raw.type=RawData.DATA_TYPE['Status']
+                    _raw.provider = provider
                     _raw.data = obj['message']
                     if 'likes' in obj:
                         _raw.like_count = len(obj['likes'])
