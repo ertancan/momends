@@ -54,6 +54,7 @@ class DataManager:
             raw_data = self.collect_user_data(inc_photo, inc_status, inc_checkin, **kwargs)
             if len(raw_data) < 15:
                 self.status = 'Could not collect enough data to create a momend! Please select a wider time frame'
+                self.momend.delete()
                 return None
 
             enriched_data = self.enrich_user_data(raw_data, enrichment_method)
