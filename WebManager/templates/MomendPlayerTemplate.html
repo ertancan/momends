@@ -32,9 +32,12 @@
         <div class="momend-player">
             <div class="momend-button-group">
                 <button id="play-toggle" class="icon-pause player-button"></button>
-                <div id="volume-slider"></div>
+                <div id="volume-group" class="momend-button-group">
+                    <i class="icon-volume-up player-button" id="volume-button"></i>
+                    <div id="volume-slider"></div>
+                </div>
             </div>
-            <div class="momend-button-group right-group">
+            <div class="momend-button-group" id="right-group">
                 <button class="icon-heart player-button" style="display: none" id="button-like"></button>
                 <button class="icon-share player-button" id="button-share"></button>
                 <button class="icon-fullscreen player-button" href="#" id="button-fullscreen"></button>
@@ -162,12 +165,14 @@
                 _value = 100;
             }else{
                 momendManager.jsAnimate.volumeSliderChanged(_value);
+                _handleVolumeIcon(_value);
             }
             $('#volume-slider').slider({
                 min : 0,
                 max : 100,
                 value : _value,
                 slide : function(event, obj){
+                    _handleVolumeIcon(obj.value);
                     $.cookie('volume-slider-value',obj.value, {path: '/' });
                     momendManager.jsAnimate.volumeSliderChanged(obj.value);
                 }
@@ -175,6 +180,13 @@
             var pauseButton = $('#play-toggle');
             pauseButton.bind('click', momendManager.jsAnimate.pause);
 
+            var volume_group = $('#volume-group');
+            volume_group.mouseenter(function(){
+                $(this).animate({'width': 120},300);
+            });
+            volume_group.mouseleave(function(){
+                $(this).animate({'width': 20},300);
+            });
             prepareButtons();
         }
         FB.init({appId: "125999474230740", status: true, cookie: true});
@@ -296,6 +308,22 @@
                 }
 
             });
+        }
+        function _handleVolumeIcon(val){
+            var volumeButton = $('#volume-button');
+            if(val === 0){
+                volumeButton.removeClass('icon-volume-down');
+                volumeButton.removeClass('icon-volume-up');
+                volumeButton.addClass('icon-volume-off');
+            }else if(val < 50){
+                volumeButton.removeClass('icon-volume-off');
+                volumeButton.removeClass('icon-volume-up');
+                volumeButton.addClass('icon-volume-down');
+            }else{
+                volumeButton.removeClass('icon-volume-off');
+                volumeButton.removeClass('icon-volume-down');
+                volumeButton.addClass('icon-volume-up');
+            }
         }
         function _closeShareDialog(tooltip){
             tooltip.animate({

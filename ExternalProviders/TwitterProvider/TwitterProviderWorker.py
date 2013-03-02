@@ -70,9 +70,15 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
         api=tweepy.API(auth)
         _return_data = []
         for i in range(1,16):
-            result=api.user_timeline(count=200,page=i)
+            try:
+            result=api.user_timeline(count=200, page=i)
+            except Exception, e:
+                Log.error('Twitter data collect error')
+                return _return_data
+
             if len(result) == 0:
                 return _return_data
+                
             for tweet in result:
                 if since<tweet.created_at.replace(tzinfo=pytz.UTC)<until:
                     if not RawData.objects.filter(original_id=tweet.id_str).filter(provider=provider).exists():
