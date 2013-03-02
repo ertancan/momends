@@ -10,10 +10,10 @@ import pytz
 from LogManagers.Log import Log
 from social_auth.db.django_models import UserSocialAuth
 
-class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker):
 
+class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker):
     def collect_photo(self, user, **kwargs):
-        _return_data = [] #TODO exceptions here if cannot connect to facebook
+        _return_data = []  # TODO exceptions here if cannot connect to facebook
         if kwargs['is_date']:
             _return_data += self._collect_photo_by_date(user, kwargs['since'], kwargs['until'])
         if kwargs.get('item_id', None):
@@ -60,14 +60,13 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
             raise NotImplementedError()
         return _return_data
 
-
     def _collect_photo_by_date(self, user, since, until):
-        access_token=self._get_access_token(user)
+        access_token = self._get_access_token(user)
         api = facebook.GraphAPI(access_token)
         provider = self.getProvider()
         try:
-            result=api.get_connections('me', 'photos', limit=200, since=str(since), until=str(until),
-                fields = 'likes.limit(500),comments.limit(500),source,name,sharedposts,images')
+            result = api.get_connections('me', 'photos', limit=200, since=str(since), until=str(until),
+                                         fields='likes.limit(500),comments.limit(500),source,name,sharedposts,images')
         except:
             return None
         _return_data = []
@@ -75,20 +74,20 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
             if not RawData.objects.filter(original_id=obj['id']).filter(provider=provider).exists():
                 _raw = RawData()
                 _raw.owner = user
-                _raw.type=RawData.DATA_TYPE['Photo']
+                _raw.type = RawData.DATA_TYPE['Photo']
                 _raw.provider = provider
                 try:
                     _raw.original_id = obj['id']
                     _raw.original_path = obj['images'][0]['source']
                     if 'name' in obj:
-                        _raw.title = obj['name'][:255] #first 255 chars of title
+                        _raw.title = obj['name'][:255]  # first 255 chars of title
                     if 'likes' in obj:
                         _raw.like_count = len(obj['likes'])
                     if 'sharedposts' in obj:
                         _raw.share_count = len(obj['sharedposts'])
                     if 'comments' in obj:
                         _raw.comment_count = len(obj['comments'])
-                    _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
+                    _raw.create_date = datetime.datetime.strptime(obj['created_time'], '%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
                     #TODO error handling (goktan)
                     #_raw.thumbnail = DataManagerUtil.create_photo_thumbnail(settings.SAVE_PREFIX + _raw.data, str(_raw)+ '_thumb'+ _ext_part)
                     Log.debug(_raw)
@@ -114,15 +113,15 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         return _return_data
 
     def _collect_status_by_date(self, user, since, until):
-        access_token=self._get_access_token(user)
+        access_token = self._get_access_token(user)
         api = facebook.GraphAPI(access_token)
         provider = self.getProvider()
         try:
-            result=api.get_connections('me', 'statuses', limit=200, since=str(since), until=str(until),
-                fields='id,message,likes.limit(500),comments.limit(500),sharedposts,updated_time')
+            result = api.get_connections('me', 'statuses', limit=200, since=str(since), until=str(until),
+                                         fields='id,message,likes.limit(500),comments.limit(500),sharedposts,updated_time')
         except:
             return None
-        _return_data= []
+        _return_data = []
         for obj in result['data']:
             if not RawData.objects.filter(original_id=obj['id']).filter(provider=provider).exists():
                 try:
@@ -132,7 +131,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                         continue
                     _raw = RawData()
                     _raw.owner = user
-                    _raw.type=RawData.DATA_TYPE['Status']
+                    _raw.type = RawData.DATA_TYPE['Status']
                     _raw.provider = provider
                     _raw.data = obj['message']
                     if 'likes' in obj:
@@ -141,16 +140,15 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                         _raw.share_count = len(obj['sharedposts'])
                     if 'comments' in obj:
                         _raw.comment_count = len(obj['comments'])
-                    _raw.create_date = datetime.datetime.strptime(obj['updated_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
+                    _raw.create_date = datetime.datetime.strptime(obj['updated_time'], '%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
                     _raw.original_id = obj['id']
                 except:
                     Log.error('Could not fetch Facebook status')
                 _return_data.append(_raw)
             else:
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
-                Log.debug( _raw.original_id + ' found in DB')
+                Log.debug(_raw.original_id + ' found in DB')
         return _return_data
-
 
     def _collect_status_by_id(self, user, status_ids):
         """
@@ -188,8 +186,6 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
             raise NotImplementedError()
         return _return_data
 
-
-
     def collect_checkin(self, user, **kwargs):
         _return_data = []
         if kwargs['is_date']:
@@ -199,17 +195,17 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         return _return_data
 
     def _collect_checkin_by_date(self, user, since, until):
-        access_token=self._get_access_token(user)
+        access_token = self._get_access_token(user)
         api = facebook.GraphAPI(access_token)
         try:
-            result=api.get_connections('me', 'checkins', limit=200, since=str(since), until=str(until),
-                fields='id,place,likes.limit(500),comments.limit(500),created_time') #TODO hardcoded limits will go to config file
+            result = api.get_connections('me', 'checkins', limit=200, since=str(since), until=str(until),
+                                         fields='id,place,likes.limit(500),comments.limit(500),created_time')  # TODO hardcoded limits will go to config file
         except:
             return None
 
         provider = self.getProvider()
 
-        _return_data= []
+        _return_data = []
         for obj in result['data']:
             if not RawData.objects.filter(original_id=obj['id']).filter(provider=provider).exists():
                 _raw = RawData()
@@ -222,19 +218,19 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                         _raw.like_count = len(obj['likes'])
                     if 'comments' in obj:
                         _raw.comment_count = len(obj['comments'])
-                    _raw.create_date = datetime.datetime.strptime(obj['created_time'],'%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
+                    _raw.create_date = datetime.datetime.strptime(obj['created_time'], '%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
                     _raw.original_id = obj['id']
                     _return_data.append(_raw)
                 except:
                     Log.error('Could not fetch Facebook checkin')
             else:
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
-                Log.debug( _raw.original_id + ' found in DB')
+                Log.debug(_raw.original_id + ' found in DB')
         return _return_data
 
     def _get_access_token(self, user):
         _instance = UserSocialAuth.objects.filter(provider='facebook').get(user=user)
-        return  _instance.tokens['access_token']
+        return _instance.tokens['access_token']
 
     def _collect_checkin_with_friends(self, user, friends):
         """
