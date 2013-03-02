@@ -31,7 +31,7 @@ var JSAnimate = (function(){
 
     var volume;
 
-    var isiPad = navigator.userAgent.match(/iPad/i) != null;
+    var isiPad = navigator.userAgent.match(/iPad/i);
 
     function _initAnimation(){
         $.cssEase._default = 'linear';
@@ -206,7 +206,7 @@ var JSAnimate = (function(){
     function __handleNode(_node,_level, _caller){
         var _animation = _node;
         if('animation' in _node){
-            _animation = _node['animation']
+            _animation = _node['animation'];
         }
         _node['startTime'] = new Date().getTime();
         //if(_level == 4){
@@ -242,7 +242,8 @@ var JSAnimate = (function(){
             triggerNext=_animation['triggerNext'];
         }
 
-        var _type=_animation['type'];
+        var _type = _animation['type'];
+        var _obj = null;
         if('object' in _animation){
             var _obj=_animation['object'];
             if(typeof _obj === 'string'){
@@ -404,7 +405,7 @@ var JSAnimate = (function(){
                 }
             }
         }else if(_type==='breakpoint'){
-            while(_layerBreakPointWaitQueue[_level].length!=0){
+            while(_layerBreakPointWaitQueue[_level].length!==0){
                 _target=_layerBreakPointWaitQueue[_level].shift();
                 _startQueue(_target);
             }
@@ -486,7 +487,7 @@ var JSAnimate = (function(){
             return;
         }
         if(typeof _layerWaitQueue[_level]!=='undefined'){
-            while(_layerWaitQueue[_level].length!=0){
+            while(_layerWaitQueue[_level].length!==0){
                 var waiting=_layerWaitQueue[_level].shift();
                 _startQueue(waiting);
             }
@@ -521,7 +522,7 @@ var JSAnimate = (function(){
         button.removeClass('icon-pause');
         button.addClass('icon-repeat');
         button.unbind('click');
-        button.bind('click', function(){location.reload()});
+        button.bind('click', function(){location.reload();});
 
         for(var i = 0; i< currentAnimation.length; i++){ //Stop active animations (i.e. background)
             for(var j = 0; j<currentAnimation[i].length; j++){
@@ -630,14 +631,15 @@ var JSAnimate = (function(){
      */
     function __musicFade(_obj, isFadeIn, step, triggerNextAfterFinish){
         var currentVol = _obj.jPlayer('option','volume');
+        var targetVol;
         if(isFadeIn){
-            var targetVol = currentVol + step;
+            targetVol = currentVol + step;
         }else{
-            var targetVol = currentVol - step;
+            targetVol = currentVol - step;
         }
         _obj.jPlayer('volume',targetVol);
-        if((isFadeIn && targetVol + step  <= (volume/100) ) //Fade-in animation and not completed yet
-            || (!isFadeIn && targetVol - step >=0)){ //Fade-out animation and not completed yet
+        if((isFadeIn && targetVol + step  <= (volume/100) ) || //Fade-in animation and not completed yet 
+            (!isFadeIn && targetVol - step >=0)){ //Fade-out animation and not completed yet
             setTimeout(function(){
                 __musicFade(_obj, isFadeIn, step, triggerNextAfterFinish);
             },MUSIC_ANIMATION_INTERVAL);
@@ -691,7 +693,7 @@ var JSAnimate = (function(){
         //Add performed operations to the user interaction queue to be able to imitate it later
         _userInteractionQueue.push({'animation':{'type':'sleep','duration':(click_time-lastUserInteraction)}});
         _userInteractionQueue.push({'animation':{'type':'click','object':_obj}});
-        __addInteractionAnimationLayerForObject(jQuery.extend(true,[],click_animation['animations']))
+        __addInteractionAnimationLayerForObject(jQuery.extend(true,[],click_animation['animations']));
         lastUserInteraction=click_time;
     }
 
@@ -725,7 +727,7 @@ var JSAnimate = (function(){
         //Add performed operations to the user interaction queue to be able to imitate it later
         _userInteractionQueue.push({'animation':{'type':'sleep','duration':(enter_time-lastUserInteraction)}});
         _userInteractionQueue.push({'animation':{'type':'hover','object':_obj}});
-        __addInteractionAnimationLayerForObject(jQuery.extend(true,[],enter_animation['animations']))
+        __addInteractionAnimationLayerForObject(jQuery.extend(true,[],enter_animation['animations']));
         lastUserInteraction=enter_time;
     }
 
@@ -764,7 +766,7 @@ var JSAnimate = (function(){
                     continue;
                 }
                 if(_originalAnimationQueue[i][j]['animation']['object'][0].children[0].id ===_obj[0].id){
-                    var foundTime=new Date().getTime()
+                    var foundTime=new Date().getTime();
                     //console.log('Found in:'+(foundTime-time));
                     return _originalAnimationQueue[i][j];
                 }
@@ -815,7 +817,7 @@ var JSAnimate = (function(){
         keywordLookupTable = {
             '{{SCREEN_WIDTH}}' : screen.outerWidth(),
             '{{SCREEN_HEIGHT}}' : screen.outerHeight()
-        }
+        };
     }
 
     function __replaceObjectKeywords(_str, _obj){
@@ -941,5 +943,5 @@ var JSAnimate = (function(){
         setShadowForObject : _setShadowForObject,
         setShadowData : _setShadowData,
         isPlaying : _isPlaying
-    }
+    };
 }());
