@@ -4,7 +4,7 @@ __author__ = 'goktan'
 from models import Provider
 import importlib
 from DataEnrich.EnrichDataWorker import EnrichDataWorker
-from ExternalProviders.BaseProviderWorker import BasePhotoProviderWorker,BaseStatusProviderWorker,BaseLocationProviderWorker
+from ExternalProviders.BaseProviderWorker import BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker
 from Outputs.AnimationManager.AnimationManagerWorker import AnimationManagerWorker
 from models import Momend, MomendScore
 from models import RawData
@@ -24,7 +24,7 @@ class DataManager:
         self.user = user
         self.momend = None
 
-    status = dict() #keep the latest status of raw data collection
+    status = dict()  # keep the latest status of raw data collection
 
     def get_last_status(self):
         return self.status
@@ -33,8 +33,8 @@ class DataManager:
                       privacy=Momend.PRIVACY_CHOICES['Private'], inc_photo=True, inc_status=True, inc_checkin=True,
                       enrichment_method=None, theme=None, scenario=None, **kwargs):
         try:
-            _time_limit = datetime.datetime.now().replace(tzinfo= pytz.UTC) - datetime.timedelta(minutes=15)
-            if Momend.objects.filter(owner = self.user).filter(thumbnail=None).filter(create_date__gt = _time_limit ).count() > 0:
+            _time_limit = datetime.datetime.now().replace(tzinfo=pytz.UTC) - datetime.timedelta(minutes=15)
+            if Momend.objects.filter(owner=self.user).filter(thumbnail=None).filter(create_date__gt=_time_limit).count() > 0:
                 self.status = 'You are creating another momend right now. Please wait until it is ready.'
                 return None
 
@@ -67,26 +67,26 @@ class DataManager:
                 return None
             self._create_momend_thumbnail()
             self.momend.save()
-        except Exception as e:
+        except Exception:
             self.status = 'Error while creating the momend. Please try again!'
             Log.error(traceback.format_exc())
             if self.momend.id:
                 self.momend.delete()
             return None
 
-        score = MomendScore(momend = self.momend, provider_score = self._calculate_provider_score())
+        score = MomendScore(momend=self.momend, provider_score=self._calculate_provider_score())
         score.save()
         DataManagerUtil.send_momend_created_email(self.momend)
         self.status = 'Success'
         return self.momend
 
-    def collect_user_data(self, inc_photo, inc_status, inc_checkin, **kwargs): #TODO concatenation fail if cannot connect to facebook or twitter (fixed on status)
+    def collect_user_data(self, inc_photo, inc_status, inc_checkin, **kwargs):  # TODO concatenation fail if cannot connect to facebook or twitter (fixed on status)
         _raw_data = []
         _collect_count = dict()
         for _provider in Provider.objects.all():
             if UserSocialAuth.objects.filter(provider=str(_provider).lower()).filter(user=self.user).count() > 0:
                 worker = self._instantiate_provider_worker(_provider)
-                if inc_photo and issubclass(worker.__class__,BasePhotoProviderWorker):
+                if inc_photo and issubclass(worker.__class__, BasePhotoProviderWorker):
                     _collected = worker.collect_photo(self.user, **kwargs)
                     if not _collected:
                         self.status[str(_provider)+'_photo'] = 'Error'
@@ -94,7 +94,7 @@ class DataManager:
                         _raw_data += _collected
                         _collect_count['photo'] = _collect_count.get('photo', 0) + len(_raw_data)
                         self.status[str(_provider)+'_photo'] = 'Success'
-                if inc_status and issubclass(worker.__class__,BaseStatusProviderWorker):
+                if inc_status and issubclass(worker.__class__, BaseStatusProviderWorker):
                     _collected = worker.collect_status(self.user, **kwargs)
                     if not _collected:
                         self.status[str(_provider)+'_status'] = 'Error'
@@ -102,7 +102,7 @@ class DataManager:
                         _raw_data += _collected
                         _collect_count['status'] = _collect_count.get('status', 0) + len(_raw_data)
                         self.status[str(_provider)+'_status'] = 'Success'
-                if inc_checkin and issubclass(worker.__class__,BaseLocationProviderWorker):
+                if inc_checkin and issubclass(worker.__class__, BaseLocationProviderWorker):
                     _collected = worker.collect_checkin(self.user, **kwargs)
                     if not _collected:
                         self.status[str(_provider)+'_checkin'] = 'Error'
@@ -124,7 +124,7 @@ class DataManager:
     def enrich_user_data(self, raw_data, method=None):
         if not method:
             method = 'date'
-        enriched_data = EnrichDataWorker.enrich_user_raw_data(raw_data) #TODO use method parameter
+        enriched_data = EnrichDataWorker.enrich_user_raw_data(raw_data)  # TODO use method parameter
         return enriched_data
 
     def _create_momend_thumbnail(self):
@@ -138,7 +138,7 @@ class DataManager:
             for data in out_data:
                 if data.raw and data.raw.type == RawData.DATA_TYPE['Photo']:
                     self.momend.thumbnail = DataManagerUtil.create_photo_thumbnail(settings.SAVE_PREFIX + data.final_data_path,
-                        'momend_'+str(self.momend.pk)+'_thumb.jpg')
+                                                                                   'momend_' + str(self.momend.pk) + '_thumb.jpg')
                     break
         except Exception as error:
             Log.error("Couldn't create thumbnail!-->"+str(error))
@@ -149,13 +149,13 @@ class DataManager:
         :param provider: models.Provider object
         :return:
         """
-        mod = importlib.import_module('ExternalProviders.'+provider.package_name+'.'+provider.worker_name,provider.worker_name)
-        cl = getattr(mod,provider.worker_name)
+        mod = importlib.import_module('ExternalProviders.' + provider.package_name + '.' + provider.worker_name, provider.worker_name)
+        cl = getattr(mod, provider.worker_name)
         return cl()
 
     def _calculate_provider_score(self):
         main_layer = self.momend.animationlayer_set.all()[1]
-        used_objects = OutData.objects.filter(owner_layer = main_layer).filter(Q(raw__isnull = False))
+        used_objects = OutData.objects.filter(owner_layer=main_layer).filter(Q(raw__isnull=False))
         _score = 0
         for _out_data in used_objects:
             _score += _out_data.raw.share_count*5
@@ -163,5 +163,4 @@ class DataManager:
             _score += _out_data.raw.like_count
 
         return _score
-
 
