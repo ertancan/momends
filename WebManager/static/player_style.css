@@ -18,15 +18,29 @@
 }
 .ui-widget-content { border: 1px solid rgba(50, 50, 50, 0.8); background: rgb(185,31,31) 50% 50% repeat-x; color: rgb(185,31,31); }
 
-.right-group{
+#right-group{
     right: 5px;
+}
+#volume-group{
+    left:40px;
+    bottom:3px;
+    width: 20px;
+    overflow: hidden;
+    padding: 6px 10px 6px 6px;
+    user-select: none;
+    moz-user-select: none;
+    -webkit-user-select: none;
 }
 #volume-slider {
     height:5px;
     width: 80px;
     position: absolute;
-    top: 7px;
-    left: 50px;
+    top: 16px;
+    left: 42px;
+}
+#volume-button{
+    position: relative;
+    top: 5px;
 }
 .ui-slider .ui-slider-handle{
     width: 13px;
