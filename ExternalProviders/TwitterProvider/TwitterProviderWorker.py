@@ -71,7 +71,7 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
         _return_data = []
         for i in range(1,16):
             try:
-            result=api.user_timeline(count=200, page=i)
+                result=api.user_timeline(count=200, page=i)
             except Exception, e:
                 Log.error('Twitter data collect error')
                 return _return_data
