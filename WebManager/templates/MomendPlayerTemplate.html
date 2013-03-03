@@ -185,7 +185,7 @@
                 $(this).animate({'width': 120},300);
             });
             volume_group.mouseleave(function(){
-                $(this).animate({'width': 20},300);
+                $(this).animate({'width': 15},300);
             });
             prepareButtons();
         }
@@ -218,7 +218,7 @@
         function generateTwitterShareURL(){
             var baseURL ='https://twitter.com/share?';
             var URL = baseURL + 'url='+encodeURIComponent(HOST_URL + '{% url 'momends:show-momend' params.type params.id %}');
-            URL += '&text='+encodeURIComponent('Have you seen this momend?');
+            URL += '&text='+encodeURIComponent('Have you seen this momend? - @momends');
             return URL;
         }
 
