@@ -447,7 +447,8 @@ var JSAnimate = (function(){
         }else if(_type === 'music-volume'){
             var vol = parseFloat(_target);
             if(!isNaN(vol)){
-                _obj.jPlayer('volume',vol*(volume/100)); //proportional to the volume slider's current value
+                //console.log('New volume: '+ (vol*(volume/100))/100);
+                _obj.jPlayer('volume', (vol*(volume/100))/100); //proportional to the volume slider's current value
             }
         }
         else if(_type === 'music-fadein'){
