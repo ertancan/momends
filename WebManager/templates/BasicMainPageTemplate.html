@@ -198,7 +198,8 @@
             var token = $('[name="csrfmiddlewaretoken"]')[0].value;
             $.ajax({
                 type: 'POST',
-                url: '{% url 'momends:create-momend'%}',
+                timeout: 10*60*1000,
+		url: '{% url 'momends:create-momend'%}',
                 beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', token);},
                 data: postData,
                 success: function(msg){
