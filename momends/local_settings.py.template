@@ -130,3 +130,6 @@ EMAIL_USE_TLS = True
 SERVER_EMAIL = 'info@momends.com'
 DEFAULT_FROM_EMAIL = 'info@momends.com'
 HOST_URL = 'http://test.momends.com:8000'
+
+BROKER_URL = 'django://'  # Celery will use django database while on development
+INSTALLED_APPS += ('kombu.transport.django',)
