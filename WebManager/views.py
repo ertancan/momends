@@ -15,6 +15,7 @@ from DataManager.DataManager import DataManager
 from DataManager.models import Momend
 from DataManager.models import DeletedMomend
 from DataManager.models import RawData
+from DataManager.models import MomendStatus
 from DataManager.models import  decode_id
 from Outputs.AnimationManager.models import UserInteraction
 from Outputs.AnimationManager.models import DeletedUserInteraction
@@ -220,37 +221,53 @@ class SendAnimationAsMail(View):
 class CreateMomendView(View):
     def post(self, request, *args, **kwargs):
         try:
-            Log.debug('Create momend request')
-            _create_start = time.time()
+            Log.debug('Create momend request: '+str(request.POST))
+            _owner = request.user
+            if 'owner' in request.POST:
+                if request.user.is_superuser:
+                    _owner = User.objects.get(pk=request.POST['owner'])
             _momend_name = request.POST['momend_name']
-            _start_date =  datetime.strptime(request.POST['start_date'], '%d %b, %Y').replace(tzinfo= pytz.UTC)
+            _start_date = datetime.strptime(request.POST['start_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
             _finish_date = datetime.strptime(request.POST['finish_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
             _privacy = request.POST['privacy_type']
-            _user = self.request.user
             _theme = request.POST['momend_theme']
-            _theme = 1 #TODO remove after showing theme selection combo
-            dm = DataManager(_user)
+            _theme = 1  # TODO remove after showing theme selection combo
+
+            _send_mail = request.POST.get('mail', True)  # Send mail after create, default True
+            dm = DataManager(_owner)
             try:
                 _args = dict()
                 _args['is_date'] = True
                 _args['since'] = _start_date
                 _args['until'] = _finish_date
-                momend = dm.create_momend(name=_momend_name, duration=60, privacy=_privacy,
-                    theme=Theme.objects.get(pk= _theme), **_args)
-                if momend: #If created momend successfully
-                    Log.info('Momend created in: '+str(time.time() - _create_start))
-                    return _generate_json_response(True, 'Created momend', cid=momend.cryptic_id)
+                _cryptic_id = dm.create_momend(name=_momend_name, duration=60, privacy=_privacy,
+                                               theme=Theme.objects.get(pk=_theme), mail=_send_mail, **_args)
+                if _cryptic_id:  # If created momend successfully
+                    return _generate_json_response(True, 'Create momend request received', cid=_cryptic_id)
                 _error_msg = dm.get_last_status()
-                return _generate_json_response(False, 'Create momend failed with error message: '+_error_msg, _error_msg)
+                return _generate_json_response(False, 'Create momend failed with error message: '+str(_error_msg), _error_msg)
             except Exception as e:
                 _log_critical_error('Exception while creating the momend', True, request.POST, request.user, traceback.format_exc())
-                return _generate_json_response(False, 'Error while creating momend: '+str(e), 'An error occurred. Please try again') #Could be any error
+                return _generate_json_response(False, 'Error while creating momend: '+str(e), 'An error occurred. Please try again')  # Could be any error
         except KeyError as e:
             Log.error(traceback.format_exc())
-            return _generate_json_response(False, 'Error while creating momend: '+str(e), str(e)) #One of the parameters is missing
+            return _generate_json_response(False, 'Error while creating momend: '+str(e), str(e))  # One of the parameters is missing
         except Exception as e:
             _log_critical_error('Impossible exception occurred while creating momend', True, request.POST, request.user, traceback.format_exc())
             return _generate_json_response(False, 'Error while creating momend (impossible): '+str(e), 'An error occurred. Please try again after a while')
+
+class MomendStatusView(View):
+    def get(self, request, *args, **kwargs):
+        decoded_id = decode_id(kwargs['id'])
+        if not decoded_id:
+            return _generate_json_response(False, 'Invalid id on status', 'Invalid Id')
+        try:
+            Log.debug('Status for momend:'+str(decoded_id))
+            _status_obj = MomendStatus.objects.get(momend_id=decoded_id)
+            print _status_obj.status
+            return _generate_json_response(True, user_msg=_status_obj.message, status=MomendStatus.MESSAGES[_status_obj.status])
+        except Exception as e:
+            return _generate_json_response(False, 'Exception on status check: '+str(e), 'Error while checking the status')
 
 class DeleteMomendView(View):
     def get(self, request, *args, **kwargs):

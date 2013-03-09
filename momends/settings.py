@@ -94,6 +94,9 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'momends.urls'
 
+import djcelery
+djcelery.setup_loader()
+
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'momends.wsgi.application'
 
@@ -116,6 +119,7 @@ INSTALLED_APPS = (
     'social_auth',
     'registration',
     'sorl.thumbnail',
+    'djcelery',
 )
 
 

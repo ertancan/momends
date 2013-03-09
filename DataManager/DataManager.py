@@ -5,8 +5,8 @@ from models import Provider
 import importlib
 from DataEnrich.EnrichDataWorker import EnrichDataWorker
 from ExternalProviders.BaseProviderWorker import BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker
-from Outputs.AnimationManager.AnimationManagerWorker import AnimationManagerWorker
-from models import Momend, MomendScore
+from models import encode_id
+from models import Momend, MomendStatus
 from models import RawData
 from Outputs.AnimationManager.models import OutData
 from social_auth.db.django_models import UserSocialAuth
@@ -15,28 +15,33 @@ from DataManagerUtil import DataManagerUtil
 from django.db.models import Q
 from django.conf import settings
 import traceback
+import tasks
 import datetime
 import pytz
 
 
 class DataManager:
-    def __init__(self, user):
+    def __init__(self, user, momend=None, momend_status=None):
         self.user = user
-        self.momend = None
+        self.momend = momend
+        self.momend_status = momend_status
 
-    status = dict()  # keep the latest status of raw data collection
+    status = ''  # keep the latest status of raw data collection
 
     def get_last_status(self):
         return self.status
 
-    def create_momend(self, name, duration,
+    def create_momend(self, name, duration, mail,
                       privacy=Momend.PRIVACY_CHOICES['Private'], inc_photo=True, inc_status=True, inc_checkin=True,
                       enrichment_method=None, theme=None, scenario=None, **kwargs):
         try:
-            _time_limit = datetime.datetime.now().replace(tzinfo=pytz.UTC) - datetime.timedelta(minutes=15)
-            if Momend.objects.filter(owner=self.user).filter(thumbnail=None).filter(create_date__gt=_time_limit).count() > 0:
+            _time_limit = datetime.datetime.now().replace(tzinfo=pytz.UTC) - datetime.timedelta(minutes=5)
+            if MomendStatus.objects.filter(owner=self.user)\
+               .filter(~Q(status=MomendStatus.MOMEND_STATUS['Success']) & ~Q(status=MomendStatus.MOMEND_STATUS['Error']))\
+               .filter(last_update__gt=_time_limit)\
+               .exists():
                 self.status = 'You are creating another momend right now. Please wait until it is ready.'
-                return None
+                return False
 
             self.momend = Momend(owner=self.user, name=name, privacy=privacy)
             if kwargs['is_date']:
@@ -48,70 +53,58 @@ class DataManager:
                     return None
             else:
                 self.status = 'Not supported yet!'
-                return None
+                return False
             self.momend.save()
+            _cryptic_id = encode_id(self.momend.id)
+            self.momend.cryptic_id = _cryptic_id
+            self.momend.save()  # To save cryptic_id, doing this on pre_save not working since momend id is not ready, post_save also needs to update the momend
+            self.momend_status = MomendStatus(momend=self.momend, owner=self.user)
+            self.momend_status.status = MomendStatus.MOMEND_STATUS['Starting']
+            self.momend_status.save()
 
-            raw_data = self.collect_user_data(inc_photo, inc_status, inc_checkin, **kwargs)
-            if len(raw_data) < 15:
-                self.status = 'Could not collect enough data to create a momend! Please select a wider time frame'
-                self.momend.delete()
-                return None
-
-            enriched_data = self.enrich_user_data(raw_data, enrichment_method)
-
-            animation_worker = AnimationManagerWorker(self.momend)
-            generated_layer, duration = animation_worker.generate_output(enriched_data, duration, theme, scenario)
-            if duration == 0 or not generated_layer:
-                self.status = 'Could not create momend! Please try again.'
-                self.momend.delete()
-                return None
-            self._create_momend_thumbnail()
-            self.momend.save()
-        except Exception:
-            self.status = 'Error while creating the momend. Please try again!'
+            #Spawn a new task to create the momend
+            tasks.create_momend_task.delay(self.user.id, self.momend.id, duration, mail, theme,
+                                           scenario, inc_photo, inc_status, inc_checkin, enrichment_method, **kwargs)
+            return _cryptic_id
+        except Exception as e:
+            self._handle_momend_create_error('Error while creating the momend. Please try again!', 'Exception: '+str(e)[:255])
             Log.error(traceback.format_exc())
-            if self.momend.id:
-                self.momend.delete()
-            return None
 
-        score = MomendScore(momend=self.momend, provider_score=self._calculate_provider_score())
-        score.save()
-        DataManagerUtil.send_momend_created_email(self.momend)
-        self.status = 'Success'
-        return self.momend
+        return True
 
     def collect_user_data(self, inc_photo, inc_status, inc_checkin, **kwargs):  # TODO concatenation fail if cannot connect to facebook or twitter (fixed on status)
         _raw_data = []
         _collect_count = dict()
+        _collect_status = dict()
         for _provider in Provider.objects.all():
             if UserSocialAuth.objects.filter(provider=str(_provider).lower()).filter(user=self.user).count() > 0:
                 worker = self._instantiate_provider_worker(_provider)
                 if inc_photo and issubclass(worker.__class__, BasePhotoProviderWorker):
                     _collected = worker.collect_photo(self.user, **kwargs)
                     if not _collected:
-                        self.status[str(_provider)+'_photo'] = 'Error'
+                        _collect_status[str(_provider)+'_photo'] = 'Error'
                     else:
                         _raw_data += _collected
                         _collect_count['photo'] = _collect_count.get('photo', 0) + len(_raw_data)
-                        self.status[str(_provider)+'_photo'] = 'Success'
+                        _collect_status[str(_provider)+'_photo'] = 'Success'
                 if inc_status and issubclass(worker.__class__, BaseStatusProviderWorker):
                     _collected = worker.collect_status(self.user, **kwargs)
                     if not _collected:
-                        self.status[str(_provider)+'_status'] = 'Error'
+                        _collect_status[str(_provider)+'_status'] = 'Error'
                     else:
                         _raw_data += _collected
                         _collect_count['status'] = _collect_count.get('status', 0) + len(_raw_data)
-                        self.status[str(_provider)+'_status'] = 'Success'
+                        _collect_status[str(_provider)+'_status'] = 'Success'
                 if inc_checkin and issubclass(worker.__class__, BaseLocationProviderWorker):
                     _collected = worker.collect_checkin(self.user, **kwargs)
                     if not _collected:
-                        self.status[str(_provider)+'_checkin'] = 'Error'
+                        _collect_status[str(_provider)+'_checkin'] = 'Error'
                     else:
                         _raw_data += _collected
                         _collect_count['checkin'] = _collect_count.get('checkin', 0) + len(_raw_data)
-                        self.status[str(_provider)+'_checkin'] = 'Success'
+                        _collect_status[str(_provider)+'_checkin'] = 'Success'
         #all incoming data shall be saved here instead of collection place
-        Log.debug('status:'+str(self.status))
+        Log.debug('status:'+str(_collect_status))
         Log.debug('Collected Objects:'+str(_collect_count))
         for _obj in _raw_data:
             try:
@@ -119,7 +112,7 @@ class DataManager:
             except IntegrityError as e:
                 Log.debug('Raw data save error:'+str(e))
 
-        return _raw_data
+        return _raw_data, _collect_status
 
     def enrich_user_data(self, raw_data, method=None):
         if not method:
@@ -164,3 +157,11 @@ class DataManager:
 
         return _score
 
+    def _handle_momend_create_error(self, user_message, log_message=None):
+        if log_message:
+            Log.error(log_message)
+        else:
+            Log.error(user_message)
+        self.status = user_message
+        self.momend_status.status = MomendStatus.MOMEND_STATUS['Error']
+        self.momend_status.save()

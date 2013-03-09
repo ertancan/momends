@@ -11,6 +11,7 @@ from views import SaveInteractionView
 from views import CreateMomendView
 from views import UserProfileTemplateView
 from views import SettingsFormView
+from views import MomendStatusView
 from views import UploadFormView
 from views import MomendPlayerView
 from views import FileUploadView
@@ -29,6 +30,7 @@ urlpatterns = patterns('',
     url(r'^user/(?P<id>\d+)/$', login_required(UserProfileTemplateView.as_view()), name='user-screen'),
     url(r'^user/(?P<username>\w+)/$', login_required(UserProfileTemplateView.as_view()), name='user-screen'),
     url(r'^settings/$', login_required(SettingsFormView.as_view()), name='settings-screen'),
+    url(r'^momendstatus/(?P<id>[\w\-=]+)/$', login_required(MomendStatusView.as_view()), name='momend-status'),
     url(r'^show/(?P<type>\w{1})/(?P<id>[\w\-=]+)/$', ShowMomendView.as_view(), name='show-momend'),
     url(r'^play/(?P<type>\w{1})/(?P<id>[\w\-=]+)/$', MomendPlayerView.as_view(), name='play-momend'),
     url(r'^get/(?P<type>\w{1})/(?P<id>[\w\-=]+)/$', GetMomendView.as_view(), name='get-momend'),
