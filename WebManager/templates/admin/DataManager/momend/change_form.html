@@ -1,0 +1,48 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+{% block submit_buttons_bottom %}
+<div class="submit-row">
+<input type="submit" value="Save" class="default" name="_save">
+
+<input type="button" value="Generate a momend" name="_create" id="create-momend" onclick="createMomend()">
+<input type="submit" value="Save and add another" name="_addanother">
+<input type="submit" value="Save and continue editing" name="_continue">
+</div>
+<script type="text/javascript">
+	function createMomend(){
+		var monthNamesShort= ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+		var _start_date = django.jQuery('#id_momend_start_date_0').val().split('-');
+		var _end_date = django.jQuery('#id_momend_end_date_0').val().split('-');
+        var postData = {'momend_name': django.jQuery('#id_name').val(),
+        	'owner': django.jQuery('#id_owner').val(),
+	        'start_date': parseInt(_start_date[2]) + ' ' + monthNamesShort[parseInt(_start_date[1])] + ', '+_start_date[0],  //Change format yyyy-mm-dd to dd mmm, yyyy
+	        'finish_date': parseInt(_end_date[2]) + ' ' + monthNamesShort[parseInt(_end_date[1])] + ', '+_end_date[0],
+	        'momend_theme': 0,
+	        'privacy_type': django.jQuery('#id_privacy').val(),
+	        'facebook-active': true,
+	        'twitter-active': false,
+	        'mail': false
+	    };
+	    console.dir(postData)
+	    var token = django.jQuery('[name="csrfmiddlewaretoken"]')[0].value;
+		django.jQuery.ajax({
+                type: 'POST',
+                timeout: 10*60*1000,
+		        url: '../../../../create/',
+                beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', token);},
+                data: postData,
+                success: function(msg){
+                    var result = JSON.parse(msg);
+                    if(result.resp){ //Create requested successfully 
+                        alert('Request sent to worker')
+                    }else{
+                        alert(result.message)
+                    }
+                },
+                error: function(msg){
+                    alert('500 or someting')
+                }
+            });
+	}
+</script>
+{% endblock %}

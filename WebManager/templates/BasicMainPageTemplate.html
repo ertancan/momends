@@ -124,6 +124,7 @@
         var home = '{{ home }}';
         var animationId;
         var momendPlaying = false;
+        var createState;
 
         window.onpopstate = function(e){ //Play momend if the url bar changed after create and user coming back from history
             if(e.state){
@@ -189,9 +190,9 @@
 
         function createMomend(postData){
             _trackPageEvent('Create', 'Creating');
-            var start = new Date();
             var creatingDialogBg = $('#creating-dialog-bg');
             creatingDialogBg.fadeIn();
+            createState = 'We are creating your momend';
             animateCollectingText();
             animateArrows();
 
@@ -199,24 +200,14 @@
             $.ajax({
                 type: 'POST',
                 timeout: 10*60*1000,
-		url: '{% url 'momends:create-momend'%}',
+		        url: '{% url 'momends:create-momend'%}',
                 beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', token);},
                 data: postData,
                 success: function(msg){
                     console.log(msg);
                     var result = JSON.parse(msg);
-                    if(result.resp){ //Created
-                        var end = new Date();
-                        var seconds = Math.floor((end - start) / 1000);
-                        _gaq.push(['_trackEvent', 'Page', 'Momend', 'Created',seconds]);
-                        creatingDialogBg.fadeOut();
-                        $('#create-modal-mini').modal("hide");
-                        try{
-                            window.history.pushState({'type':'m','cid':result.cid},"", HOST_URL+'/show/m/'+result.cid);
-                        }catch(e){
-                            console.log('Different domain?');
-                        }
-                        playMomend(result.cid);
+                    if(result.resp){ //Create requested successfully 
+                        setTimeout(function() {checkMomendStatus(result.cid)}, 5000);
                     }else{
                         _trackPageEvent('Momend', 'CreateFailed');
                         creatingDialogBg.fadeOut();
@@ -229,6 +220,35 @@
                     _showToast('An error occurred! Please try again later.', '90px');
                 }
             });
+        }
+
+        function checkMomendStatus(crypticId){
+            var mainURL = '{% url 'momends:momend-status' 'dummy' %}';
+            var statusURL = mainURL.replace('dummy', crypticId);
+            $.getJSON( statusURL, function(data) {
+                if(!data.resp){ //Status check request unsuccessful
+                    _showToast(data.message, '90px');
+                }else{
+                    if(data.status === 'Success'){
+                        var creatingDialogBg = $('#creating-dialog-bg');
+                        creatingDialogBg.fadeOut();
+                        $('#create-modal-mini').modal("hide");
+                        try{
+                            window.history.pushState({'type':'m','cid':result.cid},"", HOST_URL+'/show/m/'+result.cid);
+                        }catch(e){
+                            console.log('Different domain?');
+                        }
+                        playMomend(crypticId);
+                    }
+                    else if(data.status === 'Error'){
+                        _showToast(data.message, '90px');
+                    }else{
+                        createState = data.status;
+                        setTimeout(function() {checkMomendStatus(crypticId)}, 5000);
+                    }
+                }
+
+            }).error(function(){_showToast('An error occurred! Please try again later.', '90px');});
         }
 
         /**
@@ -330,15 +350,18 @@
         }
 
         function animateCollectingText(state){
-            var texts = ['We are creating your momend',
-                'We are creating your momend.',
-                'We are creating your momend..',
-                'We are creating your momend...'];
-            if(!state || state===texts.length){
+            if(!state || state === 4){
                 state = 0;
             }
             var obj = $('#collecting-text');
-            obj.text(texts[state]);
+            var width = (createState.length+3)*9;
+            var container = $('#creating-dialog');
+            obj.css({'left': (container.outerWidth() - width) / 2});
+            var tmpText = createState;
+            for (var i=0;i<state;i++){
+                tmpText += '.';
+            }
+            obj.text(tmpText);
             setTimeout(function(){
                 animateCollectingText(state+1);
             },500);
@@ -530,6 +553,7 @@
          */
         fullscreen_on = false;
         function frameLoaded(){
+            console.log('Frame Loaded');
             player_frame = document.getElementById('momend-player-frame');
             momendManager = player_frame.contentWindow.momendManager;
             momendManager.setFullscreenFunction(fullscreen);

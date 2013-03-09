@@ -304,7 +304,7 @@ var JSAnimate = (function(){
                 }else if(_animation['anim']['right']){ //Convert it to pixels if it is not left
                     var _right = _animation['anim']['right'];
                     if(_right.indexOf('px')>0){
-                        _x = screen.outerWidth() - parseInt(_right.replace('px',''));
+                        _x = screen.outerWidth() - parseInt(_right.replace('px',''), 10);
                     }else if(_right.indexOf('%') > 0){
                         _x = screen.outerWidth() * (100 - parseFloat(_right.replace('%','')))/100;
                     }
@@ -315,7 +315,7 @@ var JSAnimate = (function(){
                 }else if(_animation['anim']['bottom']){
                     var _bottom = _animation['anim']['bottom'];
                     if(_bottom.indexOf('px')>0){
-                        _y = screen.outerHeight() - parseInt(_bottom.replace('px',''));
+                        _y = screen.outerHeight() - parseInt(_bottom.replace('px',''), 10);
                     }else if(_bottom.indexOf('%') > 0){
                         _y = screen.outerHeight() * (100 - parseFloat(_bottom.replace('%','')))/100;
                     }
@@ -562,9 +562,9 @@ var JSAnimate = (function(){
 
                 var passed = pauseTime - currentAnimation[i][j]['startTime']; //Time passed since the animation start
                 node['duration'] = node['duration'] - passed; //Assign remaining time
-
+                var _obj;
                 if('object' in node){
-                    var _obj=node['object'];
+                    _obj=node['object'];
                     if(typeof _obj === 'string'){
                         _obj = $(_obj);
                     }
