@@ -104,3 +104,5 @@ SERVER_EMAIL = 'info@momends.com'
 DEFAULT_FROM_EMAIL = 'info@momends.com'
 
 HOST_URL = 'http://beta.momends.com'
+
+BROKER_URL = 'sqs://'
