@@ -26,7 +26,10 @@ def create_momend_task(user_id, momend_id, duration, mail, theme, scenario, inc_
             dm._handle_momend_create_error('Could not collect enough data to create a momend! Please select a wider time frame')
             return None
 
-        enriched_data = dm.enrich_user_data(raw_data, enrichment_method)
+        _enrich_filter = dict()
+        if 'friends' in kwargs:
+            _enrich_filter['friends'] = kwargs['friends']
+        enriched_data = dm.enrich_user_data(raw_data, _enrich_filter, enrichment_method)
 
         _status.status = MomendStatus.MOMEND_STATUS['Applying Enhancements']
         _status.save()

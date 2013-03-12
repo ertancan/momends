@@ -7,9 +7,9 @@ from Crypto.Cipher import AES
 from django.conf import settings
 import string
 from LogManagers.Log import Log
-from django.db.models.signals import pre_save
 import base64
 import random
+import importlib
 
 
 # Create your models here.
@@ -52,6 +52,10 @@ class Momend(BaseDataManagerModel):
 
 
 class MomendStatus(BaseDataManagerModel):
+    class Meta:
+        verbose_name_plural = 'MomendStatuses'
+        verbose_name = 'MomendStatus'
+
     momend = models.ForeignKey(Momend)
     owner = models.ForeignKey(User)  # In order to quickly check if user creating a momend right now
     MESSAGES = ['Starting', 'Collecting Data', 'Applying Enhancements', 'Success', 'Error']
@@ -59,7 +63,7 @@ class MomendStatus(BaseDataManagerModel):
     for i, v in enumerate(MESSAGES):
         MOMEND_STATUS[v] = i
 
-    status = models.IntegerField(choices=[[i, MESSAGES[i]] for i in range(0,len(MESSAGES))], default=0)
+    status = models.IntegerField(choices=[[i, MESSAGES[i]] for i in range(0, len(MESSAGES))], default=0)
     message = models.CharField(max_length=255, null=True, blank=True)
     last_update = models.DateTimeField(auto_now=True)
 
@@ -121,6 +125,16 @@ class Provider(BaseDataManagerModel):
     def __unicode__(self):
         return str(self.name)
 
+    def instantiate_provider_worker(self):
+        """
+        Instantiates the worker objects, which collects data etc., for given provider
+        :param provider: models.Provider object
+        :return:
+        """
+        mod = importlib.import_module('ExternalProviders.' + self.package_name + '.' + self.worker_name, self.worker_name)
+        cl = getattr(mod, self.worker_name)
+        return cl()
+
 
 class RawData(BaseDataManagerModel):
     class Meta:
@@ -135,6 +149,7 @@ class RawData(BaseDataManagerModel):
     data = models.TextField()  # main data to use in momend
     title = models.CharField(max_length=255)
     thumbnail = models.CharField(max_length=2000, null=True, blank=True)
+    tags = models.TextField(null=True, blank=True)  # IDs of the tagged users, comma seperated
 
     DATA_TYPE = {'Photo': 0,
                  'Status': 1,
@@ -146,7 +161,7 @@ class RawData(BaseDataManagerModel):
 
     provider = models.ForeignKey(Provider)
 
-    create_date = models.DateTimeField(default=datetime.now)
+    create_date = models.DateTimeField(verbose_name='Original Date', null=True, blank=True)
     fetch_date = models.DateTimeField(auto_now_add=True)
 
     like_count = models.IntegerField(default=0)

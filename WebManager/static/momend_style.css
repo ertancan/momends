@@ -59,6 +59,17 @@ figure, figcaption{ /*add any other html5 elements you use*/
     margin-left: auto;
     margin-right: auto;
 }
+.title {
+    display:none;
+    position:absolute;
+}
+
+.title-text{
+    position:relative;
+    width: 75%;
+    margin-left: auto;
+    margin-right: auto;
+}
 
 .scene-background{
     position:absolute;

@@ -41,9 +41,9 @@ class MomendScoreAdmin(admin.ModelAdmin):
 
 class RawDataAdmin(admin.ModelAdmin):
     list_display = ('owner', 'type', 'provider', 'original_path', 'thumbnail',
-                    'original_id', 'fetch_date', 'data', 'title')
+                    'original_id', 'fetch_date', 'data', 'title', 'tags')
     list_filter = ('provider', 'type', 'fetch_date')
-    search_fields = ('owner__username', 'owner__first_name', 'owner__last_name', 'title', 'original_id', 'original_path')
+    search_fields = ('owner__username', 'owner__first_name', 'owner__last_name', 'title', 'original_id', 'original_path', 'tags')
 
 
 class ProviderAdmin(admin.ModelAdmin):

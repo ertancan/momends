@@ -278,11 +278,11 @@ var JSAnimate = (function(){
                 _obj.css(_animation['pre']);
                 if(_shadow){
                     var _shadowStr = __generateShadowStr(_obj, _shadow, null, null);
-                    $(_obj[0].lastChild).css('box-shadow', _shadowStr); //Apply to image directly not to the div
+                    $(_obj[0].firstChild).css('box-shadow', _shadowStr); //Apply to image directly not to the div
                 }
             }
             //if(_level ==1 && _animation['used_object_type'].indexOf('STATUS') == -1){ //Only first layer objects but statuses
-            //    $(_obj[0].lastChild).box2d({'density':0.2,'x-velocity':-1,'debug':true});
+            //    $(_obj[0].firstChild).box2d({'density':0.2,'x-velocity':-1,'debug':true});
             //}
             for(var key in _animation['anim']){
                 if(typeof _animation['anim'][key] === 'function'){
@@ -324,9 +324,9 @@ var JSAnimate = (function(){
                     var _shadowStr = __generateShadowStr(_obj, _shadow, _x, _y);
                     //console.log('shadow animation for moving obj:'+_shadowStr);
                     if(_animation['extended_animation']){ //To support custom cubic-bezier easing on shadows
-                        $(_obj[0].lastChild).transition({'box-shadow': _shadowStr}, _duration, _easing);
+                        $(_obj[0].firstChild).transition({'box-shadow': _shadowStr}, _duration, _easing);
                     }else{
-                        $(_obj[0].lastChild).animate({'box-shadow': _shadowStr},{duration:_duration, queue:false, easing:_easing}); //Apply to image directly not to the div
+                        $(_obj[0].firstChild).animate({'box-shadow': _shadowStr},{duration:_duration, queue:false, easing:_easing}); //Apply to image directly not to the div
                     }
                 }
             }
@@ -576,7 +576,7 @@ var JSAnimate = (function(){
                         _obj.stop();
                     }
                     pauseQueue[i].push(node);
-                    $(_obj[0].lastChild).stop();
+                    $(_obj[0].firstChild).stop();
                 }
                 if(node['type']==='sleep'){
                     clearTimeout(node['sleepTimer']);
@@ -842,7 +842,7 @@ var JSAnimate = (function(){
     function __generateShadowStr(_obj, _shadow, _targetX, _targetY){
         var _x;
         var _y;
-        var _photoObj = _obj[0].lastChild;
+        var _photoObj = _obj[0].firstChild;
         if(!_targetX){
             _x = _photoObj.x;
         }else{

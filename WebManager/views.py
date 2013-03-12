@@ -16,7 +16,8 @@ from DataManager.models import Momend
 from DataManager.models import DeletedMomend
 from DataManager.models import RawData
 from DataManager.models import MomendStatus
-from DataManager.models import  decode_id
+from DataManager.models import encode_id, decode_id
+from DataManager.models import Provider
 from Outputs.AnimationManager.models import UserInteraction
 from Outputs.AnimationManager.models import DeletedUserInteraction
 from Outputs.AnimationManager.models import OutData
@@ -32,17 +33,18 @@ from django.core.files.uploadedfile import UploadedFile
 from DataManager.DataManagerUtil import DataManagerUtil
 from django.conf import settings
 import traceback
-import time
 
-ERROR_TYPES = {
-    'WRONG_PARAMETER' : 0,
-    'MISSING_PARAMETER' : 1,
-    'NOT_FOUND' : 2,
-}
+ERROR_TYPES = {'WRONG_PARAMETER': 0,
+               'MISSING_PARAMETER': 1,
+               'NOT_FOUND': 2,
+               }
+
+
 class HomePageLoggedFormView(TemplateView):
     template_name = 'BasicMainPageTemplate.html'
+
     def get_context_data(self, **kwargs):
-        context =  super(HomePageLoggedFormView,self).get_context_data(**kwargs)
+        context = super(HomePageLoggedFormView, self).get_context_data(**kwargs)
         context['user'] = self.request.user
         context['user_top_momends'] = EnrichDataWorker.get_top_user_momends(user=self.request.user, max_count=10)
         context['public_top_momends'] = EnrichDataWorker.get_top_public_momends(max_count=20)
@@ -55,11 +57,13 @@ class HomePageLoggedFormView(TemplateView):
 
 class HomePageNotLoggedView(TemplateView):
     template_name = 'BasicMainPageTemplate.html'
+
     def get_context_data(self, *args, **kwargs):
         context = super(HomePageNotLoggedView, self).get_context_data(**kwargs)
         context['public_top_momends'] = EnrichDataWorker.get_top_public_momends(max_count=20)
         context['should_create_automatically'] = False
         return context
+
 
 class MomendPlayerView(TemplateView):
     template_name = 'MomendPlayerTemplate.html'
@@ -71,9 +75,9 @@ class MomendPlayerView(TemplateView):
         if decoded_id:
             try:
                 if kwargs['type'] == 'm':
-                    _momend = Momend.objects.get(pk = decoded_id)
+                    _momend = Momend.objects.get(pk=decoded_id)
                 elif kwargs['type'] == 'i':
-                    _momend = UserInteraction.objects.get(pk = decoded_id).momend
+                    _momend = UserInteraction.objects.get(pk=decoded_id).momend
                 else:
                     context['error'] = ERROR_TYPES['WRONG_PARAMETER']
                     return context
@@ -86,6 +90,7 @@ class MomendPlayerView(TemplateView):
         context['momend'] = _momend
         return context
 
+
 class ShowMomendView(TemplateView):
     template_name = 'BasicMainPageTemplate.html'
 
@@ -94,7 +99,7 @@ class ShowMomendView(TemplateView):
         if decoded_id:
             play_stat = AnimationPlayStat()
 
-            if kwargs['type'] == 'm': #Whether it is momend or interaction
+            if kwargs['type'] == 'm':  # Whether it is momend or interaction
                 play_stat.momend_id = decoded_id
             elif kwargs['type'] == 'i':
                 play_stat.interaction_id = decoded_id
@@ -115,29 +120,28 @@ class ShowMomendView(TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super(ShowMomendView, self).get_context_data(**kwargs)
 
-        if not self.request.user.is_anonymous(): #Put authentication details even if momend is not exists!
-            print 'not anonymous'
+        if not self.request.user.is_anonymous():  # Put authentication details even if momend is not exists!
             providers = UserSocialAuth.objects.filter(user=self.request.user)
             context['providers'] = [pr.provider for pr in providers]
 
         decoded_id = decode_id(kwargs['id'])
-        if decoded_id: #Show only if id is valid
+        if decoded_id:  # Show only if id is valid
             try:
                 if kwargs['type'] == 'm':
-                    _momend = Momend.objects.get(pk =decoded_id )
+                    _momend = Momend.objects.get(pk=decoded_id)
                 elif kwargs['type'] == 'i':
-                    _momend = UserInteraction.objects.get(pk = decoded_id).momend
+                    _momend = UserInteraction.objects.get(pk=decoded_id).momend
                 else:
                     context['error'] = ERROR_TYPES['WRONG_PARAMETER']
                     return context
             except ObjectDoesNotExist:
-                Log.warn('Momend or interaction does not exists:('+kwargs['type']+'-'+str(decoded_id)) #TODO change to debug after introducing delete
+                Log.warn('Momend or interaction does not exists:('+kwargs['type']+'-'+str(decoded_id))  # TODO change to debug after introducing delete
                 context['error'] = ERROR_TYPES['NOT_FOUND']
                 return context
 
-            context['error']  = '0'
+            context['error'] = '0'
             context['momend'] = _momend
-            context['interactions'] = UserInteraction.objects.filter(momend = _momend)
+            context['interactions'] = UserInteraction.objects.filter(momend=_momend)
             context['related_momends'] = EnrichDataWorker.get_related_momends(momend=_momend, max_count=10, get_private=True)
 
             _all_dis = OutData.objects.filter(owner_layer__momend=_momend).values('raw').distinct()
@@ -156,9 +160,10 @@ class ShowMomendView(TemplateView):
                     _tmp['original_path'] = _obj.original_path
                     _used_media.append(_tmp)
             context['used_media'] = _used_media
-        else: #If id is wrong (decoded_id is none)
+        else:  # If id is wrong (decoded_id is none)
             context['error'] = ERROR_TYPES['WRONG_PARAMETER']
         return context
+
 
 class GetMomendView(TemplateView):
     template_name = 'GetMomendTemplate.html'
@@ -171,14 +176,14 @@ class GetMomendView(TemplateView):
             return context
         try:
             if kwargs['type'] == 'm':
-                obj = Momend.objects.get(pk = decoded_id)
+                obj = Momend.objects.get(pk=decoded_id)
                 if obj.privacy == Momend.PRIVACY_CHOICES['Private']:
                     if obj.owner != self.request.user:
                         context['momend'] = '{"error":"not authorized"}'
                         return context
                 context['momend'] = obj.toJSON()
-            elif kwargs['type'] =='i':
-                obj = UserInteraction.objects.get(pk = decoded_id)
+            elif kwargs['type'] == 'i':
+                obj = UserInteraction.objects.get(pk=decoded_id)
                 if obj.momend.privacy == Momend.PRIVACY_CHOICES['Private']:
                     if obj.momend.owner != self.request.user:
                         context['momend'] = '{"error":"not authorized"}'
@@ -189,6 +194,7 @@ class GetMomendView(TemplateView):
         except ObjectDoesNotExist:
             context['momend'] = '{"error":"bad request"}'
         return context
+
 
 class SaveInteractionView(View):
     def post(self, request, *args, **kwargs):
@@ -201,9 +207,12 @@ class SaveInteractionView(View):
             interaction.interaction = queue
             interaction.creator = request.user
             interaction.save()
-            return _generate_json_response(True, 'Interaction Saved', url=str(reverse_lazy('momends:show-momend',args=('i',interaction.cryptic_id))))
+            interaction.cryptic_id = encode_id(interaction.id)
+            interaction.save()
+            return _generate_json_response(True, 'Interaction Saved', url=str(reverse_lazy('momends:show-momend', args=('i', interaction.cryptic_id))))
         except Exception as e:
             return _generate_json_response(False, 'Error while saving interaction: '+str(e), 'Try Again')
+
 
 class SendAnimationAsMail(View):
     def post(self, request, *args, **kwargs):
@@ -213,10 +222,35 @@ class SendAnimationAsMail(View):
             _email = request.POST['email']
         except:
             return _generate_json_response(False, 'Missing argument on share mail', 'Missing argument')
-        _url = reverse('momends:show-momend', args = (_type, _cryptic_id,))
+        _url = reverse('momends:show-momend', args=(_type, _cryptic_id,))
         if DataManagerUtil.send_share_email(self.request.user, _email.split(','), _url):
             return _generate_json_response(True, 'Send mail success')
-        return _generate_json_response(False, user_msg='Send mail failed. Please try again!') #Error logged on the send mail side
+        return _generate_json_response(False, user_msg='Send mail failed. Please try again!')  # Error logged on the send mail side
+
+
+class GetUserFriendsView(View):
+    """
+    Return list of objects containing friendlist of current user.
+    Response is in this format;
+        [
+            {
+                name: Provider Name,
+                local: [Data returned from provider worker]  # Named as local to be directly compatible with typeahead.js
+            }
+        ]
+    """
+    def get(self, request, *args, **kwargs):
+        response = []
+        providers = UserSocialAuth.objects.filter(user=request.user)
+        for provider in providers:
+            provider_response = dict()
+            provider_response['name'] = provider.provider
+            momends_provider = Provider.objects.get(name=provider.provider)
+            provider_instance = momends_provider.instantiate_provider_worker()
+            provider_response['local'] = provider_instance.get_friendlist(request.user)
+            response.append(provider_response)
+        return _generate_json_response(True, 'Returning friendlist successfully', list=response)
+
 
 class CreateMomendView(View):
     def post(self, request, *args, **kwargs):
@@ -230,6 +264,7 @@ class CreateMomendView(View):
             _start_date = datetime.strptime(request.POST['start_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
             _finish_date = datetime.strptime(request.POST['finish_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
             _privacy = request.POST['privacy_type']
+            _friends = request.POST['friends']
             _theme = request.POST['momend_theme']
             _theme = 1  # TODO remove after showing theme selection combo
 
@@ -240,8 +275,10 @@ class CreateMomendView(View):
                 _args['is_date'] = True
                 _args['since'] = _start_date
                 _args['until'] = _finish_date
+                if _friends:
+                    _args['friends'] = _friends.split(',')
                 _cryptic_id = dm.create_momend(name=_momend_name, duration=60, privacy=_privacy,
-                                               theme=Theme.objects.get(pk=_theme), mail=_send_mail, **_args)
+                                               theme=Theme.objects.get(pk=_theme), send_mail=_send_mail, **_args)
                 if _cryptic_id:  # If created momend successfully
                     return _generate_json_response(True, 'Create momend request received', cid=_cryptic_id)
                 _error_msg = dm.get_last_status()
@@ -276,7 +313,7 @@ class DeleteMomendView(View):
             return _generate_json_response(False, 'Invalid id on delete', 'Invalid Id')
         if kwargs['type'] == 'm':
             try:
-                momend = Momend.objects.get(pk = decoded_id)
+                momend = Momend.objects.get(pk=decoded_id)
                 if not momend.owner == request.user:
                     Log.warn("Trying to delete someone else's momend")
                     return _generate_json_response(False, user_msg='You cannot delete this momend')
@@ -298,7 +335,7 @@ class DeleteMomendView(View):
 
         if kwargs['type'] == 'i':
             try:
-                interaction = UserInteraction.objects.get(pk = decoded_id)
+                interaction = UserInteraction.objects.get(pk=decoded_id)
                 if not interaction.creator == request.user and not interaction.momend.owner == request.user:
                     Log.warn("Trying to delete someone else's interaction")
                     return _generate_json_response(False, user_msg='You cannot delete this interaction')
@@ -315,16 +352,17 @@ class DeleteMomendView(View):
                 return _generate_json_response(False, 'Cannot delete interaction: '+str(e), 'Try Again')
 
 
-
 class SettingsFormView(FormView):
     form_class = SettingsForm
     template_name = 'SettingsTemplate.html'
     success_url = reverse_lazy('momends:home-screen')
+
     def get_context_data(self, **kwargs):
-        context =  super(SettingsFormView,self).get_context_data(**kwargs)
+        context = super(SettingsFormView, self).get_context_data(**kwargs)
         providers = UserSocialAuth.objects.filter(user=self.request.user)
         context['providers'] = [pr.provider for pr in providers]
         return context
+
 
 class MainRedirectView(RedirectView):
         def get_redirect_url(self):
@@ -337,25 +375,28 @@ class MainRedirectView(RedirectView):
 
 class UserProfileTemplateView(TemplateView):
     template_name = 'UserProfileTemplate.html'
+
     def get_context_data(self, **kwargs):
         context = super(UserProfileTemplateView, self).get_context_data(**kwargs)
         try:
-            _user = User.objects.get(pk = kwargs['id'])
-            _obj = UserSocialAuth.objects.filter(user = kwargs['id']) #TODO put here more
+            _user = User.objects.get(pk=kwargs['id'])
+            _obj = UserSocialAuth.objects.filter(user=kwargs['id'])  # TODO put here more
         except KeyError:
-            _user = User.objects.get(username = kwargs['username'])
+            _user = User.objects.get(username=kwargs['username'])
         context['user_top_momends'] = EnrichDataWorker.get_top_user_momends(user=_user, max_count=20, get_private=False)
         context['profile_user'] = _user
         return context
+
 
 class UploadFormView(FormView):
     form_class = DocumentForm
     template_name = 'UploadTest.html'
     success_url = reverse_lazy('momends:home-screen')
 
+
 class FileUploadView(View):
     def post(self, request, *args, **kwargs):
-        if request.FILES == None:
+        if request.FILES is None:
             return _generate_json_response(False, 'Must have files attached: ', 'Try Again')
         _files = request.FILES[u'files[]']
         result = []
@@ -363,30 +404,28 @@ class FileUploadView(View):
             wrapped_file = UploadedFile(_file)
             _filename = wrapped_file.name
             file_size = wrapped_file.file.size
-            Log.debug ('Got file: "%s"' % str(_filename))
+            Log.debug('Got file: "%s"' % str(_filename))
             Log.debug('Content type: "$s" % file.content_type')
 
-            _file_url  = DataManagerUtil.create_file(_file, _filename)
+            _file_url = DataManagerUtil.create_file(_file, _filename)
             Log.debug("Created file " + _filename)
             Log.debug('Uploaded file saving done')
             #settings imports
 
-            _file_delete_url = ""#settings.MULTI_FILE_DELETE_URL+'/'
+            _file_delete_url = ""  # settings.MULTI_FILE_DELETE_URL+'/'
             #getting thumbnail url using sorl-thumbnail
             _thumbnail = DataManagerUtil.create_photo_thumbnail(settings.SAVE_PREFIX + _filename, _filename+'_thumb.jpg')
 
-
-            result.append({"name":_filename,
-                       "size":file_size,
-                       "url":_file_url,
-                       "thumbnail_url":_thumbnail,
-                       "delete_url":_file_delete_url,
-                       "delete_type":"POST",} )
+            result.append({"name": _filename,
+                           "size": file_size,
+                           "url": _file_url,
+                           "thumbnail_url": _thumbnail,
+                           "delete_url": _file_delete_url,
+                           "delete_type": "POST"})
 
         total_result = {
             'files': result
         }
-
 
         #checking for json data type
         #big thanks to Guy Shapiro
@@ -396,6 +435,7 @@ class FileUploadView(View):
         else:
             mimetype = 'text/plain'
         return HttpResponse(_response_data, mimetype=mimetype)
+
 
 def _generate_json_response(success, log_message=None, user_msg=None, **kwargs):
     if log_message:
@@ -412,6 +452,7 @@ def _generate_json_response(success, log_message=None, user_msg=None, **kwargs):
     json = simplejson.dumps(_response)
     return HttpResponse(json)
 
+
 def _log_critical_error(message, send_mail, parameters=None, request_user=None, stack_trace=None):
     Log.fatal(message+':'+str(parameters))
     if send_mail:
@@ -422,7 +463,7 @@ def _log_critical_error(message, send_mail, parameters=None, request_user=None, 
             mail_message += 'While processing the request for '+request_user.username+'\n'
         mail_message += message + '\n'
         if parameters:
-            mail_message += 'Request parameters were:' +str(parameters)+'\n'
+            mail_message += 'Request parameters were:' + str(parameters)+'\n'
         if stack_trace:
             mail_message += str(stack_trace)
 
@@ -431,4 +472,4 @@ def _log_critical_error(message, send_mail, parameters=None, request_user=None, 
         try:
             msg.send()
         except Exception as e:
-            Log.error('Could not send error mail :) ->'+str(e))
+            Log.error('Could not send error mail :) ->' + str(e))

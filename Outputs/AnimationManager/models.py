@@ -16,11 +16,11 @@ class OutData(BaseDataManagerModel):
         verbose_name = 'OutData'
         app_label = 'DataManager'
     owner_layer = models.ForeignKey('AnimationLayer')
-    raw = models.ForeignKey(RawData,null=True, blank=True) #If created by enriching or enhancing a raw data
+    raw = models.ForeignKey(RawData, null=True, blank=True)  # If created by enriching or enhancing a raw data
 
     #Enriched Data
     priority = models.IntegerField(default=0)
-    selection_criteria = models.TextField(null=True, blank=True) #TODO foreign key may be
+    selection_criteria = models.TextField(null=True, blank=True)  # TODO foreign key may be
 
     #Enhanced Data
     theme = models.ForeignKey('Theme', null=True, blank=True)
@@ -30,17 +30,21 @@ class OutData(BaseDataManagerModel):
     parameters = models.TextField(null=True, blank=True)
 
     #Animation Data
-    animation = models.ForeignKey('CoreAnimationData', null=True, blank= True)
+    animation = models.ForeignKey('CoreAnimationData', null=True, blank=True)
 
     def __unicode__(self):
         return str(self.owner_layer)+':'+str(self.theme)+'='+str(self.animation)
 
     def encode(self):
-        enc = model_to_dict(self,fields=['priority','selection_criteria','final_data_path','parameters'])
+        enc = model_to_dict(self, fields=['priority', 'selection_criteria', 'final_data_path', 'parameters'])
         enc['theme'] = self.theme.encode()
         enc['animation'] = self.animation.encode()
-        if self.raw and (self.raw.type == RawData.DATA_TYPE['Status']):
-            enc['data'] = self.raw.data
+        if self.raw:
+            if self.raw.type == RawData.DATA_TYPE['Status']:
+                enc['data'] = self.raw.data
+            if self.raw.type == RawData.DATA_TYPE['Photo']:
+                enc['title'] = self.raw.title
+            enc['date'] = self.raw.create_date
         post_enhancements = self.appliedpostenhancement_set
         if post_enhancements.count() > 0:
             posts = []
@@ -63,11 +67,14 @@ class CoreAnimationData(BaseDataManagerModel):
         app_label = 'DataManager'
 
     USER_DATA_KEYWORDS = [
-        '{{USER_PHOTO}}', '{{NEXT_USER_PHOTO}}','{{RAND_USER_PHOTO}}',
+        '{{USER_PHOTO}}', '{{NEXT_USER_PHOTO}}', '{{RAND_USER_PHOTO}}',
         '{{USER_STATUS}}', '{{NEXT_USER_STATUS}}', '{{RAND_USER_STATUS}}',
         '{{USER_CHECKIN}}', '{{NEXT_USER_CHECKIN}}', '{{RAND_USER_CHECKIN',
         '{{USER_BACKGROUND}}', '{{NEXT_USER_BACKGROUND}}', '{{RAND_USER_BACKGROUND}}',
         '{{USER_MUSIC}}', '{{NEXT_USER_MUSIC}}', '{{RAND_USER_MUSIC}}'
+    ]
+    SPECIAL_DATA_KEYWORDS = [
+        '{{CURRENT_PHOTO_TITLE}}'
     ]
     ANIMATION_TYPE = [
         'animation',
@@ -88,27 +95,26 @@ class CoreAnimationData(BaseDataManagerModel):
         'music-fadeout',
     ]
 
-
-    _choices = [[i,ANIMATION_TYPE[i]] for i in range(0,len(ANIMATION_TYPE))]
+    _choices = [[i, ANIMATION_TYPE[i]] for i in range(0, len(ANIMATION_TYPE))]
 
     group = models.ForeignKey('AnimationGroup')
     order_in_group = models.IntegerField(default=0)
 
-    used_object_type = models.CharField(max_length=255, null=True, blank=True) #What kind of object? i.e., USER_PHOTO,THEME_BG
+    used_object_type = models.CharField(max_length=255, null=True, blank=True)  # What kind of object? i.e., USER_PHOTO,THEME_BG
     used_theme_data = models.ForeignKey('ThemeData', null=True, blank=True)
     extended_animation = models.BooleanField(default=False)
     #Consistent with javascript interpreter
-    name = models.CharField(max_length=255, null=True, blank=True) #Optional, descriptive, human readable name
-    type = models.IntegerField(choices=_choices) #Type of the animation
-    duration = models.IntegerField(verbose_name = 'Duration (ms)', default=0) #Duration of certain types
+    name = models.CharField(max_length=255, null=True, blank=True)  # Optional, descriptive, human readable name
+    type = models.IntegerField(choices=_choices)  # Type of the animation
+    duration = models.IntegerField(verbose_name='Duration (ms)', default=0)  # Duration of certain types
     delay = models.IntegerField(verbose_name='Delay (ms)', default=0)
-    easing = models.CharField(max_length=255, null=True, blank=True) #Easing functions (or cubic-bezier also supported in extended animation)  for default list: http://easings.net/
-    pre = models.TextField(null=True, blank=True) #Precondition of the object to perform the animation
-    anim = models.TextField(null=True, blank=True) #Steps to be performed if the type is 'animation'
-    target = models.IntegerField(null=True, blank=True) #Animation layer to affect if inter-layer type like wait,block,unblock etc.
-    waitPrev = models.BooleanField(default=True) #Whether this animation should wait the previous one to finish or not.
-    triggerNext = models.BooleanField(default=True) #Whether this animation should trigger the next one in the queue or not
-    force = models.NullBooleanField(null=True, blank=True) #Like force stop now or etc. #TODO serializer should ignore null fields may be?
+    easing = models.CharField(max_length=255, null=True, blank=True)  # Easing functions (or cubic-bezier also supported in extended animation)  for default list: http://easings.net/
+    pre = models.TextField(null=True, blank=True)  # Precondition of the object to perform the animation
+    anim = models.TextField(null=True, blank=True)  # Steps to be performed if the type is 'animation'
+    target = models.IntegerField(null=True, blank=True)  # Animation layer to affect if inter-layer type like wait,block,unblock etc.
+    waitPrev = models.BooleanField(default=True)  # Whether this animation should wait the previous one to finish or not.
+    triggerNext = models.BooleanField(default=True)  # Whether this animation should trigger the next one in the queue or not
+    force = models.NullBooleanField(null=True, blank=True)  # Like force stop now or etc. #TODO serializer should ignore null fields may be?
 
     click_animation = models.ForeignKey('UserInteractionAnimationGroup', null=True, blank=True, related_name='click_animation')
     hover_animation = models.ForeignKey('UserInteractionAnimationGroup', null=True, blank=True, related_name='hover_animation')
@@ -118,7 +124,7 @@ class CoreAnimationData(BaseDataManagerModel):
         return str(self.group)+'-'+str(self.used_object_type)
 
     def encode(self):
-        enc = model_to_dict(self,exclude=['group','click_animation','hover_animation','used_object_id','order_in_group','type', 'shadow'])
+        enc = model_to_dict(self, exclude=['group', 'click_animation', 'hover_animation', 'used_object_id', 'order_in_group', 'type', 'shadow'])
         enc['type'] = CoreAnimationData.ANIMATION_TYPE[self.type]
         if self.click_animation:
             enc['click_animation'] = self.click_animation.encode()
@@ -127,6 +133,7 @@ class CoreAnimationData(BaseDataManagerModel):
         if self.shadow:
             enc['shadow'] = self.shadow.encode()
         return enc
+
 
 class DynamicShadow(BaseDataManagerModel):
     name = models.CharField(max_length=255)
@@ -146,6 +153,7 @@ class DynamicShadow(BaseDataManagerModel):
     def encode(self):
         return model_to_dict(self, exclude='name')
 
+
 class ImageEnhancement(BaseDataManagerModel):
     name = models.CharField(max_length=255)
 
@@ -156,10 +164,11 @@ class ImageEnhancement(BaseDataManagerModel):
     def __unicode__(self):
         return self.name
 
+
 class PostEnhancement(BaseDataManagerModel):
     name = models.CharField(max_length=255)
-    filepath = models.CharField(max_length=500, null= True, blank= True)
-    used_object_type = models.CharField(max_length=255, null=True, blank=True) #What kind of object? i.e., USER_PHOTO,THEME_BG
+    filepath = models.CharField(max_length=500, null=True, blank=True)
+    used_object_type = models.CharField(max_length=255, null=True, blank=True)  # What kind of object? i.e., USER_PHOTO,THEME_BG
     parameters = models.CharField(max_length=255, null=True, blank=True)
 
     type = models.CharField(max_length=255)
@@ -167,26 +176,27 @@ class PostEnhancement(BaseDataManagerModel):
     def __unicode__(self):
         return self.name+':'+str(self.type)
 
+
 class AppliedPostEnhancement(BaseDataManagerModel):
     outdata = models.ForeignKey(OutData)
 
     filepath = models.CharField(max_length=255)
     type = models.CharField(max_length=255)
-    parameters = models.CharField(max_length=255) #This parameters overrides ThemeData parameters!
+    parameters = models.CharField(max_length=255)  # This parameters overrides ThemeData parameters!
 
     def __unicode__(self):
         return str(self.type)+':'+self.filepath
 
     def encode(self):
-        return model_to_dict(self,exclude='outdata')
+        return model_to_dict(self, exclude='outdata')
 
 
 class EnhancementGroup(BaseDataManagerModel):
     name = models.CharField(max_length=255)
     enhancement_functions = models.CommaSeparatedIntegerField(max_length=255, null=True, blank=True)
 
-    post_enhancement = models.BooleanField(default = False)
-    applicable_to = models.IntegerField(choices=[[RawData.DATA_TYPE[key],key] for key in RawData.DATA_TYPE.keys()])
+    post_enhancement = models.BooleanField(default=False)
+    applicable_to = models.IntegerField(choices=[[RawData.DATA_TYPE[key], key] for key in RawData.DATA_TYPE.keys()])
 
     def __unicode__(self):
         return self.name+':'+str(self.enhancement_functions)
@@ -203,6 +213,7 @@ class Theme(BaseDataManagerModel):
     def encode(self):
         return self.name
 
+
 class ThemeData(BaseDataManagerModel):
     class Meta:
         verbose_name_plural = 'ThemeData'
@@ -216,18 +227,18 @@ class ThemeData(BaseDataManagerModel):
         'StubPhoto': 2,
         'Font': 3,
         'Music': 4,
-        'Status-Background' : 5,
-        }
-    THEME_DATA_TYPE_KEYWORDS = [ #Every data type has 3 keywords, 1st latest data, 2nd next data, 3rd random #!!DO NOT BREAK THE ORDER
-                                 '{{THEME_BG}}','{{NEXT_THEME_BG}}','{{RAND_THEME_BG}}', #!!3 is necessary for all types even though you won't use it
-                                 '{{THEME_FRAME}}','{{NEXT_THEME_FRAME}}', '{{RAND_THEME_FRAME}}',
-                                 '{{THEME_STUB}}','{{NEXT_THEME_STUB}}', '{{RAND_THEME_STUB}}',
-                                 '{{THEME_FONT}}','{{NEXT_THEME_FONT}}', '{{RAND_THEME_FONT}}',
-                                 '{{THEME_MUSIC}}','{{NEXT_THEME_MUSIC}}', '{{RAND_THEME_MUSIC}}',
-                                 '{{THEME_STATUS_BG}}', '{{NEXT_THEME_STATUS_BG}}', '{{RAND_THEME_STATUS_BG}}',
-                                 ]
-    THEME_DATA_PARAMETER_KEYWORD = '{{THEME_DATA_PARAMETER}}' # To be replaced while applying enhancements etc.
-    type = models.IntegerField(choices=[[THEME_DATA_TYPE[key],key] for key in THEME_DATA_TYPE.keys()])
+        'Status-Background': 5, }
+
+    # Every data type has 3 keywords, 1st latest data, 2nd next data, 3rd random #!!DO NOT BREAK THE ORDER
+    THEME_DATA_TYPE_KEYWORDS = ['{{THEME_BG}}', '{{NEXT_THEME_BG}}', '{{RAND_THEME_BG}}',  # !!3 is necessary for all types even though you won't use it
+                                '{{THEME_FRAME}}', '{{NEXT_THEME_FRAME}}', '{{RAND_THEME_FRAME}}',
+                                '{{THEME_STUB}}', '{{NEXT_THEME_STUB}}', '{{RAND_THEME_STUB}}',
+                                '{{THEME_FONT}}', '{{NEXT_THEME_FONT}}', '{{RAND_THEME_FONT}}',
+                                '{{THEME_MUSIC}}', '{{NEXT_THEME_MUSIC}}', '{{RAND_THEME_MUSIC}}',
+                                '{{THEME_STATUS_BG}}', '{{NEXT_THEME_STATUS_BG}}', '{{RAND_THEME_STATUS_BG}}', ]
+
+    THEME_DATA_PARAMETER_KEYWORD = '{{THEME_DATA_PARAMETER}}'  # To be replaced while applying enhancements etc.
+    type = models.IntegerField(choices=[[THEME_DATA_TYPE[key], key] for key in THEME_DATA_TYPE.keys()])
     data_path = models.TextField()
     parameters = models.TextField(null=True, blank=True)
 
@@ -236,6 +247,7 @@ class ThemeData(BaseDataManagerModel):
     def __unicode__(self):
         return str(self.theme)+':'+str(self.type)+'='+str(self.data_path)
 
+
 class Scenario(BaseDataManagerModel):
     name = models.CharField(max_length=255)
 
@@ -243,6 +255,7 @@ class Scenario(BaseDataManagerModel):
 
     def __unicode__(self):
         return str(self.name)
+
 
 class AnimationGroup(BaseDataManagerModel):
     name = models.CharField(max_length=255)
@@ -256,9 +269,8 @@ class AnimationGroup(BaseDataManagerModel):
         'Music': 1,
         'Stub': 2,
         'Normal': 3,
-        'UserInteraction': 4,
-        }
-    type = models.IntegerField(choices=[[ANIMATION_GROUP_TYPE[key],key] for key in ANIMATION_GROUP_TYPE.keys()])
+        'UserInteraction': 4, }
+    type = models.IntegerField(choices=[[ANIMATION_GROUP_TYPE[key], key] for key in ANIMATION_GROUP_TYPE.keys()])
 
     needed_bg = models.IntegerField('Needed user background', default=0)
     needed_music = models.IntegerField('Needed user music', default=0)
@@ -276,6 +288,7 @@ class AnimationGroup(BaseDataManagerModel):
             resp.append(animation.encode())
         return resp
 
+
 class UserInteractionAnimationGroup(BaseDataManagerModel):
     name = models.CharField(max_length=255)
 
@@ -289,9 +302,10 @@ class UserInteractionAnimationGroup(BaseDataManagerModel):
         return self.name
 
     def encode(self):
-        resp = model_to_dict(self,exclude='animations')
+        resp = model_to_dict(self, exclude='animations')
         resp['animations'] = self.animations.encode()
         return resp
+
 
 class AnimationPlayStat(BaseDataManagerModel):
     momend = models.ForeignKey('Momend', null=True, blank=True)
@@ -301,7 +315,8 @@ class AnimationPlayStat(BaseDataManagerModel):
     redirect_url = models.CharField(max_length=500)
 
     def __unicode__(self):
-        return str(self.momend) + ':'+ str(self.user)+'='+str(self.date)
+        return str(self.momend) + ':' + str(self.user) + '=' + str(self.date)
+
 
 class UserInteraction(BaseDataManagerModel):
     momend = models.ForeignKey('Momend')
@@ -323,16 +338,11 @@ class UserInteraction(BaseDataManagerModel):
     def toJSON(self):
         return simplejson.dumps(self.encode(), default=lambda obj: obj.isoformat() if isinstance(obj, datetime) else None)
 
-def generate_cryptic_id_for_interaction(sender,instance,using,**kwargs):
-    if not instance.cryptic_id:
-        instance.cryptic_id = encode_id(instance.pk)
-
-pre_save.connect(generate_cryptic_id_for_interaction, UserInteraction)
 
 class DeletedUserInteraction(BaseDataManagerModel):
-    momend_id = models.IntegerField() #Using id so as not to link with momend
+    momend_id = models.IntegerField()  # Using id so as not to link with momend
     date = models.DateTimeField()
-    creator_id = models.IntegerField() #Not to delete if creator deletes his profile
+    creator_id = models.IntegerField()  # Not to delete if creator deletes his profile
 
     momend_owner_deleted = models.NullBooleanField(null=True, blank=True)
     delete_time = models.DateTimeField(auto_now_add=True)
@@ -342,9 +352,10 @@ class DeletedUserInteraction(BaseDataManagerModel):
         self.date = interaction.date
         self.creator_id = interaction.creator_id
 
-def check_theme_data_path_callback(sender,instance,using,**kwargs):
+
+def check_theme_data_path_callback(sender, instance, using, **kwargs):
     if not '/' in instance.data_path:
-        types = {ThemeData.THEME_DATA_TYPE[key]:key for key in ThemeData.THEME_DATA_TYPE}
-        instance.data_path = instance.theme.name + '/' + types[instance.type].lower()+ '/' + instance.data_path
+        types = {ThemeData.THEME_DATA_TYPE[key]: key for key in ThemeData.THEME_DATA_TYPE}
+        instance.data_path = instance.theme.name + '/' + types[instance.type].lower() + '/' + instance.data_path
 
 pre_save.connect(check_theme_data_path_callback, ThemeData)

@@ -9,6 +9,7 @@ var Momend = (function(){
     var loadedObjects = 0;
     var _loadCallback;
     var musicObjects;
+    var createdObjects;
 
     function init(){
         _jsAnimate.initAnimation();
@@ -103,7 +104,7 @@ var Momend = (function(){
     }
     function _createObjectsFromData(load_callback){
         _loadCallback = load_callback;
-        var created_objects = {};
+        createdObjects = {};
         musicObjects = [];
         _shadowData = {};
         for(var i = 0;i<_momendData['animation_layers'].length;i++){
@@ -119,177 +120,57 @@ var Momend = (function(){
                 }
                 var filepath = node['final_data_path'];
                 var theme_filepath;
-                if(filepath && filepath.indexOf('http') != 0){
+                if(filepath && filepath.indexOf('http') !== 0){
                     theme_filepath = MOMEND_FILE_URL + THEME_DATA_URL + filepath;
                     filepath = MOMEND_FILE_URL + filepath;
                 }
                 if(node['animation']['used_theme_data'] != null){
-                    if(created_objects[node['final_data_path']]){
-                        node['animation']['object'] = created_objects[node['final_data_path']];
+                    if(createdObjects[node['final_data_path']]){
+                        node['animation']['object'] = createdObjects[node['final_data_path']];
                     }else{
-                        totalObjects++; //Player should wait for item to load
-                        var _id = 'stub'+i+''+j;
-                        jQuery('<div/>',{
-                            id: _id,
-                            class: 'photo'
-                        }).appendTo('.scene');
-                        var created_div = $('#stub'+i+''+j);
-                        var created_obj = jQuery('<img/>',{
-                            class: 'photo_image',
-                            id: 'stub-image'+i+''+j,
-                            src: theme_filepath,
-                            ready : function(){
-                                __objectReady();
-                            }
-                        }).appendTo(created_div);
-                        if(typeof node['animation']['click_animation'] !== 'undefined'){
-                            created_obj.click(function(){
-                                _jsAnimate.handleClick($(this));
-                            });
-                        }
-                        if(typeof node['animation']['hover_animation'] !== 'undefined'){
-                            created_obj.mouseenter(function(){
-                                _jsAnimate.handleMouseEnter($(this));
-                            });
-                        }
-                        if(typeof node['animation']['shadow'] !== 'undefined'){
-                             _shadowData[_id] = node['animation']['shadow'];
-                        }
-                        created_objects[node['final_data_path']] = created_div;
-                        node['animation']['object'] = created_objects[node['final_data_path']];
+                        __createStubPhoto(node, i, j, theme_filepath);
                     }
                 }else{
                     switch(node['animation']['used_object_type']){
                         case '{{NEXT_THEME_BG}}':
                         case '{{RAND_THEME_BG}}':
-                            totalObjects++; //Player should wait for item to load
-                            var _id = 'bg'+i+''+j;
-                            var created_div = jQuery('<div/>',{
-                                id: _id,
-                                class: 'scene-background'
-                            }).appendTo('.scene');
-                            var created_pbj = jQuery('<img/>',{
-                                class: 'background-image',
-                                src: theme_filepath,
-                                ready : function(){
-                                    __objectReady();
-                                }
-                            }).appendTo(created_div);
-                            created_objects[node['final_data_path']] = $('#bg'+i+''+j);
+                            __createThemeBg(node, i, j, theme_filepath);
                         case '{{THEME_BG}}':
-                            node['animation']['object'] = created_objects[node['final_data_path']];
+                            node['animation']['object'] = createdObjects[node['final_data_path']];
                             break;
                         case '{{NEXT_USER_PHOTO}}':
                         case '{{RAND_USER_PHOTO}}':
-                            totalObjects++; //Player should wait for item to load
-                            var _id = 'photo'+i+''+j;
-                            jQuery('<div/>',{
-                                id: _id,
-                                class: 'photo'
-                            }).appendTo('.scene');
-                            var created_div = $('#photo'+i+''+j);
-                            var created_obj = jQuery('<img/>',{
-                                class: 'photo_image',
-                                id: 'photo_image'+i+''+j,
-                                src: filepath,
-                                ready : function(){
-                                    __objectReady();
-                                }
-                            }).appendTo(created_div);
-                            if(typeof node['animation']['click_animation'] !== 'undefined'){
-                                created_obj.click(function(){
-                                    _jsAnimate.handleClick($(this));
-                                });
-                            }
-                            if(typeof node['animation']['hover_animation'] !== 'undefined'){
-                                created_obj.mouseenter(function(){
-                                    _jsAnimate.handleMouseEnter($(this));
-                                });
-                            }
-                            if(typeof node['animation']['shadow'] !== 'undefined'){
-                                _shadowData[_id] = node['animation']['shadow'];
-                            }
-                            created_objects[node['final_data_path']] = created_div;
+                            __createPhoto(node, i, j, filepath);
                         case '{{USER_PHOTO}}':
-                            node['animation']['object'] = created_objects[node['final_data_path']];
+                            node['animation']['object'] = createdObjects[node['final_data_path']];
                             break;
-
                         case '{{NEXT_USER_STATUS}}':
                         case '{{RAND_USER_STATUS}}':
-                            var _id = 'status'+i+''+j;
-                            jQuery('<div/>',{
-                                id: _id,
-                                class: 'status'
-                            }).appendTo('.scene');
-                            var created_div = $('#status'+i+''+j);
-                            jQuery('<p/>',{
-                                class: 'status-text',
-                                text:node['data']
-                            }).appendTo(created_div);
-                            if(typeof node['animation']['click_animation'] !== 'undefined'){
-                                created_div.click(function(){
-                                    _jsAnimate.handleClick($(this));
-                                });
-                            }
-                            if(typeof node['animation']['hover_animation'] !== 'undefined'){
-                                created_div.mouseenter(function(){
-                                    _jsAnimate.handleMouseEnter($(this));
-                                });
-                            }
-                            if(typeof node['animation']['shadow'] !== 'undefined'){
-                                _shadowData[_id] = node['animation']['shadow'];
-                            }
-                            if(node['post_enhancements']){
-                                __applyPostEnhancements(created_div,node['post_enhancements']);
-                            }
-                            created_objects[hashCode(node['data'])] = created_div;
-
+                            __createStatus(node, i, j);
                         case '{{USER_STATUS}}':
-                            node['animation']['object'] = created_objects[hashCode(node['data'])];
+                            node['animation']['object'] = createdObjects[hashCode(node['data'])];
                             break;
-
                         case '{{NEXT_USER_MUSIC}}':
-                            var _is_user_music = true;
+                            var isUserMusic = true;
                         case '{{NEXT_THEME_MUSIC}}':
                         case '{{RAND_THEME_MUSIC}}':
-                            totalObjects++; //Player should wait for item to load
-                            var _id = 'music'+i+''+j;
-                            var musicObj = jQuery('<div/>',{
-                                id: _id,
-                                class:'jp-jplayer'
-                            }).appendTo('.music');
-                            musicObjects.push(musicObj);
-                            musicObj[0]['filepath'] = node['final_data_path'];
-                            var _parsed_paths = __parseMusicSources(node['final_data_path']);
-                            musicObj.jPlayer({
-                                ready: function (event){
-                                    var paths = __parseMusicSources(event.delegateTarget['filepath']);
-                                    var _keys = Object.keys(paths);
-                                    for(var k = 0; k< _keys.length; k++){
-                                        var _type = _keys[k];
-                                        if(paths[_type].indexOf('http') == 0){
-                                            continue;
-                                        }
-                                        if(_is_user_music){
-                                            paths[_type] = MOMEND_FILE_URL + paths[_type];
-                                        }else{
-                                            paths[_type] = MOMEND_FILE_URL + THEME_DATA_URL + paths[_type];
-                                        }
-                                    }
-                                    $(this).jPlayer("setMedia",paths);
-                                    _jsAnimate.musicLoaded($(this));
-                                    __objectReady();
-                                },
-                                swfPath: STATIC_URL,
-                                supplied: Object.keys(_parsed_paths).toString(),
-                                wmode: 'window',
-                                volume: 0.1
-                            });
-                            created_objects[node['final_data_path']] = musicObj;
+                            __createMusic(node, i, j, isUserMusic);
                         case '{{THEME_MUSIC}}':
                         case '{{USER_MUSIC}}':
-                            node['animation']['object'] = created_objects[node['final_data_path']];
+                            node['animation']['object'] = createdObjects[node['final_data_path']];
                             break;
+                        case '{{CURRENT_PHOTO_TITLE}}':  //Title has the owner photo as final_data_path
+                            if (!node['title']){
+                                console.dir(node);
+                                node['title'] = node['date'].substring(0,10);
+                            }
+                            var title = createdObjects[hashCode(node['date'])];
+                            if(title){
+                                node['animation']['object'] = title;
+                            }else{
+                                __createTitle(node, i, j);
+                                node['animation']['object'] = createdObjects[hashCode(node['date'])];
+                            }
                     }
 
                 }
@@ -297,9 +178,208 @@ var Momend = (function(){
         }
         __checkIfReady();
     }
+
+    /**
+    Creates a div and photo dom objects for given stub data node
+    handles user interactions and shadow, too
+    Appends the result to createdObjects dictionary
+    */
+    function __createStubPhoto(node, layer, order, theme_filepath){
+        totalObjects++; //Player should wait for item to load
+        var _id = 'stub'+layer+''+order;
+        var created_div = jQuery('<div/>',{
+            id: _id,
+            class: 'photo'
+        }).appendTo('.scene');
+        var created_obj = jQuery('<img/>',{
+            class: 'photo_image',
+            id: 'stub-image'+layer+''+order,
+            src: theme_filepath,
+            ready : function(){
+                __objectReady();
+            }
+        }).appendTo(created_div);
+        if(typeof node['animation']['click_animation'] !== 'undefined'){
+            created_obj.click(function(){
+                _jsAnimate.handleClick($(this));
+            });
+        }
+        if(typeof node['animation']['hover_animation'] !== 'undefined'){
+            created_obj.mouseenter(function(){
+                _jsAnimate.handleMouseEnter($(this));
+            });
+        }
+        if(typeof node['animation']['shadow'] !== 'undefined'){
+             _shadowData[_id] = node['animation']['shadow'];
+        }
+        createdObjects[node['final_data_path']] = created_div;
+        node['animation']['object'] = createdObjects[node['final_data_path']];
+    }
+
+    /**
+    Creates a div that contains background picture
+    has no user interaction or shadow
+    */
+    function __createThemeBg(node, layer, order, theme_filepath){
+        totalObjects++; //Player should wait for item to load
+        var _id = 'bg'+layer+''+order;
+        var created_div = jQuery('<div/>',{
+            id: _id,
+            class: 'scene-background'
+        }).appendTo('.scene');
+        var created_pbj = jQuery('<img/>',{
+            class: 'background-image',
+            src: theme_filepath,
+            ready : function(){
+                __objectReady();
+            }
+        }).appendTo(created_div);
+        createdObjects[node['final_data_path']] = created_div;
+    }
+
+    /**
+    Creates a div that contains user photo
+    Appends the result to the createdObjects dictionary
+    */
+    function __createPhoto(node, layer, order, filepath){
+        totalObjects++; //Player should wait for item to load
+        var _id = 'photo'+layer+''+order;
+        var created_div = jQuery('<div/>',{
+            id: _id,
+            class: 'photo'
+        }).appendTo('.scene');
+        var created_obj = jQuery('<img/>',{
+            class: 'photo_image',
+            id: 'photo_image'+layer+''+order,
+            src: filepath,
+            ready : function(){
+                __objectReady();
+            }
+        }).appendTo(created_div);
+        if(typeof node['animation']['click_animation'] !== 'undefined'){
+            created_obj.click(function(){
+                _jsAnimate.handleClick($(this));
+            });
+        }
+        if(typeof node['animation']['hover_animation'] !== 'undefined'){
+            created_obj.mouseenter(function(){
+                _jsAnimate.handleMouseEnter($(this));
+            });
+        }
+        if(typeof node['animation']['shadow'] !== 'undefined'){
+            _shadowData[_id] = node['animation']['shadow'];
+        }
+        createdObjects[node['final_data_path']] = created_div;
+    }
+
+    /**
+    Creates a status dom object and adds it to createdObjects array.
+    Also applies post enhancements if the given node has enhancement values on post_enhancements key
+    */
+    function __createStatus(node, layer, order){
+        var _id = 'status'+layer+''+order;
+        var created_div = jQuery('<div/>',{
+            id: _id,
+            class: 'status'
+        }).appendTo('.scene');
+        jQuery('<p/>',{
+            class: 'status-text',
+            text:node['data']
+        }).appendTo(created_div);
+        if(typeof node['animation']['click_animation'] !== 'undefined'){
+            created_div.click(function(){
+                _jsAnimate.handleClick($(this));
+            });
+        }
+        if(typeof node['animation']['hover_animation'] !== 'undefined'){
+            created_div.mouseenter(function(){
+                _jsAnimate.handleMouseEnter($(this));
+            });
+        }
+        if(typeof node['animation']['shadow'] !== 'undefined'){
+            _shadowData[_id] = node['animation']['shadow'];
+        }
+        if(node['post_enhancements']){
+            __applyPostEnhancements(created_div,node['post_enhancements']);
+        }
+        createdObjects[hashCode(node['data'])] = created_div;
+    }
+
+    /**
+    Creates required divs and instantiates jPlayer to be ready to play music
+    Adds the resulting player to createdObjects dictionary
+    !IMPORTANT: sets the volume of the player to 0.1, by the time I was looking there was an issue on setting it to 0
+    However it won't matter if you set the volume after playing the music since it is not playing automatically.
+    */ 
+    function __createMusic(node, layer, order, isUserMusic){
+        totalObjects++; //Player should wait for item to load
+        var _id = 'music'+layer+''+order;
+        var musicObj = jQuery('<div/>',{
+            id: _id,
+            class:'jp-jplayer'
+        }).appendTo('.music');
+        musicObjects.push(musicObj);
+        musicObj[0]['filepath'] = node['final_data_path'];
+        var _parsed_paths = __parseMusicSources(node['final_data_path']);
+        musicObj.jPlayer({
+            ready: function (event){
+                var paths = __parseMusicSources(event.delegateTarget['filepath']);
+                var _keys = Object.keys(paths);
+                for(var k = 0; k< _keys.length; k++){
+                    var _type = _keys[k];
+                    if(paths[_type].indexOf('http') == 0){
+                        continue;
+                    }
+                    if(isUserMusic){
+                        paths[_type] = MOMEND_FILE_URL + paths[_type];
+                    }else{
+                        paths[_type] = MOMEND_FILE_URL + THEME_DATA_URL + paths[_type];
+                    }
+                }
+                $(this).jPlayer("setMedia",paths);
+                _jsAnimate.musicLoaded($(this));
+                __objectReady();
+            },
+            swfPath: STATIC_URL,
+            supplied: Object.keys(_parsed_paths).toString(),
+            wmode: 'window',
+            volume: 0.1
+        });
+        createdObjects[node['final_data_path']] = musicObj;
+    }
+
+    function __createTitle(node, layer, order){
+        var owner = createdObjects[node['final_data_path']];  // Photo object
+        console.log('Appending to:');
+        console.dir(owner);
+        var _id = 'title'+layer+''+order;
+        var created_div = jQuery('<div/>',{
+            id: _id,
+            class: 'title'
+        }).appendTo(owner);
+        jQuery('<p/>',{
+            class: 'title-text',
+            text:node['title']
+        }).appendTo(created_div);
+        if(node['post_enhancements']){
+            __applyPostEnhancements(created_div,node['post_enhancements']);
+        }  
+        createdObjects[hashCode(node['date'])] = created_div;  // Using full date to be unique, title or day part of the date might not be.
+    }
+
+    /**
+    Object load callback in order to count how many of the required objects are loaded
+    Increaments global variable; loadedObjects
+    */
     function __objectReady(){
         loadedObjects++;
     }
+
+    /**
+    Checks if all the required objects loaded
+    After called once, it will run in every 300ms until player is ready,
+    it will call loadCallback if the player is ready
+    */
     function __checkIfReady(){
         if(loadedObjects === totalObjects){
             _loadCallback();

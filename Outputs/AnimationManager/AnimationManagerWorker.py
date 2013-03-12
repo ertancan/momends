@@ -52,7 +52,7 @@ class AnimationManagerWorker(BaseOutputWorker):
 
         return filled_scenario, duration
 
-    def _validate_data_count(self,enriched_data, used_bg_count, used_photo_count, used_status_count, used_checkin_count):
+    def _validate_data_count(self, enriched_data, used_bg_count, used_photo_count, used_status_count, used_checkin_count):
         types = RawData.DATA_TYPE
         if len(enriched_data[types['Photo']]) < used_photo_count:
             raise DataCountException(DataCountException.PHOTO_TYPE)
@@ -64,7 +64,7 @@ class AnimationManagerWorker(BaseOutputWorker):
             raise DataCountException(DataCountException.BACKGROUND_TYPE)
         return True
 
-    def _fill_user_data(self,scenario):
+    def _fill_user_data(self, scenario):
         for object_layer in scenario:
             for outData in object_layer:
                 used_type = outData.animation.used_object_type
@@ -74,14 +74,24 @@ class AnimationManagerWorker(BaseOutputWorker):
                         outData.raw = used_object.raw
                         outData.selection_criteria = used_object.criteria
                         outData.priority = used_object.priority
+                elif used_type in CoreAnimationData.SPECIAL_DATA_KEYWORDS:
+                    used_object = self.user_data_manager.get_data_for_keyword(used_type)
+                    if used_object:
+                        index = CoreAnimationData.SPECIAL_DATA_KEYWORDS.index(used_type)
+                        if index == 0:  # Title
+                            print 'USED--->'+str(used_object.raw)
+                            outData.raw = used_object.raw
+                            outData.selection_criteria = 'Photo Title'
+                            outData.priority = 100
+                            outData.final_data_path = used_object.raw.data
                 outData.save()
-        return  scenario
+        return scenario
 
     def _apply_theme(self, scenario_layers, theme, prefix):
         themeWorker = ThemeManagerWorker(theme)
         for animation_layer in scenario_layers:
             for outdata in animation_layer:
-                themeWorker.apply_theme(outdata,file_prefix=prefix)
+                themeWorker.apply_theme(outdata, file_prefix=prefix)
 
 
     def save_output(self):

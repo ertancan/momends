@@ -3,12 +3,33 @@ import random
 from Outputs.AnimationManager.models import CoreAnimationData
 from LogManagers.Log import Log
 from DataManager.models import Momend
-from DataManager.models import User
+from DataManager.models import Provider
 
-class EnrichDataWorker: #TODO keep this as base class and introduce different workers
+
+class EnrichDataWorker:  # TODO keep this as base class and introduce different workers
 
     @staticmethod
-    def enrich_user_raw_data(raw_data_arr): #TODO enrich? :) #TODO Background
+    def filter_user_raw_data_for_friends(raw_data_arr, friends):
+        _provider_groups = dict()
+        _response = []
+        for _friend in friends:  # Grouping friends according to their providers, so as to delegate
+            try:
+                _provider, _user_id = _friend.split('-')
+                if not _provider in _provider_groups:
+                    _provider_groups[_provider] = []
+                _provider_groups[_provider].append(_user_id)
+            except ValueError:
+                Log.error('Wrong friend id format; expected: provider-id')
+
+        for _provider in _provider_groups.keys():
+            _provider_obj = Provider.objects.get(name=_provider)
+            _provider_worker = _provider_obj.instantiate_provider_worker()
+            _response += _provider_worker.filter_for_friends(raw_data_arr, _provider_groups[_provider])
+
+        return _response
+
+    @staticmethod
+    def enrich_user_raw_data(raw_data_arr):  # TODO enrich? :)
         """get list of user raw data smartly according to its relevance to user.
         Args:
             raw_data_array: raw data array to get enhanced to
@@ -17,11 +38,11 @@ class EnrichDataWorker: #TODO keep this as base class and introduce different wo
             an array of ordered raw data (aka. enhanced data)
         """
         result = []
-        for i in range(0,len(CoreAnimationData.USER_DATA_KEYWORDS)/2):
+        for i in range(0, len(CoreAnimationData.USER_DATA_KEYWORDS) / 2):
             result.append([])
 
         for _raw in raw_data_arr:
-            tmp = TemporaryEnrichedObjectHolder(raw=_raw, criteria='Random', priority=random.randint(1,100))
+            tmp = TemporaryEnrichedObjectHolder(raw=_raw, criteria='Random', priority=random.randint(1, 100))
             result[_raw.type].append(tmp)
         return EnrichDataWorker._sort_by_priority(result)
 
@@ -42,7 +63,6 @@ class EnrichDataWorker: #TODO keep this as base class and introduce different wo
         _obj = _obj.order_by('?').reverse()
         return _obj if (_obj.count() < max_count) else _obj[_obj.count() - max_count:]
 
-
     @staticmethod
     def _sort_by_priority(enriched_data):
         sorted_data = []
@@ -52,7 +72,7 @@ class EnrichDataWorker: #TODO keep this as base class and introduce different wo
         return sorted_data
 
     @staticmethod
-    def get_top_user_momends(user, max_count, get_private=True): #TODO (goktan): here we need an algorithm
+    def get_top_user_momends(user, max_count, get_private=True):  # TODO (goktan): here we need an algorithm
         """get list of top momends for a specific user
         Args:
             user: user to get momend
