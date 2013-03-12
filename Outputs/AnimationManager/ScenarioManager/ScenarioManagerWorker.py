@@ -28,6 +28,9 @@ class ScenarioManagerWorker(object):
 
         if selection == 'random':
             compatible_animation_groups = compatible_animation_groups.order_by('?')
+        elif selection == 'latest-animation':
+            Log.debug('Latest Animation Selection')
+            compatible_animation_groups = compatible_animation_groups.order_by('pk').reverse()
 
         Log.debug('Preparing scenario with selection:'+selection)
 
