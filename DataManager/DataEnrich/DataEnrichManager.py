@@ -37,6 +37,7 @@ class DataEnrichManager(object):
 
             for _type in range(0, len(RawData.DATA_TYPE)):
                 if len(self.raw_data_groups[_type]) > 0:  # If there is data for this type
+                    print _worker_model.applicable_to
                     if not _worker_model.applicable_to or _worker_model.applicable_to == _type:  # Whether worker is applicable to every type, or this type
                         if not _worker_instance:
                             _worker_instance = DataEnrichManager._instantiate_enrich_worker(_worker_model.worker_name)
@@ -46,14 +47,17 @@ class DataEnrichManager(object):
                             if _results[i]:  # If the worker processed this item
                                 self.enriched_data_groups[_type][i].criteria.append(_worker_model.name)
                                 self.enriched_data_groups[_type][i].multiplier.append(_enhancement_item.multiplier)
-                                self.enriched_data_groups[_type][i].priority.append(_results[i] * _enhancement_item.multiplier)  # Multiply with the weight of the enhancer in the scenario
+                                self.enriched_data_groups[_type][i].priority.append(_results[i])
 
         for _layer in self.enriched_data_groups:  # Merging layers of enrichment results
             for _item in _layer:
-                _total = sum(_item.priority)
                 _weight = sum(_item.multiplier)
                 if _weight > 0:
-                    _item.priority = (_total / _weight) * (100 / _weight)  # To calculate weighted priority (i.e. if total weight was 50 and total score was 35, then score will be 70)
+                    _total = 0
+                    for i, _score in enumerate(_item.priority):  # To calculate weighted priority (i.e. if total weight was 50 and total score was 35, then score will be 70)
+                        _total += _score * (_item.multiplier[i] / _weight)
+
+                    _item.priority = _total
                     _item.criteria = ','.join(_item.criteria)
                 else:  # There wasn't any enrichment for this data
                     _item.priority = 0
