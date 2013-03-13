@@ -82,21 +82,21 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                     if 'name' in obj:
                         _raw.title = obj['name'][:255]  # first 255 chars of title
                     if 'likes' in obj:
-                        _raw.like_count = len(obj['likes'])
+                        _raw.like_count = len(obj['likes']['data'])
                     if 'sharedposts' in obj:
-                        _raw.share_count = len(obj['sharedposts'])
+                        _raw.share_count = len(obj['sharedposts']['data'])
                     if 'comments' in obj:
-                        _raw.comment_count = len(obj['comments'])
+                        _raw.comment_count = len(obj['comments']['data'])
                     _raw.create_date = datetime.datetime.strptime(obj['created_time'], '%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
                     #TODO error handling (goktan)
                     #_raw.thumbnail = DataManagerUtil.create_photo_thumbnail(settings.SAVE_PREFIX + _raw.data, str(_raw)+ '_thumb'+ _ext_part)
                     Log.debug(_raw)
-                except:
-                    Log.error('Could not fetch Facebook photo')
+                    _return_data.append(_raw)
+                except Exception as e:
+                    Log.error('Could not fetch Facebook photo:' + str(e))
             else:
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
                 Log.debug(_raw.original_id + ' found in DB')
-            if _raw:
                 _return_data.append(_raw)
 
         return _return_data
@@ -136,19 +136,19 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                     _raw.provider = provider
                     _raw.data = obj['message']
                     if 'likes' in obj:
-                        _raw.like_count = len(obj['likes'])
+                        _raw.like_count = len(obj['likes']['data'])
                     if 'sharedposts' in obj:
-                        _raw.share_count = len(obj['sharedposts'])
+                        _raw.share_count = len(obj['sharedposts']['data'])
                     if 'comments' in obj:
-                        _raw.comment_count = len(obj['comments'])
+                        _raw.comment_count = len(obj['comments']['data'])
                     _raw.create_date = datetime.datetime.strptime(obj['updated_time'], '%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
                     _raw.original_id = obj['id']
+                    _return_data.append(_raw)
                 except:
                     Log.error('Could not fetch Facebook status')
             else:
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
                 Log.debug(_raw.original_id + ' found in DB')
-            if _raw:
                 _return_data.append(_raw)
         return _return_data
 
@@ -217,17 +217,17 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 try:
                     _raw.data = obj['place']['name']
                     if 'likes' in obj:
-                        _raw.like_count = len(obj['likes'])
+                        _raw.like_count = len(obj['likes']['data'])
                     if 'comments' in obj:
-                        _raw.comment_count = len(obj['comments'])
+                        _raw.comment_count = len(obj['comments']['data'])
                     _raw.create_date = datetime.datetime.strptime(obj['created_time'], '%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
                     _raw.original_id = obj['id']
+                    _return_data.append(_raw)
                 except:
                     Log.error('Could not fetch Facebook checkin')
             else:
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
                 Log.debug(_raw.original_id + ' found in DB')
-            if _raw:
                 _return_data.append(_raw)
         return _return_data
 
