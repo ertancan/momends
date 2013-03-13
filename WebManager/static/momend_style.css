@@ -51,6 +51,7 @@ figure, figcaption{ /*add any other html5 elements you use*/
 .status {
     display:none;
     position:absolute;
+    text-align: center;
 }
 
 .status-text{
@@ -62,6 +63,7 @@ figure, figcaption{ /*add any other html5 elements you use*/
 .title {
     display:none;
     position:absolute;
+    text-align: center;
 }
 
 .title-text{

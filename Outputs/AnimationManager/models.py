@@ -43,7 +43,10 @@ class OutData(BaseDataManagerModel):
             if self.raw.type == RawData.DATA_TYPE['Status']:
                 enc['data'] = self.raw.data
             if self.raw.type == RawData.DATA_TYPE['Photo']:
-                enc['title'] = self.raw.title
+                if len(self.raw.title) > 0:
+                    enc['title'] = self.raw.title
+                else:  # Use photo date as title
+                    enc['title'] = self.raw.create_date.strftime("%Y-%m-%d %H:%M")
             enc['date'] = self.raw.create_date
         post_enhancements = self.appliedpostenhancement_set
         if post_enhancements.count() > 0:

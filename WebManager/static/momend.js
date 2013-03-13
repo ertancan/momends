@@ -17,7 +17,7 @@ var Momend = (function(){
     function _momendArrived(momend_data){
         _momendData = $.extend(momend_data, {}, true);
         _jsAnimate.reCalculateDimensions(); //Since they may be needed while creating objects
-        if(!_momendData || _momendData.length == 0 || _momendData['error']){
+        if(!_momendData || _momendData.length === 0 || _momendData['error']){
             _loadFailed();
             _gaq.push(['_trackEvent', 'Player', 'Load', 'Failed']);
         }else{
@@ -58,7 +58,7 @@ var Momend = (function(){
         if(_interactionSent){
             return;
         }
-        console.log('sending')
+        console.log('sending');
         var json = _jsAnimate.convertUserInteractionLayerToJSON();
         var token = $('[name="csrfmiddlewaretoken"]')[0].value;
         var momend_id = _momendData['cryptic_id'];
@@ -128,25 +128,28 @@ var Momend = (function(){
                     if(createdObjects[node['final_data_path']]){
                         node['animation']['object'] = createdObjects[node['final_data_path']];
                     }else{
-                        __createStubPhoto(node, i, j, theme_filepath);
+                        node['animation']['object'] = __createStubPhoto(node, i, j, theme_filepath);
                     }
                 }else{
                     switch(node['animation']['used_object_type']){
                         case '{{NEXT_THEME_BG}}':
                         case '{{RAND_THEME_BG}}':
-                            __createThemeBg(node, i, j, theme_filepath);
+                            node['animation']['object'] = __createThemeBg(node, i, j, theme_filepath);
+                            break;
                         case '{{THEME_BG}}':
                             node['animation']['object'] = createdObjects[node['final_data_path']];
                             break;
                         case '{{NEXT_USER_PHOTO}}':
                         case '{{RAND_USER_PHOTO}}':
-                            __createPhoto(node, i, j, filepath);
+                            node['animation']['object'] = __createPhoto(node, i, j, filepath);
+                            break;
                         case '{{USER_PHOTO}}':
-                            node['animation']['object'] = createdObjects[node['final_data_path']];
+                            node['animation']['object'] = createdObjects[_getPhotoIdentifier(node['final_data_path'])];
                             break;
                         case '{{NEXT_USER_STATUS}}':
                         case '{{RAND_USER_STATUS}}':
-                            __createStatus(node, i, j);
+                            node['animation']['object'] = __createStatus(node, i, j);
+                            break;
                         case '{{USER_STATUS}}':
                             node['animation']['object'] = createdObjects[hashCode(node['data'])];
                             break;
@@ -154,16 +157,13 @@ var Momend = (function(){
                             var isUserMusic = true;
                         case '{{NEXT_THEME_MUSIC}}':
                         case '{{RAND_THEME_MUSIC}}':
-                            __createMusic(node, i, j, isUserMusic);
+                            node['animation']['object'] = __createMusic(node, i, j, isUserMusic);
+                            break;
                         case '{{THEME_MUSIC}}':
                         case '{{USER_MUSIC}}':
                             node['animation']['object'] = createdObjects[node['final_data_path']];
                             break;
                         case '{{CURRENT_PHOTO_TITLE}}':  //Title has the owner photo as final_data_path
-                            if (!node['title']){
-                                console.dir(node);
-                                node['title'] = node['date'].substring(0,10);
-                            }
                             var title = createdObjects[hashCode(node['date'])];
                             if(title){
                                 node['animation']['object'] = title;
@@ -213,7 +213,7 @@ var Momend = (function(){
              _shadowData[_id] = node['animation']['shadow'];
         }
         createdObjects[node['final_data_path']] = created_div;
-        node['animation']['object'] = createdObjects[node['final_data_path']];
+        return created_div;
     }
 
     /**
@@ -235,6 +235,7 @@ var Momend = (function(){
             }
         }).appendTo(created_div);
         createdObjects[node['final_data_path']] = created_div;
+        return created_div;
     }
 
     /**
@@ -269,7 +270,8 @@ var Momend = (function(){
         if(typeof node['animation']['shadow'] !== 'undefined'){
             _shadowData[_id] = node['animation']['shadow'];
         }
-        createdObjects[node['final_data_path']] = created_div;
+        createdObjects[_getPhotoIdentifier(node['final_data_path'])] = created_div;
+        return created_div;
     }
 
     /**
@@ -303,6 +305,7 @@ var Momend = (function(){
             __applyPostEnhancements(created_div,node['post_enhancements']);
         }
         createdObjects[hashCode(node['data'])] = created_div;
+        return created_div;
     }
 
     /**
@@ -310,7 +313,7 @@ var Momend = (function(){
     Adds the resulting player to createdObjects dictionary
     !IMPORTANT: sets the volume of the player to 0.1, by the time I was looking there was an issue on setting it to 0
     However it won't matter if you set the volume after playing the music since it is not playing automatically.
-    */ 
+    */
     function __createMusic(node, layer, order, isUserMusic){
         totalObjects++; //Player should wait for item to load
         var _id = 'music'+layer+''+order;
@@ -327,7 +330,7 @@ var Momend = (function(){
                 var _keys = Object.keys(paths);
                 for(var k = 0; k< _keys.length; k++){
                     var _type = _keys[k];
-                    if(paths[_type].indexOf('http') == 0){
+                    if(paths[_type].indexOf('http') === 0){
                         continue;
                     }
                     if(isUserMusic){
@@ -346,13 +349,17 @@ var Momend = (function(){
             volume: 0.1
         });
         createdObjects[node['final_data_path']] = musicObj;
+        return musicObj;
     }
 
+    /**
+        Creates a title div (Which appears quite like status :) ) and appends it to the owner photo's div
+    */
     function __createTitle(node, layer, order){
-        var owner = createdObjects[node['final_data_path']];  // Photo object
+        var owner = createdObjects[_getPhotoIdentifier(node['final_data_path'])];  // Photo object
         console.log('Appending to:');
         console.dir(owner);
-        var _id = 'title'+layer+''+order;
+        var _id = 'title' + layer + '' + order;
         var created_div = jQuery('<div/>',{
             id: _id,
             class: 'title'
@@ -363,8 +370,9 @@ var Momend = (function(){
         }).appendTo(created_div);
         if(node['post_enhancements']){
             __applyPostEnhancements(created_div,node['post_enhancements']);
-        }  
+        }
         createdObjects[hashCode(node['date'])] = created_div;  // Using full date to be unique, title or day part of the date might not be.
+        return created_div;
     }
 
     /**
@@ -391,7 +399,7 @@ var Momend = (function(){
         for(var i=0; i<enhancements.length; i++){
             var enh = enhancements[i];
             var path = enh['filepath'];
-            if(path && path.indexOf('http') != 0){
+            if(path && path.indexOf('http') !== 0){
                 path = MOMEND_FILE_URL + THEME_DATA_URL + path;
             }
             if(enh['type'] === 'apply_font'){
@@ -499,9 +507,27 @@ var Momend = (function(){
         getMomendData : _getMomendData,
         jsAnimate : _jsAnimate,
         isPlaying : _jsAnimate.isPlaying
-    }
+    };
 }());
 // !! UTILITY !!
+
+/**
+    Returns the identifier part (username_provider_providerId) of given photo url
+    @param fullPath: path of the photo like /static/collected/user_facebook_123.25.enh0
+    return (string) user_facebook_123, null on error
+*/
+function _getPhotoIdentifier(fullPath){
+    var identifier = null;
+    try{
+        var lastPartIndex = fullPath.lastIndexOf('/');
+        var lastStr = fullPath.substring(lastPartIndex + 1);
+        var dotIndex = lastStr.indexOf('.');
+        identifier = lastStr.substring(0, dotIndex);
+    }catch(Exception){
+        Log.error('Filename format is invalid');
+    }
+    return identifier;
+}
 
 /**
  * By default we keep animations in string format in db, however they can be parsed into json, this method gets those strings
@@ -530,7 +556,7 @@ function _parseStringToDict(_str,replaceKeywords){
 
 function hashCode(str){
     var hash = 0;
-    if (str.length == 0) return hash;
+    if (str.length === 0) return hash;
     for (i = 0; i < str.length; i++) {
         var _char = str.charCodeAt(i);
         hash = ((hash<<5)-hash)+_char;
@@ -572,6 +598,6 @@ if (!Object.keys) {
                 }
             }
             return result;
-        }
-    })()
+        };
+    })();
 }

@@ -80,6 +80,7 @@ class AnimationManagerWorker(BaseOutputWorker):
                         index = CoreAnimationData.SPECIAL_DATA_KEYWORDS.index(used_type)
                         if index == 0:  # Title
                             print 'USED--->'+str(used_object.raw)
+                            print 'data:'+str(used_object.raw.data)
                             outData.raw = used_object.raw
                             outData.selection_criteria = 'Photo Title'
                             outData.priority = 100
@@ -96,7 +97,4 @@ class AnimationManagerWorker(BaseOutputWorker):
 
     def save_output(self):
         pass
-
-
-
 
