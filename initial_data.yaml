@@ -97,3 +97,18 @@
     script_path: coloration.sh
     parameters: -s 50 -l 0 -h 0
 
+
+- model:  DataManager.DataEnrichmentWorker
+  pk: 1
+  fields:
+    name: Link Hater
+    applicable_to: 0
+    compatible_with: [1, 2]
+    worker_name: LinkHater
+
+- model:  DataManager.DataEnrichmentWorker
+  pk: 2
+  fields:
+    name: Like Counter
+    compatible_with: [1, 2]
+    worker_name: LikeCounter
