@@ -41,9 +41,25 @@ class MomendScoreAdmin(admin.ModelAdmin):
 
 class RawDataAdmin(admin.ModelAdmin):
     list_display = ('owner', 'type', 'provider', 'original_path', 'thumbnail',
-                    'original_id', 'fetch_date', 'data', 'title')
+                    'original_id', 'fetch_date', 'data', 'title', 'like_count')
     list_filter = ('provider', 'type', 'fetch_date')
     search_fields = ('owner__username', 'owner__first_name', 'owner__last_name', 'title', 'original_id', 'original_path')
+
+
+class DataEnrichmentWorkerAdmin(admin.ModelAdmin):
+    list_display = ('name', 'applicable_to', 'worker_name')
+    list_filter = ('applicable_to', 'compatible_with')
+    search_fields = ('worker_name', )
+
+
+class DataEnrichmentScenarioAdmin(admin.ModelAdmin):
+    list_display = ('name', )
+
+
+class DataEnrichmentScenarioItemAdmin(admin.ModelAdmin):
+    list_display = ('scenario', 'worker', 'order', 'multiplier')
+    list_filter = ('scenario', 'worker')
+    search_fields = ('scenario__name', 'worker__name')
 
 
 class ProviderAdmin(admin.ModelAdmin):
@@ -60,3 +76,6 @@ admin.site.register(MomendScore, MomendScoreAdmin)
 admin.site.register(RawData, RawDataAdmin)
 admin.site.register(Provider, ProviderAdmin)
 admin.site.register(AnimationLayer, AnimationLayerAdmin)
+admin.site.register(DataEnrichmentWorker, DataEnrichmentWorkerAdmin)
+admin.site.register(DataEnrichmentScenario, DataEnrichmentScenarioAdmin)
+admin.site.register(DataEnrichmentScenarioItem, DataEnrichmentScenarioItemAdmin)

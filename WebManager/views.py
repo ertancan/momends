@@ -22,7 +22,7 @@ from Outputs.AnimationManager.models import DeletedUserInteraction
 from Outputs.AnimationManager.models import OutData
 from Outputs.AnimationManager.models import AnimationPlayStat
 from Outputs.AnimationManager.models import Theme
-from DataManager.DataEnrich.EnrichDataWorker import EnrichDataWorker
+from DataManager.DataEnrich.DataEnrichManager import DataEnrichManager
 from social_auth.db.django_models import UserSocialAuth
 from datetime import datetime
 import pytz
@@ -44,8 +44,8 @@ class HomePageLoggedFormView(TemplateView):
     def get_context_data(self, **kwargs):
         context =  super(HomePageLoggedFormView,self).get_context_data(**kwargs)
         context['user'] = self.request.user
-        context['user_top_momends'] = EnrichDataWorker.get_top_user_momends(user=self.request.user, max_count=10)
-        context['public_top_momends'] = EnrichDataWorker.get_top_public_momends(max_count=20)
+        context['user_top_momends'] = DataEnrichManager.get_top_user_momends(user=self.request.user, max_count=10)
+        context['public_top_momends'] = DataEnrichManager.get_top_public_momends(max_count=20)
         context['should_create_automatically'] = False
         providers = UserSocialAuth.objects.filter(user=self.request.user)
         context['providers'] = [pr.provider for pr in providers]
@@ -57,7 +57,7 @@ class HomePageNotLoggedView(TemplateView):
     template_name = 'BasicMainPageTemplate.html'
     def get_context_data(self, *args, **kwargs):
         context = super(HomePageNotLoggedView, self).get_context_data(**kwargs)
-        context['public_top_momends'] = EnrichDataWorker.get_top_public_momends(max_count=20)
+        context['public_top_momends'] = DataEnrichManager.get_top_public_momends(max_count=20)
         context['should_create_automatically'] = False
         return context
 
@@ -138,7 +138,7 @@ class ShowMomendView(TemplateView):
             context['error']  = '0'
             context['momend'] = _momend
             context['interactions'] = UserInteraction.objects.filter(momend = _momend)
-            context['related_momends'] = EnrichDataWorker.get_related_momends(momend=_momend, max_count=10, get_private=True)
+            context['related_momends'] = DataEnrichManager.get_related_momends(momend=_momend, max_count=10, get_private=True)
 
             _all_dis = OutData.objects.filter(owner_layer__momend=_momend).values('raw').distinct()
             _icons = ['icon-picture', 'icon-comment', 'icon-pushpin', 'icon-desktop', ' icon-music']
@@ -344,7 +344,7 @@ class UserProfileTemplateView(TemplateView):
             _obj = UserSocialAuth.objects.filter(user = kwargs['id']) #TODO put here more
         except KeyError:
             _user = User.objects.get(username = kwargs['username'])
-        context['user_top_momends'] = EnrichDataWorker.get_top_user_momends(user=_user, max_count=20, get_private=False)
+        context['user_top_momends'] = DataEnrichManager.get_top_user_momends(user=_user, max_count=20, get_private=False)
         context['profile_user'] = _user
         return context
 

@@ -3,11 +3,12 @@ from django.db import IntegrityError
 __author__ = 'goktan'
 from models import Provider
 import importlib
-from DataEnrich.EnrichDataWorker import EnrichDataWorker
+from DataEnrich.DataEnrichManager import DataEnrichManager
 from ExternalProviders.BaseProviderWorker import BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker
 from models import encode_id
 from models import Momend, MomendStatus
 from models import RawData
+from models import DataEnrichmentScenario
 from Outputs.AnimationManager.models import OutData
 from social_auth.db.django_models import UserSocialAuth
 from LogManagers.Log import Log
@@ -117,7 +118,9 @@ class DataManager:
     def enrich_user_data(self, raw_data, method=None):
         if not method:
             method = 'date'
-        enriched_data = EnrichDataWorker.enrich_user_raw_data(raw_data)  # TODO use method parameter
+        _enrich_scenario = DataEnrichmentScenario.objects.order_by('pk').reverse()[0]  # TODO: Using the latest enrichment scenario, use the scenario from parameter instaed
+        _enrich_manager = DataEnrichManager(self.user, raw_data, _enrich_scenario)
+        enriched_data = _enrich_manager.get_enriched_user_raw_data()
         return enriched_data
 
     def _create_momend_thumbnail(self):

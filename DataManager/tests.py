@@ -11,7 +11,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from DataManager.DataManager import DataManager
 from DataManager.models import Provider, RawData
-from DataManager.DataEnrich.EnrichDataWorker import EnrichDataWorker
+from DataManager.DataEnrich.DataEnrichManager import DataEnrichManager
 from datetime import datetime
 
 ert = User.objects.get(username='ertan')

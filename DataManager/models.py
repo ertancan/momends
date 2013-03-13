@@ -59,7 +59,7 @@ class MomendStatus(BaseDataManagerModel):
     for i, v in enumerate(MESSAGES):
         MOMEND_STATUS[v] = i
 
-    status = models.IntegerField(choices=[[i, MESSAGES[i]] for i in range(0,len(MESSAGES))], default=0)
+    status = models.IntegerField(choices=[[i, MESSAGES[i]] for i in range(0, len(MESSAGES))], default=0)
     message = models.CharField(max_length=255, null=True, blank=True)
     last_update = models.DateTimeField(auto_now=True)
 
@@ -167,6 +167,38 @@ class RawData(BaseDataManagerModel):
                 RawData.objects.get(original_id=key)
             except:
                 return key
+
+
+class DataEnrichmentWorker(BaseDataManagerModel):
+    name = models.CharField(max_length=255)
+
+    applicable_to = models.IntegerField(choices=[[RawData.DATA_TYPE[key], key] for key in RawData.DATA_TYPE.keys()], null=True, blank=True)  # Applicable to every object if empty
+    compatible_with = models.ManyToManyField('Provider')
+    worker_name = models.CharField(max_length=255)
+
+    def __unicode__(self):
+        return self.name + '-' + self.worker_name
+
+
+class DataEnrichmentScenario(BaseDataManagerModel):
+    name = models.CharField(max_length=255)
+
+    def __unicode__(self):
+        return self.name
+
+
+class DataEnrichmentScenarioItem(BaseDataManagerModel):
+    class Meta:
+        unique_together = ('scenario', 'worker')
+
+    scenario = models.ForeignKey(DataEnrichmentScenario)
+    worker = models.ForeignKey(DataEnrichmentWorker)
+
+    order = models.IntegerField()
+    multiplier = models.IntegerField()
+
+    def __unicode__(self):
+        return str(self.scenario) + ':' + str(self.worker)
 
 
 def encode_id(id):
