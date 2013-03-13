@@ -96,7 +96,8 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
             else:
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
                 Log.debug(_raw.original_id + ' found in DB')
-            _return_data.append(_raw)
+            if _raw:
+                _return_data.append(_raw)
 
         return _return_data
 
@@ -144,10 +145,11 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                     _raw.original_id = obj['id']
                 except:
                     Log.error('Could not fetch Facebook status')
-                _return_data.append(_raw)
             else:
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
                 Log.debug(_raw.original_id + ' found in DB')
+            if _raw:
+                _return_data.append(_raw)
         return _return_data
 
     def _collect_status_by_id(self, user, status_ids):
@@ -220,12 +222,13 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                         _raw.comment_count = len(obj['comments'])
                     _raw.create_date = datetime.datetime.strptime(obj['created_time'], '%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
                     _raw.original_id = obj['id']
-                    _return_data.append(_raw)
                 except:
                     Log.error('Could not fetch Facebook checkin')
             else:
                 _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
                 Log.debug(_raw.original_id + ' found in DB')
+            if _raw:
+                _return_data.append(_raw)
         return _return_data
 
     def _get_access_token(self, user):
