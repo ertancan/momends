@@ -229,8 +229,8 @@
                 if(!data.resp){ //Status check request unsuccessful
                     _showToast(data.message, '90px');
                 }else{
+                    var creatingDialogBg = $('#creating-dialog-bg');
                     if(data.status === 'Success'){
-                        var creatingDialogBg = $('#creating-dialog-bg');
                         creatingDialogBg.fadeOut();
                         $('#create-modal-mini').modal("hide");
                         try{
@@ -241,6 +241,7 @@
                         playMomend(crypticId);
                     }
                     else if(data.status === 'Error'){
+                        creatingDialogBg.fadeOut();
                         _showToast(data.message, '90px');
                     }else{
                         createState = data.status;

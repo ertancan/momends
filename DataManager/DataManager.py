@@ -163,5 +163,6 @@ class DataManager:
         else:
             Log.error(user_message)
         self.status = user_message
+        self.momend_status.message = user_message
         self.momend_status.status = MomendStatus.MOMEND_STATUS['Error']
         self.momend_status.save()
