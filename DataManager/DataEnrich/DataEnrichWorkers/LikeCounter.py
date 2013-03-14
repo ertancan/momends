@@ -27,5 +27,4 @@ class LikeCounter(StatusEnrichWorker, PhotoEnrichWorker, CheckinEnrichWorker):
                 _like_count_array.append((_raw.like_count/_max_like) * 100)
             else:
                 _like_count_array.append(None)
-        print _like_count_array
         return _like_count_array

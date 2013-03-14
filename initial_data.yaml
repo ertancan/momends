@@ -135,3 +135,10 @@
     applicable_to: 1
     compatible_with: [2]
     worker_name: TwitterHashtagRanker
+
+- model:  DataManager.DataEnrichmentWorker
+  pk: 6
+  fields:
+    name: Comment Counter
+    compatible_with: [1, 2]
+    worker_name: CommentCounter
