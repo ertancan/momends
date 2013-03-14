@@ -51,11 +51,14 @@ class DataEnrichManager(object):
 
         for _layer in self.enriched_data_groups:  # Merging layers of enrichment results
             for _item in _layer:
+                print _item
                 _weight = sum(_item.multiplier)
                 if _weight > 0:
+                    _weight += 0.0  # To make float division
                     _total = 0
                     for i, _score in enumerate(_item.priority):  # To calculate weighted priority (i.e. if total weight was 50 and total score was 35, then score will be 70)
                         _total += _score * (_item.multiplier[i] / _weight)
+                        print 'Total: ' + str(_total) + ' because score was ' + str(_score) + ' multip: ' + str(_item.multiplier[i]) + ' and weight ' + str(_weight)
 
                     _item.priority = _total
                     _item.criteria = ','.join(_item.criteria)
