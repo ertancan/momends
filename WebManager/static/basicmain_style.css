@@ -162,10 +162,10 @@ a.get-yours-link:hover{
     cursor: pointer !important;
 }
 #create-modal-mini{
-    height: 240px;
+    height: 250px;
 }
 #create-modal-body-mini{
-    height: 146px;
+    height: 156px;
     overflow: visible;
 }
 #create-modal-footer{
@@ -280,7 +280,7 @@ a.selected{
     margin-top: 20px;
 }
 #with-list{
-    margin: 0;
+    margin: 0 0 10px 15px;
 }
 #with-label{
     position: relative;

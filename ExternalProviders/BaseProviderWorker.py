@@ -22,10 +22,12 @@ class BaseProviderWorker(object):
         if len(friend_list) == 0:
             return _result_array
 
+        Log.debug(str(friend_list))
         for _raw in data_list:
             if not _raw.tags:
                 continue
             tag_list = _raw.tags.split(',')
+            Log.debug(_raw.tags)
             for _friend in friend_list:
                 if _friend in tag_list:
                     _result_array.append(_raw)

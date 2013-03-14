@@ -11,6 +11,7 @@ import traceback
 from DataManagerUtil import DataManagerUtil
 import time
 
+
 @task()
 def create_momend_task(user_id, momend_id, duration, mail, theme, scenario, inc_photo, inc_status, inc_checkin, enrichment_method, **kwargs):
     _create_start = time.time()
@@ -30,6 +31,9 @@ def create_momend_task(user_id, momend_id, duration, mail, theme, scenario, inc_
         if 'friends' in kwargs:
             _enrich_filter['friends'] = kwargs['friends']
         enriched_data = dm.enrich_user_data(raw_data, _enrich_filter, enrichment_method)
+        if len(enriched_data) < 10:
+            dm._handle_momend_create_error('You don\'t have enough photos together! Please select a wider time frame')
+            return None
 
         _status.status = MomendStatus.MOMEND_STATUS['Applying Enhancements']
         _status.save()

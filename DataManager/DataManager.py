@@ -127,6 +127,7 @@ class DataManager:
         if raw_data_filter:
             if 'friends' in raw_data_filter:
                 filtered_data = EnrichDataWorker.filter_user_raw_data_for_friends(filtered_data, raw_data_filter['friends'])
+                Log.info('Data filtered for friends: ' + str(filtered_data))
 
         enriched_data = EnrichDataWorker.enrich_user_raw_data(filtered_data)  # TODO use method parameter
         return enriched_data

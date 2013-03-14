@@ -3,7 +3,6 @@
 {% block include %}
     <link href="{{ STATIC_URL }}basicmain_style.css" rel="stylesheet"> 
     <link href="{{ STATIC_URL }}datepicker.css" rel="stylesheet">
-    <link href="{{ STATIC_URL }}typeahead.min.css" rel="stylesheet">
 {% endblock include %},
 {% block meta %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -135,6 +134,8 @@
         var momendPlaying = false;
         var createState;
         var autocompleteData;
+        var selectedFriends;
+        var createModalMaximized = false;
 
         window.onpopstate = function(e){ //Play momend if the url bar changed after create and user coming back from history
             if(e.state){
@@ -169,15 +170,12 @@
                     'facebook-active': $('#create-social-facebook').hasClass('active'),
                     'twitter-active': $('#create-social-twitter').hasClass('active'),
                     'friends': function(){
-                        if($('#with-box').val().length == 0){
-                            return [];
+
+                        var selectedIds = [];
+                        for(var i=0; i < selectedFriends.length; i++){
+                            selectedIds.push(selectedFriends[i].id);
                         }
-                        var _typeaheadSuggestion = $('.tt-suggested-id');  // Temporary, since typeahead update
-                        if(_typeaheadSuggestion.length != 1){
-                            return [];
-                        }
-                        var _suggested = _typeaheadSuggestion[0].innerHTML;
-                        return _suggested;
+                        return selectedIds;
                     }
                 };
                 createMomend(postData);
@@ -393,6 +391,7 @@
                         for(var j=0; j< data.list[i].local.length; j++){
                             var _name =  data.list[i].local[j]['name'];
                             data.list[i].local[j].tokens = _name.split(' ');
+                            data.list[i].local[j].id = _providerName + '-' + data.list[i].local[j].id;  // To format like facebook-123456
                             if(_providerName === 'facebook'){
                                 data.list[i].local[j].value = _name;
                             }else if(_providerName === 'twitter'){
@@ -411,6 +410,23 @@
                     }
                 }
             });
+            $('.friend-typeahead').on('typeahead:selected', friendSelected);
+            selectedFriends = [];
+        }
+
+        function friendSelected($e){
+            if(arguments.length == 2){
+                var selected = arguments[1];
+                if($.inArray(selected, selectedFriends) === -1){
+                    selectedFriends.push(selected);
+                    var listItem = $('<li/>',{
+                        text: selected.name
+                    }).appendTo($('#with-list'));
+                    var liHeight = listItem.outerHeight();
+                    _animateCreateModal('+=' + liHeight, '+=' + liHeight, 300);
+                }
+                $('.friend-typeahead').val('');
+            }
         }
 
         function animateCollectingText(state){
@@ -520,15 +536,20 @@
             }
         }
     function modalResize(toBig){
+        if(toBig && !createModalMaximized){
+            _animateCreateModal('+=100', '+=100', 500);
+            createModalMaximized = true;
+        }else if(createModalMaximized){
+            _animateCreateModal('-=100', '-=100', 500);
+            createModalMaximized = false;
+        }
+    }
+
+    function _animateCreateModal(modalSize, bodySize, duration){
         var modal = $('#create-modal-mini');
         var body = $('#create-modal-body-mini')
-        if(toBig){
-            modal.animate({height:340},500);
-            body.animate({height:246},500)
-        }else{
-            modal.animate({height:240},500);
-            body.animate({height:146},500)
-        }
+        modal.animate({height:modalSize}, duration);
+        body.animate({height:bodySize}, duration)
     }
     function playMomend(cid, isInteraction){
         momendPlaying = true;
