@@ -112,3 +112,10 @@
     name: Like Counter
     compatible_with: [1, 2]
     worker_name: LikeCounter
+
+- model:  DataManager.DataEnrichmentWorker
+  pk: 3
+  fields:
+    name: Randomizer
+    compatible_with: [1, 2]
+    worker_name: Randomizer
