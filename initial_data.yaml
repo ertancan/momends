@@ -119,3 +119,19 @@
     name: Randomizer
     compatible_with: [1, 2]
     worker_name: Randomizer
+
+- model:  DataManager.DataEnrichmentWorker
+  pk: 4
+  fields:
+    name: Twitter Mention Hater
+    applicable_to: 1
+    compatible_with: [2]
+    worker_name: TwitterMentionHater
+
+- model:  DataManager.DataEnrichmentWorker
+  pk: 5
+  fields:
+    name: Twitter Hashtag Ranker
+    applicable_to: 1
+    compatible_with: [2]
+    worker_name: TwitterHashtagRanker
