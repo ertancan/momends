@@ -18,8 +18,6 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
             _return_data += self._collect_status_by_keywords(user, kwargs['keywords'])
         if kwargs.get('item_id', None):
             _return_data += self._collect_status_by_id(user, kwargs['item_id'])
-        if kwargs.get('friends', None):
-            _return_data += self._collect_status_with_friends(user, kwargs['friends'])
         return _return_data
 
     def _collect_status_by_id(self, user, status_ids):
@@ -38,18 +36,6 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
         """
         :param user:
         :param keywords: status_id's array of user
-        :return: raw_data of album photos
-        TODO: implementation is needed
-        """
-        _return_data = []
-        if 1:
-            raise NotImplementedError()
-        return _return_data
-
-    def _collect_status_with_friends(self, user, friends):
-        """
-        :param user:
-        :param friends: friend list of user to get photos with
         :return: raw_data of album photos
         TODO: implementation is needed
         """
@@ -90,6 +76,7 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
                         _raw.original_id = tweet.id_str
                         _raw.data = tweet.text
                         _raw.original_path = 'twitter.com/' + user.social_auth.get(provider='twitter').uid + '/status/' + tweet.id_str
+                        _raw.tags = tweet.in_reply_to_user_id_str
                         _raw.save()
                         Log.debug(_raw)
                     else:
@@ -99,6 +86,21 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
                 elif tweet.created_at.replace(tzinfo=pytz.UTC) < since:
                     return _return_data
         return _return_data
+
+    def get_friendlist(self, user):
+        _consumer_key = settings.TWITTER_CONSUMER_KEY
+        _consumer_secret = settings.TWITTER_CONSUMER_SECRET
+        _access_token, _access_token_secret = self._get_access_token_and_secret(user)
+        _auth = tweepy.OAuthHandler(_consumer_key, _consumer_secret)
+        _auth.set_access_token(_access_token, _access_token_secret)
+        _api = tweepy.API(_auth)
+
+        _result = []
+
+        for _page in tweepy.Cursor(_api.friends).pages():
+            for _friend in _page:
+                _result.append({'id': _friend.id_str, 'name': _friend.name, 'screen_name': _friend.screen_name})
+        return _result
 
     def _get_access_token_and_secret(self, user):
         UserSocialAuth.objects.filter()

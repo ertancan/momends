@@ -32,7 +32,7 @@ class DataManager:
     def get_last_status(self):
         return self.status
 
-    def create_momend(self, name, duration, mail,
+    def create_momend(self, name, duration, send_mail,
                       privacy=Momend.PRIVACY_CHOICES['Private'], inc_photo=True, inc_status=True, inc_checkin=True,
                       enrichment_method=None, theme=None, scenario=None, **kwargs):
         try:
@@ -64,7 +64,7 @@ class DataManager:
             self.momend_status.save()
 
             #Spawn a new task to create the momend
-            tasks.create_momend_task.delay(self.user.id, self.momend.id, duration, mail, theme,
+            tasks.create_momend_task.delay(self.user.id, self.momend.id, duration, send_mail, theme,
                                            scenario, inc_photo, inc_status, inc_checkin, enrichment_method, **kwargs)
             return _cryptic_id
         except Exception as e:
@@ -78,8 +78,8 @@ class DataManager:
         _collect_count = dict()
         _collect_status = dict()
         for _provider in Provider.objects.all():
-            if UserSocialAuth.objects.filter(provider=str(_provider).lower()).filter(user=self.user).count() > 0:
-                worker = self._instantiate_provider_worker(_provider)
+            if UserSocialAuth.objects.filter(provider=str(_provider)).filter(user=self.user).count() > 0:
+                worker = _provider.instantiate_provider_worker()
                 if inc_photo and issubclass(worker.__class__, BasePhotoProviderWorker):
                     _collected = worker.collect_photo(self.user, **kwargs)
                     if not _collected:
@@ -115,13 +115,21 @@ class DataManager:
 
         return _raw_data, _collect_status
 
-    def enrich_user_data(self, raw_data, method=None):
+    def enrich_user_data(self, raw_data, raw_data_filter=None, method=None):
+        """
+        Enrich collected raw data according to the parameters.
+        @param raw_data_filter: filters to be applied to the collected data, (Dictionary):
+            Currently only supports 'friends' filter, an array of friend ids, in format 'providername-id', should be mapped to key 'friends'
+        """
         if not method:
             method = 'date'
+
         _enrich_scenario = DataEnrichmentScenario.objects.order_by('pk').reverse()[0]  # TODO: Using the latest enrichment scenario, use the scenario from parameter instaed
         _enrich_manager = DataEnrichManager(self.user, raw_data, _enrich_scenario)
-        enriched_data = _enrich_manager.get_enriched_user_raw_data()
-        return enriched_data
+        if raw_data_filter:
+            _enrich_manager.filter_user_data(raw_data_filter)
+        _enriched_data = _enrich_manager.get_enriched_user_raw_data()
+        return _enriched_data
 
     def _create_momend_thumbnail(self):
         """
@@ -138,16 +146,6 @@ class DataManager:
                     break
         except Exception as error:
             Log.error("Couldn't create thumbnail!-->"+str(error))
-
-    def _instantiate_provider_worker(self, provider):
-        """
-        Instantiates the worker objects, which collects data etc., for given provider
-        :param provider: models.Provider object
-        :return:
-        """
-        mod = importlib.import_module('ExternalProviders.' + provider.package_name + '.' + provider.worker_name, provider.worker_name)
-        cl = getattr(mod, provider.worker_name)
-        return cl()
 
     def _calculate_provider_score(self):
         main_layer = self.momend.animationlayer_set.all()[1]
@@ -166,6 +164,7 @@ class DataManager:
         else:
             Log.error(user_message)
         self.status = user_message
+        self.momend_status.log_message = log_message
         self.momend_status.message = user_message
         self.momend_status.status = MomendStatus.MOMEND_STATUS['Error']
         self.momend_status.save()

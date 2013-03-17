@@ -72,6 +72,12 @@
                     </div>
                     <div class="modal-group-container">
                         <div class="modal-tab-content span8">
+                            <div class="with-content">
+                                <ul id="with-list">
+                                </ul>
+                                <label for="with-box" id="with-label" class="modal-form-item">With:</label>
+                                <input id="with-box" type="text" class="modal-form-item-medium friend-typeahead" name="with-box">
+                            </div>
                             <div id="date-content" style="display: none">
                                 <label for="id_start_date" class="modal-form-item">From:</label>
                                 <input id="id_start_date" type="text" class="modal-form-item-medium modal-date-input" name="start_date">
@@ -84,7 +90,7 @@
 
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" id="create-modal-footer">
                 <button class="button orange" id="get-button" type="submit">Get it!</button>
             </div>
         </form>
@@ -108,7 +114,9 @@
         It seems you don't have any momend yet, here comes your first!
         <button class="button orange basic-dialog-close" id="close-button" onclick="$('#welcome-dialog').fadeOut()">OK!</button>
     </div>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/hogan-2.0.0.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap-datepicker.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/typeahead.min.js"></script>
     <script>
         var HOST_URL = '{{ HOST_URL }}';
         var currentBg = 0;
@@ -125,6 +133,9 @@
         var animationId;
         var momendPlaying = false;
         var createState;
+        var autocompleteData;
+        var selectedFriends;
+        var createModalMaximized = false;
 
         window.onpopstate = function(e){ //Play momend if the url bar changed after create and user coming back from history
             if(e.state){
@@ -148,6 +159,7 @@
                 format: "d M, yyyy",
                 autoclose: true
             });
+            prepareTypeahead();
             $('#get-button').click(function(event){
                 event.preventDefault();
                 var postData = {'momend_name':"{{user.username}}'s momend",
@@ -156,7 +168,16 @@
                     'momend_theme': 0,
                     'privacy_type': 1,
                     'facebook-active': $('#create-social-facebook').hasClass('active'),
-                    'twitter-active': $('#create-social-twitter').hasClass('active')};
+                    'twitter-active': $('#create-social-twitter').hasClass('active'),
+                    'friends': function(){
+
+                        var selectedIds = [];
+                        for(var i=0; i < selectedFriends.length; i++){
+                            selectedIds.push(selectedFriends[i].id);
+                        }
+                        return selectedIds;
+                    }
+                };
                 createMomend(postData);
             });
             if(_cid){ //If we have a video to show
@@ -182,7 +203,9 @@
                 'momend_theme': 0,
                 'privacy_type': 1,
                 'facebook-active': true,
-                'twitter-active': false};
+                'twitter-active': false,
+                'friends': null
+            };
             createMomend(postData);
             $('#creating-dialog-bg').addClass('dark');
             $('#welcome-dialog').show();
@@ -226,10 +249,10 @@
             var mainURL = '{% url 'momends:momend-status' 'dummy' %}';
             var statusURL = mainURL.replace('dummy', crypticId);
             $.getJSON( statusURL, function(data) {
+                var creatingDialogBg = $('#creating-dialog-bg');
                 if(!data.resp){ //Status check request unsuccessful
                     _showToast(data.message, '90px');
                 }else{
-                    var creatingDialogBg = $('#creating-dialog-bg');
                     if(data.status === 'Success'){
                         creatingDialogBg.fadeOut();
                         $('#create-modal-mini').modal("hide");
@@ -241,8 +264,14 @@
                         playMomend(crypticId);
                     }
                     else if(data.status === 'Error'){
+                        var message;
+                        if(data.message){
+                            message = data.message;
+                        }else{
+                            message = 'An error occurred! Please try again later.';
+                        }
                         creatingDialogBg.fadeOut();
-                        _showToast(data.message, '90px');
+                        _showToast(message, '90px');
                     }else{
                         createState = data.status;
                         setTimeout(function() {checkMomendStatus(crypticId)}, 5000);
@@ -348,6 +377,56 @@
             var date = new Date();
             date.setDate(date.getDate() -365 ); //Go back 1 year fo start date
             start.datepicker('update', date);
+            if(autocompleteData){  //Typeahead not initialized yet
+                console.log('I have data! initializing typeahead now');
+                $('.friend-typeahead').typeahead(autocompleteData);
+            }
+        }
+
+        function prepareTypeahead(){
+            $.getJSON('{% url 'momends:user-friends' %}', function(data){
+                if(data.resp){
+                    for(var i=0; i<data.list.length; i++){
+                        var _providerName = data.list[i].name;
+                        for(var j=0; j< data.list[i].local.length; j++){
+                            var _name =  data.list[i].local[j]['name'];
+                            data.list[i].local[j].tokens = _name.split(' ');
+                            data.list[i].local[j].id = _providerName + '-' + data.list[i].local[j].id;  // To format like facebook-123456
+                            if(_providerName === 'facebook'){
+                                data.list[i].local[j].value = _name;
+                            }else if(_providerName === 'twitter'){
+                                var _screenName = data.list[i].local[j].screen_name;
+                                data.list[i].local[j].value = _name +' - '+_screenName;
+                                data.list[i].local[j].tokens.push(_screenName);
+                            }
+                        }
+                        data.list[i].template =  '<p><i class="icon-'+_providerName+'"></i>{% templatetag openvariable %}value{% templatetag closevariable %}</strong><span class="tt-suggested-id">'+_providerName+'-{% templatetag openvariable %}id{% templatetag closevariable %}</span></p>';
+                        data.list[i].engine = Hogan;
+                    }
+                    autocompleteData = $.extend(data.list, [], true);
+                    if($('#create-modal-mini').is(':visible')){
+                        console.log('initializing typeahead'); 
+                        $('.friend-typeahead').typeahead(autocompleteData);
+                    }
+                }
+            });
+            $('.friend-typeahead').on('typeahead:selected', friendSelected);
+            selectedFriends = [];
+        }
+
+        function friendSelected($e){
+            if(arguments.length == 2){
+                var selected = arguments[1];
+                if($.inArray(selected, selectedFriends) === -1){
+                    selectedFriends.push(selected);
+                    var listItem = $('<li/>',{
+                        text: selected.name
+                    }).appendTo($('#with-list'));
+                    var liHeight = listItem.outerHeight();
+                    _animateCreateModal('+=' + liHeight, '+=' + liHeight, 300);
+                }
+                $('.friend-typeahead').val('');
+            }
         }
 
         function animateCollectingText(state){
@@ -457,15 +536,20 @@
             }
         }
     function modalResize(toBig){
+        if(toBig && !createModalMaximized){
+            _animateCreateModal('+=100', '+=100', 500);
+            createModalMaximized = true;
+        }else if(createModalMaximized){
+            _animateCreateModal('-=100', '-=100', 500);
+            createModalMaximized = false;
+        }
+    }
+
+    function _animateCreateModal(modalSize, bodySize, duration){
         var modal = $('#create-modal-mini');
         var body = $('#create-modal-body-mini')
-        if(toBig){
-            modal.animate({height:300},500);
-            body.animate({height:206},500)
-        }else{
-            modal.animate({height:200},500);
-            body.animate({height:106},500)
-        }
+        modal.animate({height:modalSize}, duration);
+        body.animate({height:bodySize}, duration)
     }
     function playMomend(cid, isInteraction){
         momendPlaying = true;

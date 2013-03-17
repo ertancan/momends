@@ -23,9 +23,9 @@ class MomendAdmin(admin.ModelAdmin):
 
 
 class MomendStatusAdmin(admin.ModelAdmin):
-    list_display = ('momend', 'status', 'message', 'last_update')
+    list_display = ('momend', 'status', 'message', 'last_update', 'log_message')
     list_filter = ('status',)
-    search_fields = ('momend__owner__username', 'momend__cryptic_id', 'momend__pk', 'message')
+    search_fields = ('momend__owner__username', 'momend__cryptic_id', 'momend__pk', 'message', 'log_message')
 
 
 class DeletedMomendAdmin(admin.ModelAdmin):
@@ -41,9 +41,9 @@ class MomendScoreAdmin(admin.ModelAdmin):
 
 class RawDataAdmin(admin.ModelAdmin):
     list_display = ('owner', 'type', 'provider', 'original_path', 'thumbnail',
-                    'original_id', 'fetch_date', 'data', 'title', 'like_count')
+                    'original_id', 'fetch_date', 'data', 'title', 'tags', 'like_count')
     list_filter = ('provider', 'type', 'fetch_date')
-    search_fields = ('owner__username', 'owner__first_name', 'owner__last_name', 'title', 'original_id', 'original_path')
+    search_fields = ('owner__username', 'owner__first_name', 'owner__last_name', 'title', 'original_id', 'original_path', 'tags')
 
 
 class DataEnrichmentWorkerAdmin(admin.ModelAdmin):
@@ -76,6 +76,6 @@ admin.site.register(MomendScore, MomendScoreAdmin)
 admin.site.register(RawData, RawDataAdmin)
 admin.site.register(Provider, ProviderAdmin)
 admin.site.register(AnimationLayer, AnimationLayerAdmin)
-admin.site.register(DataEnrichmentWorker, DataEnrichmentWorkerAdmin)
 admin.site.register(DataEnrichmentScenario, DataEnrichmentScenarioAdmin)
 admin.site.register(DataEnrichmentScenarioItem, DataEnrichmentScenarioItemAdmin)
+admin.site.register(DataEnrichmentWorker, DataEnrichmentWorkerAdmin)

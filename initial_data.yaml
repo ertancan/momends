@@ -1,14 +1,14 @@
 - model: DataManager.Provider
   pk: 1
   fields:
-    name: Facebook
+    name: facebook
     package_name: FacebookProvider
     worker_name: FacebookProviderWorker
 
 - model: DataManager.Provider
   pk: 2
   fields:
-    name: Twitter
+    name: twitter
     package_name: TwitterProvider
     worker_name: TwitterProviderWorker
 
