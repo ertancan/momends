@@ -12,11 +12,12 @@ from django.core.urlresolvers import reverse_lazy
 
 from LogManagers.Log import Log
 
+
 class DataManagerUtil:
     __metaclass__ = abc.ABCMeta
 
     @staticmethod
-    def download_file(url, name ):
+    def download_file(url, name):
         """
         Download file from an uri
         :param url: uri where content will be fetched
@@ -46,10 +47,10 @@ class DataManagerUtil:
         if not _file:
             Log.error('Error while creating thumbnail (No file given)')
             return
-        os.environ['PATH'] += ':/usr/local/bin' #TODO: remove this on prod For mac os
+        os.environ['PATH'] += ':/usr/local/bin'  # TODO: remove this on prod For mac os
         _file_path = settings.THUMBNAIL_FILE_PATH + _output_name
         _save_file_path = settings.SAVE_PREFIX + _file_path
-        s=["convert", _file, '-resize', '500x320^', '-gravity', 'center', '-extent', '500x320', _save_file_path]
+        s = ["convert", _file, '-resize', '500x320^', '-gravity', 'center', '-extent', '500x320', _save_file_path]
         subprocess.Popen(s).wait()
         return _file_path
 
@@ -71,11 +72,13 @@ class DataManagerUtil:
 
     @staticmethod
     def send_momend_created_email(momend):
-        ctx_dict = {'momend_url' : str(reverse_lazy('momends:show-momend',args=('m',momend.cryptic_id))),
-                    'owner' : momend.owner,
-                    'STATIC_URL' : settings.STATIC_URL,
-                    'HOST_URL' : settings.HOST_URL
-        }
+        ctx_dict = {'momend_url': str(reverse_lazy('momends:show-momend', args=('m', momend.cryptic_id))),
+                    'owner': momend.owner,
+                    'STATIC_URL': settings.STATIC_URL,
+                    'HOST_URL': settings.HOST_URL,
+                    'start_date': momend.momend_start_date.strftime("%d %B %Y"),
+                    'finish_date': momend.momend_end_date.strftime("%d %B %Y")
+                    }
         subject = render_to_string('MomendCreatedMailSubjectTemplate.html', ctx_dict)
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
@@ -96,11 +99,11 @@ class DataManagerUtil:
         sender_name = 'someone'
         if not sender.is_anonymous():
             sender_name = sender.get_full_name() + ' ('+sender.email+')'
-        ctx_dict = {'momend_url' : url,
-                    'sender' : sender_name,
-                    'STATIC_URL' : settings.STATIC_URL,
-                    'HOST_URL' : settings.HOST_URL
-        }
+        ctx_dict = {'momend_url': url,
+                    'sender': sender_name,
+                    'STATIC_URL': settings.STATIC_URL,
+                    'HOST_URL': settings.HOST_URL
+                    }
         subject = render_to_string('MomendShareMailSubjectTemplate.html', ctx_dict)
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
