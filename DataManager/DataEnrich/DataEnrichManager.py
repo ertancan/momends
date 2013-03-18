@@ -128,7 +128,7 @@ class DataEnrichManager(object):
         return _sorted_data
 
     @staticmethod
-    def get_related_momends(self, momend, max_count, get_private=True):
+    def get_related_momends(momend, max_count, get_private=True):
         """get list of top momends for a specific user
         Args:
             momend: momend to set reference for related momends
