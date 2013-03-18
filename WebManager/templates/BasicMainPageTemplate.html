@@ -400,7 +400,7 @@
                                 data.list[i].local[j].tokens.push(_screenName);
                             }
                         }
-                        data.list[i].template =  '<p><i class="icon-'+_providerName+'"></i>{% templatetag openvariable %}value{% templatetag closevariable %}</strong><span class="tt-suggested-id">'+_providerName+'-{% templatetag openvariable %}id{% templatetag closevariable %}</span></p>';
+                        data.list[i].template =  '<p><i class="icon-'+_providerName+'" style="margin-right:5px"></i>{% templatetag openvariable %}value{% templatetag closevariable %}</strong><span class="tt-suggested-id">'+_providerName+'-{% templatetag openvariable %}id{% templatetag closevariable %}</span></p>';
                         data.list[i].engine = Hogan;
                     }
                     autocompleteData = $.extend(data.list, [], true);
