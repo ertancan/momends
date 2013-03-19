@@ -3,11 +3,12 @@ from Outputs.AnimationManager.ScenarioManager.ScenarioManagerWorker import Scena
 __author__ = 'goktan'
 
 from Outputs.BaseOutputWorker import BaseOutputWorker
-from DataManager.models import Momend,RawData
-from Outputs.AnimationManager.models import Theme,CoreAnimationData
+from DataManager.models import Momend, RawData
+from Outputs.AnimationManager.models import Theme, CoreAnimationData
 from Outputs.AnimationManager.ThemeManager.ThemeManagerWorker import ThemeManagerWorker
 from LogManagers.Log import Log
 from DataManager.UserDataManager import UserDataManager
+
 
 class DataCountException(Exception):
     PHOTO_TYPE = 0
@@ -15,12 +16,13 @@ class DataCountException(Exception):
     CHECKIN_TYPE = 2
     BACKGROUND_TYPE = 3
 
-    def __init__(self,missing_type):
-        Exception.__init__(self,'Not enough data')
+    def __init__(self, missing_type):
+        Exception.__init__(self, 'Not enough data')
         self.type = missing_type
 
+
 class AnimationManagerWorker(BaseOutputWorker):
-    def __init__(self,momend):
+    def __init__(self, momend):
         assert isinstance(momend, Momend)
         self.momend = momend
         self.user_data_manager = None
@@ -38,7 +40,8 @@ class AnimationManagerWorker(BaseOutputWorker):
         scenarioWorker = ScenarioManagerWorker()
         prepared_scenario, duration, used_bg_count, used_photo_count, used_status_count, used_checkin_count =\
         scenarioWorker.prepare_scenario(self.momend, duration, theme, scenario, max_photo=len(enriched_data[types['Photo']]),
-            max_status=len(enriched_data[types['Status']]), max_checkin=len(enriched_data[types['Checkin']]), max_bg=len(enriched_data[types['Background']]), selection='random')
+                                        max_status=len(enriched_data[types['Status']]), max_checkin=len(enriched_data[types['Checkin']]),
+                                        max_bg=len(enriched_data[types['Background']]), selection='random')
 
         try:
             self._validate_data_count(enriched_data, used_bg_count, used_photo_count, used_status_count, used_checkin_count)
@@ -48,7 +51,7 @@ class AnimationManagerWorker(BaseOutputWorker):
 
         self.user_data_manager = UserDataManager(enriched_data)
         filled_scenario = self._fill_user_data(prepared_scenario['objects'])
-        self._apply_theme(filled_scenario,theme,str(self.momend.pk))
+        self._apply_theme(filled_scenario, theme, str(self.momend.pk))
 
         return filled_scenario, duration
 
@@ -94,7 +97,5 @@ class AnimationManagerWorker(BaseOutputWorker):
             for outdata in animation_layer:
                 themeWorker.apply_theme(outdata, file_prefix=prefix)
 
-
     def save_output(self):
         pass
-

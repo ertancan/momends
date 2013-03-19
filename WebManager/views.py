@@ -141,7 +141,7 @@ class ShowMomendView(TemplateView):
 
             context['error'] = '0'
             context['momend'] = _momend
-            context['interactions'] = UserInteraction.objects.filter(momend = _momend)
+            context['interactions'] = UserInteraction.objects.filter(momend=_momend)
             context['related_momends'] = DataEnrichManager.get_related_momends(momend=_momend, max_count=10, get_private=True)
 
             _all_dis = OutData.objects.filter(owner_layer__momend=_momend).values('raw').distinct()
@@ -293,6 +293,7 @@ class CreateMomendView(View):
             _log_critical_error('Impossible exception occurred while creating momend', True, request.POST, request.user, traceback.format_exc())
             return _generate_json_response(False, 'Error while creating momend (impossible): '+str(e), 'An error occurred. Please try again after a while')
 
+
 class MomendStatusView(View):
     def get(self, request, *args, **kwargs):
         decoded_id = decode_id(kwargs['id'])
@@ -305,6 +306,7 @@ class MomendStatusView(View):
             return _generate_json_response(True, user_msg=_status_obj.message, status=MomendStatus.MESSAGES[_status_obj.status])
         except Exception as e:
             return _generate_json_response(False, 'Exception on status check: '+str(e), 'Error while checking the status')
+
 
 class DeleteMomendView(View):
     def get(self, request, *args, **kwargs):
@@ -382,7 +384,7 @@ class UserProfileTemplateView(TemplateView):
             _user = User.objects.get(pk=kwargs['id'])
             _obj = UserSocialAuth.objects.filter(user=kwargs['id'])  # TODO put here more
         except KeyError:
-            _user = User.objects.get(username = kwargs['username'])
+            _user = User.objects.get(username=kwargs['username'])
         context['user_top_momends'] = DataEnrichManager.get_top_user_momends(user=_user, max_count=20, get_private=False)
         context['profile_user'] = _user
         return context
