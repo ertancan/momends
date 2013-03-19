@@ -133,7 +133,6 @@
         var animationId;
         var momendPlaying = false;
         var createState;
-        var autocompleteData;
         var selectedFriends;
         var createModalMaximized = false;
 
@@ -377,10 +376,7 @@
             var date = new Date();
             date.setDate(date.getDate() -365 ); //Go back 1 year fo start date
             start.datepicker('update', date);
-            if(autocompleteData){  //Typeahead not initialized yet
-                console.log('I have data! initializing typeahead now');
-                $('.friend-typeahead').typeahead(autocompleteData);
-            }
+
         }
 
         function prepareTypeahead(){
@@ -403,11 +399,7 @@
                         data.list[i].template =  '<p><i class="icon-'+_providerName+'" style="margin-right:5px"></i>{% templatetag openvariable %}value{% templatetag closevariable %}</strong><span class="tt-suggested-id">'+_providerName+'-{% templatetag openvariable %}id{% templatetag closevariable %}</span></p>';
                         data.list[i].engine = Hogan;
                     }
-                    autocompleteData = $.extend(data.list, [], true);
-                    if($('#create-modal-mini').is(':visible')){
-                        console.log('initializing typeahead'); 
-                        $('.friend-typeahead').typeahead(autocompleteData);
-                    }
+                    $('.friend-typeahead').typeahead(data.list);
                 }
             });
             $('.friend-typeahead').on('typeahead:selected', friendSelected);
