@@ -70,23 +70,17 @@ class DataEnrichManager(object):
                  ]
         """
         _items_of_scenario = DataEnrichmentScenarioItem.objects.filter(scenario=self.scenario).order_by('order')
-        print 'Leng ' + str(len(_items_of_scenario))
         for _enhancement_item in _items_of_scenario:
             _worker_model = _enhancement_item.worker
             _worker_instance = None  # Stays None until first needed
 
             for _type in range(len(RawData.DATA_TYPE)):
-                print 'A new type'
-                print self.raw_data_groups[_type]
                 if len(self.raw_data_groups[_type]) > 0:  # If there is data for this type
-                    print 'has items'
                     if not _worker_model.applicable_to or _worker_model.applicable_to == _type:  # Whether worker is applicable to every type, or this type
-                        print 'has enrich'
                         if not _worker_instance:
                             _worker_instance = DataEnrichManager._instantiate_enrich_worker(_worker_model.worker_name)
                         _results = _worker_instance.enrich(self.raw_data_groups[_type], _type, _worker_model.compatible_with.all())  # Base class'es enrich function delegates the call to right function according to _type parameter
                                                                                         # Also sending the compatible providers, so it won't process them
-                        print 'Got a result'
                         if not _results:
                             continue
                         for i in range(len(_results)):
@@ -95,7 +89,7 @@ class DataEnrichManager(object):
                                 self.enriched_data_groups[_type][i].multiplier.append(_enhancement_item.multiplier)
                                 self.enriched_data_groups[_type][i].priority.append(_results[i])
 
-        print self.enriched_data_groups
+        Log.debug('Enrich results: ' + str(self.enriched_data_groups))
         for _layer in self.enriched_data_groups:  # Merging layers of enrichment results
             for _item in _layer:
                 _weight = sum(_item.multiplier)

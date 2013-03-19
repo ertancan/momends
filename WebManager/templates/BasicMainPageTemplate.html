@@ -162,7 +162,7 @@
             prepareTypeahead();
             $('#get-button').click(function(event){
                 event.preventDefault();
-                var postData = {'momend_name':"{{user.username}}'s momend",
+                var postData = {'momend_name': null,
                     'start_date': $('#id_start_date').val(),
                     'finish_date': $('#id_finish_date').val(),
                     'momend_theme': 0,
@@ -197,7 +197,7 @@
             _trackPageEvent('Page', 'Welcome');
             var date = new Date();
             date.setDate(date.getDate() -365 );
-            var postData = {'momend_name':"{{user.username}}'s first momend",
+            var postData = {'momend_name':null,
                 'start_date': formatDate("d M, yy", date),
                 'finish_date': formatDate("d M, yy", new Date()), //Today
                 'momend_theme': 0,
@@ -425,7 +425,8 @@
                     var liHeight = listItem.outerHeight();
                     _animateCreateModal('+=' + liHeight, '+=' + liHeight, 300);
                 }
-                $('.friend-typeahead').val('');
+                //$('.friend-typeahead').val('');
+                $('.friend-typeahead').attr("disabled", "disabled"); 
             }
         }
 

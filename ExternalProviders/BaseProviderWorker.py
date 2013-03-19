@@ -44,6 +44,13 @@ class BaseProviderWorker(object):
         Log.debug('Friend filter returning: ' + str(_result_array))
         return _result_array
 
+    def get_friend_name_from_id(self, user, friend_id):
+        """
+            Returns the name of the friend with given id.
+            Provider workers, which can learn friend name from id should override this method!
+        """
+        return 'a friend'
+
     @abc.abstractmethod
     def get_friendlist(self, user, **kwargs):
         pass

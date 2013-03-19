@@ -2,7 +2,6 @@ from django.db import IntegrityError
 
 __author__ = 'goktan'
 from models import Provider
-import importlib
 from DataEnrich.DataEnrichManager import DataEnrichManager
 from ExternalProviders.BaseProviderWorker import BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker
 from models import encode_id
@@ -32,7 +31,7 @@ class DataManager:
     def get_last_status(self):
         return self.status
 
-    def create_momend(self, name, duration, send_mail,
+    def create_momend(self, duration, send_mail, name=None,
                       privacy=Momend.PRIVACY_CHOICES['Private'], inc_photo=True, inc_status=True, inc_checkin=True,
                       enrichment_method=None, theme=None, scenario=None, **kwargs):
         try:
@@ -44,14 +43,16 @@ class DataManager:
                 self.status = 'You are creating another momend right now. Please wait until it is ready.'
                 return False
 
+            if not name:
+                name = self.generate_momend_name(theme, scenario, **kwargs)
+
             self.momend = Momend(owner=self.user, name=name, privacy=privacy)
             if kwargs['is_date']:
                 try:
                     self.momend.momend_start_date = kwargs['since']
                     self.momend.momend_end_date = kwargs['until']
                 except KeyError:
-                    self.status = 'Missing parameters for date option'
-                    return None
+                    self._handle_momend_create_error('Parameter error. Please try again')
             else:
                 self.status = 'Not supported yet!'
                 return False
@@ -69,9 +70,65 @@ class DataManager:
             return _cryptic_id
         except Exception as e:
             self._handle_momend_create_error('Error while creating the momend. Please try again!', 'Exception: '+str(e)[:255])
-            Log.error(traceback.format_exc())
 
         return True
+
+    def generate_momend_name(self, theme, scenario, **kwargs):
+        _user_name = self.user.first_name.lower()
+        if Momend.objects.filter(owner=self.user).count() == 0:
+            return _user_name + "'s first momend"
+
+        _momend_name = _user_name + "'s"
+
+        if kwargs['is_date']:
+            try:
+                _name_date_part = ''
+                _start_date = kwargs['since']
+                _end_date = kwargs['until']
+                if _end_date.date() == datetime.datetime.now().date():  # Momend ends today
+                    _name_date_part += ' last'
+                _delta = _end_date - _start_date
+                _days = _delta.days
+                Log.debug('Momend for ' + str(_days) + ' days')
+                if _days >= 370:
+                    _name_date_part += ' years'
+                elif 360 < _days < 370:
+                    _name_date_part += ' year'
+                elif _days > 260:
+                    _name_date_part += ' 9 months'
+                elif _days > 170:
+                    _name_date_part += ' 6 months'
+                elif _days > 90:
+                    _name_date_part += ' 3 months'
+                elif _days > 32:
+                    _name_date_part += ' months'
+                elif _days > 25:
+                    _name_date_part += ' month'
+                elif _days > 7:
+                    _name_date_part += ' weeks'
+                elif _days == 7:
+                    _name_date_part += ' week'
+                if len(_name_date_part) > 0:
+                    _momend_name += _name_date_part
+                else:
+                    _momend_name += ' momend'
+            except KeyError:
+                return _momend_name
+
+        _friends = kwargs.get('friends', None)
+        if _friends:
+            if len(_friends) > 1:
+                _momend_name += ' with friends'
+            else:
+                try:
+                    _provider, _user_id = _friends[0].split('-')
+                    _worker = Provider.objects.get(name=_provider).instantiate_provider_worker()
+                    _friend_name = _worker.get_friend_name_from_id(self.user, _user_id)
+                    _momend_name += ' with ' + _friend_name
+                except:
+                    self._handle_momend_create_error('An error occured, please refresh the page and try again', 'Error on generate momend name with friend')
+
+        return _momend_name
 
     def collect_user_data(self, inc_photo, inc_status, inc_checkin, **kwargs):  # TODO concatenation fail if cannot connect to facebook or twitter (fixed on status)
         _raw_data = []
@@ -163,8 +220,11 @@ class DataManager:
             Log.error(log_message)
         else:
             Log.error(user_message)
+        _error_trace = traceback.format_exc()
+        Log.error(_error_trace)
         self.status = user_message
-        self.momend_status.log_message = log_message
-        self.momend_status.message = user_message
-        self.momend_status.status = MomendStatus.MOMEND_STATUS['Error']
-        self.momend_status.save()
+        if self.momend_status:
+            self.momend_status.log_message = log_message + _error_trace
+            self.momend_status.message = user_message
+            self.momend_status.status = MomendStatus.MOMEND_STATUS['Error']
+            self.momend_status.save()

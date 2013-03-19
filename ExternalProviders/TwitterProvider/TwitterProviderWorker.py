@@ -67,21 +67,19 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
 
             for tweet in result:
                 if since < tweet.created_at.replace(tzinfo=pytz.UTC) < until:
-                    if not RawData.objects.filter(original_id=tweet.id_str).filter(provider=provider).exists():
-                        _raw = RawData(share_count=tweet.retweet_count)
+                    _raw, _is_new = RawData.objects.get_or_create(original_id=tweet.id_str, provider=provider)
+                    if _is_new:
                         _raw.owner = user
                         _raw.create_date = tweet.created_at.replace(tzinfo=pytz.UTC)
                         _raw.provider = provider
                         _raw.type = RawData.DATA_TYPE['Status']
-                        _raw.original_id = tweet.id_str
                         _raw.data = tweet.text
                         _raw.original_path = 'twitter.com/' + user.social_auth.get(provider='twitter').uid + '/status/' + tweet.id_str
                         _raw.tags = tweet.in_reply_to_user_id_str
-                        _raw.save()
                         Log.debug(_raw)
-                    else:
-                        _raw = RawData.objects.filter(original_id=tweet.id_str).get(provider=provider)
-                        Log.debug(_raw.original_id + ' found in DB')
+                    _raw.share_count = tweet.retweet_count
+                    _raw.save()
+                    Log.debug('Fetched Twitter Status: ' + str(_raw))
                     _return_data.append(_raw)
                 elif tweet.created_at.replace(tzinfo=pytz.UTC) < since:
                     return _return_data

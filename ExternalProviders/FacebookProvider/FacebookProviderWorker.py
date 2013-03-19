@@ -54,42 +54,32 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
             result = api.get_connections('me', 'photos', limit=200, since=str(since), until=str(until),
                                          fields='likes.limit(500),comments.limit(500),source,name,sharedposts,images,tags')
         except:
+            Log.error('Exception on collect Photo')
             return None
         _return_data = []
+        Log.info('Found ' + str(len(result['data'])) + ' Photos')
         for obj in result['data']:
-            if not RawData.objects.filter(original_id=obj['id']).filter(provider=provider).exists():
-                _raw = RawData()
-                _raw.owner = user
-                _raw.type = RawData.DATA_TYPE['Photo']
-                _raw.provider = provider
-                try:
-                    _raw.original_id = obj['id']
+            try:
+                _raw, _is_new = RawData.objects.get_or_create(original_id=obj['id'], provider=provider)
+                if _is_new:
+                    _raw.owner = user
+                    _raw.type = RawData.DATA_TYPE['Photo']
                     _raw.original_path = obj['images'][0]['source']
                     if 'name' in obj:
                         _raw.title = obj['name'][:255]  # first 255 chars of title
-                    if 'likes' in obj:
-                        _raw.like_count = len(obj['likes']['data'])
-                    if 'sharedposts' in obj:
-                        _raw.share_count = len(obj['sharedposts']['data'])
-                    if 'comments' in obj:
-                        _raw.comment_count = len(obj['comments']['data'])
-                    _raw.tags = FacebookProviderWorker._get_tags(obj)
                     _raw.create_date = datetime.datetime.strptime(obj['created_time'], '%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
-                    #TODO error handling (goktan)
-                    #_raw.thumbnail = DataManagerUtil.create_photo_thumbnail(settings.SAVE_PREFIX + _raw.data, str(_raw)+ '_thumb'+ _ext_part)
-                    Log.debug(_raw)
-                except:
-                    Log.error('Could not fetch Facebook photo')
-            else:
-                _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
-                Log.debug(_raw.original_id + ' found in DB')
-                _tags = FacebookProviderWorker._get_tags(obj)
-                if not _tags == _raw.tags:
-                    Log.debug('Tags changed, updating!')
-                    _raw.tags = _tags
-                    _raw.save()
-
-            _return_data.append(_raw)
+                if 'likes' in obj:
+                    _raw.like_count = len(obj['likes']['data'])
+                if 'sharedposts' in obj:
+                    _raw.share_count = len(obj['sharedposts']['data'])
+                if 'comments' in obj:
+                    _raw.comment_count = len(obj['comments']['data'])
+                _raw.tags = FacebookProviderWorker._get_tags(obj)
+                _raw.save()
+                Log.debug('Fetched Facebook Photo: ' + str(_raw))
+                _return_data.append(_raw)
+            except Exception as e:
+                Log.error('Could not Facebook Photo:' + str(e))
         return _return_data
 
     def collect_status(self, user, **kwargs):
@@ -110,37 +100,36 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
             result = api.get_connections('me', 'statuses', limit=200, since=str(since), until=str(until),
                                          fields='id,message,likes.limit(500),comments.limit(500),sharedposts,updated_time,tags')
         except:
+            Log.error('Exception on collect Status')
             return None
         _return_data = []
+        Log.info('Found ' + str(len(result['data'])) + ' Statuses')
         for obj in result['data']:
-            if not RawData.objects.filter(original_id=obj['id']).filter(provider=provider).exists():
-                try:
+            try:
+                _raw, _is_new = RawData.objects.get_or_create(original_id=obj['id'], provider=provider)
+                if _is_new:
                     _statusText = obj['message']
                     if len(_statusText) > 150:
                         Log.debug('Dropping too long user status')
+                        _raw.delete()
                         continue
-                    _raw = RawData()
                     _raw.owner = user
                     _raw.type = RawData.DATA_TYPE['Status']
                     _raw.provider = provider
                     _raw.data = obj['message']
-                    if 'likes' in obj:
-                        _raw.like_count = len(obj['likes']['data'])
-                    if 'sharedposts' in obj:
-                        _raw.share_count = len(obj['sharedposts']['data'])
-                    if 'comments' in obj:
-                        _raw.comment_count = len(obj['comments']['data'])
-                    _raw.tags = FacebookProviderWorker._get_tags(obj)
-
                     _raw.create_date = datetime.datetime.strptime(obj['updated_time'], '%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
-                    _raw.original_id = obj['id']
-                    _return_data.append(_raw)
-                except Exception as e:
-                    Log.error('Could not fetch Facebook status: '+str(e))
-            else:
-                _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
-                Log.debug(_raw.original_id + ' found in DB')
+                if 'likes' in obj:
+                    _raw.like_count = len(obj['likes']['data'])
+                if 'sharedposts' in obj:
+                    _raw.share_count = len(obj['sharedposts']['data'])
+                if 'comments' in obj:
+                    _raw.comment_count = len(obj['comments']['data'])
+                _raw.tags = FacebookProviderWorker._get_tags(obj)
+                _raw.save()
+                Log.debug('Fetched Facebook Status: ' + str(_raw))
                 _return_data.append(_raw)
+            except Exception as e:
+                Log.error('Could not fetch Facebook status: ' + str(e))
         return _return_data
 
     def _collect_status_by_id(self, user, status_ids):
@@ -180,32 +169,33 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
             result = api.get_connections('me', 'checkins', limit=200, since=str(since), until=str(until),
                                          fields='id,place,likes.limit(500),comments.limit(500),created_time,tags')  # TODO hardcoded limits will go to config file
         except:
+            Log.error('Exception on collect Checkin')
             return None
 
         provider = self.getProvider()
 
         _return_data = []
+
+        Log.info('Found ' + str(len(result['data'])) + ' Checkins')
         for obj in result['data']:
-            if not RawData.objects.filter(original_id=obj['id']).filter(provider=provider).exists():
-                _raw = RawData()
-                _raw.owner = user
-                _raw.type = RawData.DATA_TYPE['Checkin']
-                _raw.provider = provider
-                try:
+            try:
+                _raw, _is_new = RawData.objects.get_or_create(original_id=obj['id'], provider=provider)
+                if _is_new:
+                    _raw.owner = user
+                    _raw.type = RawData.DATA_TYPE['Checkin']
+                    _raw.provider = provider
                     _raw.data = obj['place']['name']
-                    if 'likes' in obj:
-                        _raw.like_count = len(obj['likes']['data'])
-                    if 'comments' in obj:
-                        _raw.comment_count = len(obj['comments']['data'])
                     _raw.create_date = datetime.datetime.strptime(obj['created_time'], '%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
-                    _raw.original_id = obj['id']
-                    _return_data.append(_raw)
-                except Exception as e:
-                    Log.error('Could not fetch Facebook checkin:'+str(e))
-            else:
-                _raw = RawData.objects.filter(original_id=obj['id']).get(provider=provider)
-                Log.debug(_raw.original_id + ' found in DB')
-            _return_data.append(_raw)
+                if 'likes' in obj:
+                    _raw.like_count = len(obj['likes']['data'])
+                if 'comments' in obj:
+                    _raw.comment_count = len(obj['comments']['data'])
+                _raw.tags = FacebookProviderWorker._get_tags(obj)
+                _raw.save()
+                Log.debug('Fetched Facebook Checkin: ' + str(_raw))
+                _return_data.append(_raw)
+            except Exception as e:
+                Log.error('Could not fetch Facebook checkin:' + str(e))
         return _return_data
 
     def get_friendlist(self, user):
@@ -213,12 +203,21 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         api = facebook.GraphAPI(access_token)
         return api.get_connections("me", "friends")['data']
 
+    def get_friend_name_from_id(self, user, friend_id):
+        access_token = self._get_access_token(user)
+        api = facebook.GraphAPI(access_token)
+        _result = api.get_object(friend_id)
+        return _result['first_name']
+
     def _get_access_token(self, user):
         _instance = UserSocialAuth.objects.filter(provider='facebook').get(user=user)
         return _instance.tokens['access_token']
 
     @staticmethod
     def _get_tags(obj):
+        """
+            Returns comma seperated list of ids who likes the given object
+        """
         if 'tags' in obj:
             _tag_str = ''
             for _tag in obj['tags']['data']:
