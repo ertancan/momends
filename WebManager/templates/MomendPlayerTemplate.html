@@ -182,10 +182,11 @@
 
             var volume_group = $('#volume-group');
             volume_group.mouseenter(function(){
+                $(this).stop(true);
                 $(this).animate({'width': 120},300);
             });
             volume_group.mouseleave(function(){
-                $(this).animate({'width': 15},300);
+                $(this).delay(500).animate({'width': 15},300);
             });
             prepareButtons();
         }
