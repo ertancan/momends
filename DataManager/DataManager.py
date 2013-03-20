@@ -131,36 +131,47 @@ class DataManager:
         return _momend_name
 
     def collect_user_data(self, inc_photo, inc_status, inc_checkin, **kwargs):  # TODO concatenation fail if cannot connect to facebook or twitter (fixed on status)
+        """
+            Collects the user data from authenticated providers.
+            ;param inc_* : whether or not to collect this type of data
+            ;param provider_name-active : if these kinds of keys are given in kwargs and has value "False" this method won't collect data from them
+            ;return RawData array
+        """
         _raw_data = []
         _collect_count = dict()
         _collect_status = dict()
         for _provider in Provider.objects.all():
-            if UserSocialAuth.objects.filter(provider=str(_provider)).filter(user=self.user).count() > 0:
+            if UserSocialAuth.objects.filter(provider=_provider.name).filter(user=self.user).exists():
+                _provider_argument = _provider.name + '-active'
+                if _provider_argument in kwargs and (not kwargs[_provider_argument] or kwargs[_provider_argument].lower() == 'false'):  # Do not use this provider if parameters explicity say so
+                    Log.info('Not collecting data from: ' + _provider.name)
+                    continue
+
                 worker = _provider.instantiate_provider_worker()
                 if inc_photo and issubclass(worker.__class__, BasePhotoProviderWorker):
                     _collected = worker.collect_photo(self.user, **kwargs)
                     if not _collected:
-                        _collect_status[str(_provider)+'_photo'] = 'Error'
+                        _collect_status[_provider.name + '_photo'] = 'Error'
                     else:
                         _raw_data += _collected
                         _collect_count['photo'] = _collect_count.get('photo', 0) + len(_raw_data)
-                        _collect_status[str(_provider)+'_photo'] = 'Success'
+                        _collect_status[_provider.name + '_photo'] = 'Success'
                 if inc_status and issubclass(worker.__class__, BaseStatusProviderWorker):
                     _collected = worker.collect_status(self.user, **kwargs)
                     if not _collected:
-                        _collect_status[str(_provider)+'_status'] = 'Error'
+                        _collect_status[_provider.name + '_status'] = 'Error'
                     else:
                         _raw_data += _collected
                         _collect_count['status'] = _collect_count.get('status', 0) + len(_raw_data)
-                        _collect_status[str(_provider)+'_status'] = 'Success'
+                        _collect_status[_provider.name + '_status'] = 'Success'
                 if inc_checkin and issubclass(worker.__class__, BaseLocationProviderWorker):
                     _collected = worker.collect_checkin(self.user, **kwargs)
                     if not _collected:
-                        _collect_status[str(_provider)+'_checkin'] = 'Error'
+                        _collect_status[_provider.name + '_checkin'] = 'Error'
                     else:
                         _raw_data += _collected
                         _collect_count['checkin'] = _collect_count.get('checkin', 0) + len(_raw_data)
-                        _collect_status[str(_provider)+'_checkin'] = 'Success'
+                        _collect_status[_provider.name + '_checkin'] = 'Success'
         #all incoming data shall be saved here instead of collection place
         Log.debug('status:'+str(_collect_status))
         Log.debug('Collected Objects:'+str(_collect_count))

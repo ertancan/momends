@@ -243,12 +243,16 @@ class GetUserFriendsView(View):
         response = []
         providers = UserSocialAuth.objects.filter(user=request.user)
         for provider in providers:
-            provider_response = dict()
-            provider_response['name'] = provider.provider
-            momends_provider = Provider.objects.get(name=provider.provider)
-            provider_instance = momends_provider.instantiate_provider_worker()
-            provider_response['local'] = provider_instance.get_friendlist(request.user)
-            response.append(provider_response)
+            try:
+                provider_response = dict()
+                provider_response['name'] = provider.provider
+                momends_provider = Provider.objects.get(name=provider.provider)
+                provider_instance = momends_provider.instantiate_provider_worker()
+                provider_response['local'] = provider_instance.get_friendlist(request.user)
+                response.append(provider_response)
+            except:
+                Log.error('Get friendlist error')
+                Log.error(traceback.format_exc())
         return _generate_json_response(True, 'Returning friendlist successfully', list=response)
 
 
@@ -275,6 +279,12 @@ class CreateMomendView(View):
                 _args['is_date'] = True
                 _args['since'] = _start_date
                 _args['until'] = _finish_date
+                _create_params = request.POST.keys()
+
+                for _param in _create_params:
+                    if '-active' in _param:  # Provider disable requests
+                        _args[_param] = request.POST[_param]
+
                 if _friends:
                     _args['friends'] = _friends.split(',')
                 _cryptic_id = dm.create_momend(name=_momend_name, duration=60, privacy=_privacy,
