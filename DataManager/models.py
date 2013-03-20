@@ -141,7 +141,7 @@ class RawData(BaseDataManagerModel):
     class Meta:
         verbose_name_plural = 'RawData'
         verbose_name = 'RawData'
-        unique_together = ('owner', 'original_id', 'provider')
+        unique_together = ('original_id', 'provider')
 
     owner = models.ForeignKey(User)
 
