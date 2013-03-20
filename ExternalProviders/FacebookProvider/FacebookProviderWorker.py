@@ -60,11 +60,10 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         Log.info('Found ' + str(len(result['data'])) + ' Photos')
         for obj in result['data']:
             try:
-                _raw, _is_new = RawData.objects.get_or_create(original_id=obj['id'], provider=provider)
+                _raw, _is_new = RawData.objects.get_or_create(original_id=obj['id'], provider=provider,
+                                                              defaults={'owner': user, 'type': RawData.DATA_TYPE['Photo'],
+                                                                        'original_path': obj['images'][0]['source']})
                 if _is_new:
-                    _raw.owner = user
-                    _raw.type = RawData.DATA_TYPE['Photo']
-                    _raw.original_path = obj['images'][0]['source']
                     if 'name' in obj:
                         _raw.title = obj['name'][:255]  # first 255 chars of title
                     _raw.create_date = datetime.datetime.strptime(obj['created_time'], '%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
@@ -79,7 +78,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                 Log.debug('Fetched Facebook Photo: ' + str(_raw))
                 _return_data.append(_raw)
             except Exception as e:
-                Log.error('Could not Facebook Photo:' + str(e))
+                Log.error('Could not fetch Facebook Photo:' + str(e))
         return _return_data
 
     def collect_status(self, user, **kwargs):
@@ -106,17 +105,14 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         Log.info('Found ' + str(len(result['data'])) + ' Statuses')
         for obj in result['data']:
             try:
-                _raw, _is_new = RawData.objects.get_or_create(original_id=obj['id'], provider=provider)
+                _raw, _is_new = RawData.objects.get_or_create(original_id=obj['id'], provider=provider,
+                                                              defaults={'owner': user, 'type': RawData.DATA_TYPE['Status'],
+                                                                        'data': obj['message']})
                 if _is_new:
-                    _statusText = obj['message']
-                    if len(_statusText) > 150:
+                    if len(_raw.data) > 150:
                         Log.debug('Dropping too long user status')
                         _raw.delete()
                         continue
-                    _raw.owner = user
-                    _raw.type = RawData.DATA_TYPE['Status']
-                    _raw.provider = provider
-                    _raw.data = obj['message']
                     _raw.create_date = datetime.datetime.strptime(obj['updated_time'], '%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
                 if 'likes' in obj:
                     _raw.like_count = len(obj['likes']['data'])
@@ -179,12 +175,10 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         Log.info('Found ' + str(len(result['data'])) + ' Checkins')
         for obj in result['data']:
             try:
-                _raw, _is_new = RawData.objects.get_or_create(original_id=obj['id'], provider=provider)
+                _raw, _is_new = RawData.objects.get_or_create(original_id=obj['id'], provider=provider,
+                                                              defaults={'owner': user, 'type': RawData.DATA_TYPE['Checkin'],
+                                                                        'data': obj['place']['name']})
                 if _is_new:
-                    _raw.owner = user
-                    _raw.type = RawData.DATA_TYPE['Checkin']
-                    _raw.provider = provider
-                    _raw.data = obj['place']['name']
                     _raw.create_date = datetime.datetime.strptime(obj['created_time'], '%Y-%m-%dT%H:%M:%S+0000').replace(tzinfo=pytz.UTC)
                 if 'likes' in obj:
                     _raw.like_count = len(obj['likes']['data'])
