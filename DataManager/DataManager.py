@@ -226,7 +226,7 @@ class DataManager:
 
         return _score
 
-    def _handle_momend_create_error(self, user_message, log_message=None):
+    def _handle_momend_create_error(self, user_message, log_message=''):
         if log_message:
             Log.error(log_message)
         else:
