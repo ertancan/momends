@@ -31,9 +31,14 @@ def create_momend_task(user_id, momend_id, duration, mail, theme, scenario, inc_
         if 'friends' in kwargs:
             _enrich_filter['friends'] = kwargs['friends']
         enriched_data = dm.enrich_user_data(raw_data, _enrich_filter, enrichment_method)
-        if len(enriched_data[RawData.DATA_TYPE['Photo']]) < 10:
-            dm._handle_momend_create_error('You don\'t have enough photos together! Please select a wider time frame', 'Has only ' + str(len(enriched_data[RawData.DATA_TYPE['Photo']])) + ' photos')
-            return None
+        _photo_count = len(enriched_data[RawData.DATA_TYPE['Photo']]) < 15
+        if _photo_count < 15:
+            if 'friends' in kwargs and kwargs['friend']:
+                if _photo_count < 10:
+                    dm._handle_momend_create_error('You don\'t have enough photos together! Please select a wider time frame', 'Has only ' + str(len(enriched_data[RawData.DATA_TYPE['Photo']])) + ' photos')
+                    return None
+        else:
+            dm._handle_momend_create_error('Could not collect enough data to create a momend! Please select a wider time frame')
 
         _status.status = MomendStatus.MOMEND_STATUS['Applying Enhancements']
         _status.save()
