@@ -120,7 +120,6 @@ INSTALLED_APPS = (
     'registration',
     'sorl.thumbnail',
     'djcelery',
-    'south'
 )
 
 

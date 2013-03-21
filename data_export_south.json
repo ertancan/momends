@@ -1,1 +1,0 @@
-[{"pk": 1, "model": "south.migrationhistory", "fields": {"applied": "2013-03-20T18:13:31.739Z", "app_name": "DataManager", "migration": "0001_initial"}}, {"pk": 2, "model": "south.migrationhistory", "fields": {"applied": "2013-03-20T18:14:29.166Z", "app_name": "DataManager", "migration": "0002_auto__del_unique_rawdata_owner_original_id_provider__add_unique_rawdat"}}]
