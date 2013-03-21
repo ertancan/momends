@@ -2,7 +2,7 @@ __author__ = 'goktan'
 
 #This file stands for keeping environment related settings. Each environment should have its own additional_settings file
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 from os import environ
 
@@ -59,17 +59,17 @@ LOGGING = {
             'level': 'CRITICAL',
             'class': 'django.utils.log.AdminEmailHandler',
             }
-        #,
-        #'loggly': {
-        #    'level': 'DEBUG',
-        #    'class': 'hoover.LogglyHttpHandler',
-        #    'token': '8fa80082-6364-49be-bd01-9e60c53f7277',
-        #    }
+        ,
+        'loggly': {
+            'level': 'DEBUG',
+            'class': 'hoover.LogglyHttpHandler',
+            'token': '8fa80082-6364-49be-bd01-9e60c53f7277',
+            }
 
     },
     'loggers': {
         'momends': {
-            #'handlers': ['console', 'loggly'],
+            'handlers': ['console', 'loggly'],
             'handlers': ['console'],
             'propagate': True,
             'level': 'DEBUG',
