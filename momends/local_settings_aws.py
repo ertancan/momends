@@ -2,7 +2,7 @@ __author__ = 'goktan'
 
 #This file stands for keeping environment related settings. Each environment should have its own additional_settings file
 
-DEBUG = False
+DEBUG = True  # For serving static files, TODO: Fix!!!
 TEMPLATE_DEBUG = DEBUG
 from os import environ
 
