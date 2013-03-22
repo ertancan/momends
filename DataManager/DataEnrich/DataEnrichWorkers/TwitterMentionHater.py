@@ -19,7 +19,7 @@ class TwitterMentionHater(StatusEnrichWorker):
             if _item:
                 _text = _item.data
                 if '@' in _text:
-                    if _text.Index('@') == 0:
+                    if _text.index('@') == 0:
                         _result.append(0)
                     else:
                         _result.append(50)

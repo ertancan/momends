@@ -7,7 +7,7 @@ from BaseDataEnrichWorker import StatusEnrichWorker
 import re
 
 
-class TwitterMentionHater(StatusEnrichWorker):
+class TwitterHashtagRanker(StatusEnrichWorker):
     HASHTAGS = {'#FF': 0,  # TODO add more hashtags
                 '#MessageMe': 0,
                 '#happy': 100, }
@@ -27,9 +27,9 @@ class TwitterMentionHater(StatusEnrichWorker):
                 _hashtag = _hashtag_finder.search(_text)
                 while _hashtag:  # For every hashtag
                     _tag = _hashtag.group()
-                    if _tag in TwitterMentionHater.HASHTAGS:
+                    if _tag in TwitterHashtagRanker.HASHTAGS:
                         _hashtag_count += 1
-                        _hashtag_score_total += TwitterMentionHater.HASHTAGS[_tag]
+                        _hashtag_score_total += TwitterHashtagRanker.HASHTAGS[_tag]
                     _text = _text.replace(_tag, '')
                     _hashtag = _hashtag_finder.search(_text)
 

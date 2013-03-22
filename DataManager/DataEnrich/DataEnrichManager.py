@@ -84,7 +84,7 @@ class DataEnrichManager(object):
                         if not _results:
                             continue
                         for i in range(len(_results)):
-                            if _results[i]:  # If the worker processed this item
+                            if _results[i] is not None:  # If the worker processed this item
                                 self.enriched_data_groups[_type][i].criteria.append(_worker_model.name)
                                 self.enriched_data_groups[_type][i].multiplier.append(_enhancement_item.multiplier)
                                 self.enriched_data_groups[_type][i].priority.append(_results[i])
