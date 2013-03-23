@@ -268,7 +268,9 @@ class CreateMomendView(View):
             _start_date = datetime.strptime(request.POST['start_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
             _finish_date = datetime.strptime(request.POST['finish_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
             _privacy = request.POST['privacy_type']
-            _friends = request.POST['friends']
+            _friends = None
+            if 'friends' in request.POST:
+                _friends = request.POST['friends']
             _theme = request.POST['momend_theme']
             _theme = 1  # TODO remove after showing theme selection combo
 
