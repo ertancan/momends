@@ -47,7 +47,7 @@ class DataManagerUtil:
     def fetch_collected_data_from_s3(file):
         _s3_file = default_storage.open(file, 'r')
         _tmp_filename = settings.TMP_FILE_PATH + file
-        with open(_tmp_filename) as _tmp_file:
+        with open(_tmp_filename, 'w+') as _tmp_file:
             _tmp_file.write(_s3_file.read())
         _s3_file.close()
         _tmp_file.close()
