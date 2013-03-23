@@ -209,7 +209,7 @@ class DataManager:
             out_data = self.momend.animationlayer_set.all()[1].outdata_set.order_by('?')
             for data in out_data:
                 if data.raw and data.raw.type == RawData.DATA_TYPE['Photo']:
-                    self.momend.thumbnail = DataManagerUtil.create_photo_thumbnail(settings.SAVE_PREFIX + data.final_data_path,
+                    self.momend.thumbnail = DataManagerUtil.create_photo_thumbnail(settings.TMP_FILE_PATH + data.final_data_path,
                                                                                    'momend_' + str(self.momend.pk) + '_thumb.jpg')
                     break
         except Exception as error:

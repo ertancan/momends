@@ -1,5 +1,5 @@
 __author__ = 'ertan'
-from Outputs.AnimationManager.models import ThemeData, AppliedPostEnhancement, PostEnhancement
+from Outputs.AnimationManager.models import AppliedPostEnhancement, PostEnhancement
 from DataManager.models import RawData
 from DataManager.DataManagerUtil import DataManagerUtil
 from Outputs.AnimationManager.ImageEnhancementUtility.ImageEnhancementUtilityWorker import ImageEnhancementUtility
@@ -50,35 +50,33 @@ class ThemeManagerWorker:
         :param file_prefix: to be used while naming the output
         :return: outData
         """
-        photo_keywords = ['{{USER_PHOTO}}', '{{NEXT_USER_PHOTO}}', '{{RAND_USER_PHOTO}}']
+        _photo_type_id = RawData.DATA_TYPE['Photo']
+        photo_keywords = CoreAnimationData.USER_DATA_KEYWORDS[_photo_type_id * 3:_photo_type_id * 3 + 3]  # Photo keywords (currently maps to USER_DATA_KEYWORDS[0:3])
+                                                                                                          # Depends on the assumption all data types has 3 keywords, replace all 3's with n if keyword count changes
         data_type = outdata.animation.used_object_type  # Check if we need to apply enhancement on this data
         if not data_type in photo_keywords:
             return outdata
 
         _raw = outdata.raw
-        if not _raw.data:  # Download photo if not downloaded already
-            Log.debug('Downloading :'+str(_raw))
-            _raw.data = DataManagerUtil.download_raw_data(_raw)
-            _raw.save()
+        if _raw.original_id in self.enhancement_applied_objects:  # Don't apply enhancement on the same object twice
+            Log.debug('Image already enhanced')
+            outdata.final_data_path = self.enhancement_applied_objects[_raw.original_id]
+            return outdata
+
+        _raw_filename = DataManagerUtil.prepare_raw_data(_raw)
 
         rand_enhancement = self.theme.enhancement_groups.filter(post_enhancement=False).filter(applicable_to=RawData.DATA_TYPE['Photo']).order_by('?')[0]
         if not rand_enhancement:  # Check if there is a theme enhancement, set final data to raw data otherwise
-            outdata.final_data_path = outdata.raw.data
+            if _raw_filename.startswith(settings.TMP_FILE_PATH):
+                _raw_filename = _raw_filename.replace(settings.TMP_FILE_PATH, '')
+            outdata.final_data_path = _raw_filename
             return outdata
 
-        raw_filename = outdata.raw.data
-
-        if raw_filename in self.enhancement_applied_objects:  # Don't apply enhancement on the same object twice
-            Log.debug('Image already enhanced')
-            outdata.final_data_path = self.enhancement_applied_objects[raw_filename]
-            outdata.save()
-            return outdata
-
-        last_filename = ImageEnhancementUtility.applyThemeEnhancementsOnImage(settings.SAVE_PREFIX + raw_filename,
+        last_filename = ImageEnhancementUtility.applyThemeEnhancementsOnImage(_raw_filename,
                                                                               rand_enhancement.enhancement_functions, file_prefix, self.data_manager)
 
         outdata.final_data_path = last_filename  # Update final data with enhanced one
-        self.enhancement_applied_objects[raw_filename] = last_filename
+        self.enhancement_applied_objects[_raw.original_id] = last_filename
 
         return outdata
 

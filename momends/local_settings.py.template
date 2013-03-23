@@ -108,17 +108,19 @@ if DEBUG:
         }
 
 from settings import *
-MOMEND_FILE_URL = STATIC_URL
 TMP_FILE_PATH = 'operational_files/tmp/'
 
 #Settings for directories
+AWS_STORAGE_BUCKET_NAME = environ['AWS_STORAGE_BUCKET_NAME']
 
-SAVE_PREFIX = ''
+S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
+MOMEND_FILE_URL = S3_URL
+
 ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scripts/'
-COLLECTED_FILE_PATH = 'operational_files/userdata/collected/'
-THUMBNAIL_FILE_PATH = 'operational_files/userdata/thumbnail/'
-ENHANCED_FILE_PATH = 'operational_files/userdata/enhanced/'
-THEME_DATA_PATH =  'operational_files/themedata/'
+COLLECTED_FILE_PATH = 'userdata/collected/'
+THUMBNAIL_FILE_PATH = 'userdata/thumbnail/'
+ENHANCED_FILE_PATH = 'userdata/enhanced/'
+THEME_DATA_PATH =  'themedata/'
 
 
 

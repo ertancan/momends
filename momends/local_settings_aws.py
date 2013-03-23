@@ -88,7 +88,6 @@ MOMEND_FILE_URL = S3_URL
 TMP_FILE_PATH = '/tmp/momends_tmp/'
 
 #Settings for directories
-SAVE_PREFIX = 'operational_files/'
 ENHANCEMENT_SCRIPT_DIR = 'Outputs/AnimationManager/ThemeManager/enhancement_scripts/'
 COLLECTED_FILE_PATH = 'userdata/collected/'
 THUMBNAIL_FILE_PATH = 'userdata/thumbnail/'

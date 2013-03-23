@@ -120,6 +120,7 @@ INSTALLED_APPS = (
     'registration',
     'sorl.thumbnail',
     'djcelery',
+    'storages'
 )
 
 
@@ -179,6 +180,9 @@ RECAPTCHA_PUBLIC_KEY = environ.get('RECAPTCHA_PUBLIC_KEY')
 RECAPTCHA_PRIVATE_KEY = environ.get('RECAPTCHA_PRIVATE_KEY')
 #RECAPTCHA_USE_SSL = True
 
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+AWS_ACCESS_KEY_ID = environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = environ.get('AWS_SECRET_ACCESS_KEY')
 
 DATABASE_OPTIONS = {
     'use_unicode': True,

@@ -9,6 +9,7 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from django.core.urlresolvers import reverse_lazy
+from django.core.files.storage import default_storage
 
 from LogManagers.Log import Log
 
@@ -17,30 +18,69 @@ class DataManagerUtil:
     __metaclass__ = abc.ABCMeta
 
     @staticmethod
-    def download_file(url, name):
+    def download_data_to_tmp(url, name, upload_to_cloud=True):
         """
         Download file from an uri
         :param url: uri where content will be fetched
         :param name: name of file
         :return: file path to local file
         """
-        _url = urllib2.urlopen(url)
+        _url_connection = urllib2.urlopen(url)
         _file_path = settings.COLLECTED_FILE_PATH + name
-        _save_file_path = settings.SAVE_PREFIX + _file_path
+        _save_file_path = settings.TMP_FILE_PATH + _file_path
 
-        with open(_save_file_path, 'wb+') as _local_file:
-            _local_file.write(_url.read())
+        _url_content = _url_connection.read()
+        _url_connection.close()
+
+        with open(_save_file_path, 'w+') as _local_file:
+            _local_file.write(_url_content)
         _local_file.close()
-        return _file_path
+
+        if upload_to_cloud:
+            _s3_file = default_storage.open(_file_path, 'w+')
+            _s3_file.write(_url_content)
+            _s3_file.close()
+
+        return _save_file_path
 
     @staticmethod
-    def download_raw_data(raw):
-        try:
-            _dot_index = raw.original_path.rindex('.')
-            _ext_part = raw.original_path[_dot_index:]
-        except ValueError:
-            _ext_part = '.jpg'
-        return DataManagerUtil.download_file(raw.original_path, str(raw)+_ext_part)
+    def fetch_collected_data_from_s3(file):
+        _s3_file = default_storage.open(file, 'r')
+        _tmp_filename = settings.TMP_FILE_PATH + file
+        with open(_tmp_filename) as _tmp_file:
+            _tmp_file.write(_s3_file.read())
+        _s3_file.close()
+        _tmp_file.close()
+        return _tmp_filename
+
+    @staticmethod
+    def prepare_raw_data(raw):
+        if not raw.data:
+            try:
+                _dot_index = raw.original_path.rindex('.')
+                _ext_part = raw.original_path[_dot_index:]
+            except ValueError:
+                _ext_part = '.jpg'
+            return DataManagerUtil.download_data_to_tmp(raw.original_path, str(raw)+_ext_part)
+        else:
+            return DataManagerUtil.fetch_collected_data_from_s3(raw.data)
+
+    @staticmethod
+    def upload_data_to_s3(filename, prefix=None):
+        _s3_filename = filename
+        if filename.startswith(settings.TMP_FILE_PATH):
+            _s3_filename = filename.replace(settings.TMP_FILE_PATH, '')
+        if prefix:
+            _s3_filename = prefix + _s3_filename
+        if default_storage.exists(_s3_filename):
+            Log.info('File already exists! Not uploading.')
+            return _s3_filename
+        _s3_file = default_storage.open(_s3_filename, 'w+')
+        with open(filename) as _tmp_file:
+            _s3_file.write(_tmp_file.read())
+        _s3_file.close()
+        _tmp_file.close()
+        return _s3_filename
 
     @staticmethod
     def create_photo_thumbnail(_file, _output_name):
@@ -49,9 +89,11 @@ class DataManagerUtil:
             return
         os.environ['PATH'] += ':/usr/local/bin'  # TODO: remove this on prod For mac os
         _file_path = settings.THUMBNAIL_FILE_PATH + _output_name
-        _save_file_path = settings.SAVE_PREFIX + _file_path
+        _save_file_path = settings.TMP_FILE_PATH + _file_path
         s = ["convert", _file, '-resize', '500x320^', '-gravity', 'center', '-extent', '500x320', _save_file_path]
         subprocess.Popen(s).wait()
+        DataManagerUtil.upload_data_to_s3(_save_file_path)
+        os.remove(_save_file_path)
         return _file_path
 
     @staticmethod
@@ -63,8 +105,8 @@ class DataManagerUtil:
         :return: file path to local file
         """
         _file_path = settings.COLLECTED_FILE_PATH + name
-        _save_file_path = settings.SAVE_PREFIX + _file_path
-        with open(_save_file_path, 'wb+') as _local_file:
+        _save_file_path = settings.TMP_FILE_PATH + _file_path
+        with open(_save_file_path, 'w+') as _local_file:
             for chunk in content.chunks():
                 _local_file.write(chunk)
             _local_file.close()
