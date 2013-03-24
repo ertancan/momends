@@ -48,6 +48,8 @@ class OutData(BaseDataManagerModel):
                 else:  # Use photo date as title
                     enc['title'] = self.raw.create_date.strftime("%Y-%m-%d %H:%M")
             enc['date'] = self.raw.create_date
+            if not self.final_data_path:
+                enc['final_data_path'] = self.raw.data
         post_enhancements = self.appliedpostenhancement_set
         if post_enhancements.count() > 0:
             posts = []

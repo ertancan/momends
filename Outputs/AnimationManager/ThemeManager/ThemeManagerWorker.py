@@ -1,7 +1,7 @@
 __author__ = 'ertan'
 from Outputs.AnimationManager.models import AppliedPostEnhancement, PostEnhancement
 from DataManager.models import RawData
-from DataManager.DataManagerUtil import DataManagerUtil
+from DataManager.DataManagerUtil import CloudFile
 from Outputs.AnimationManager.ImageEnhancementUtility.ImageEnhancementUtilityWorker import ImageEnhancementUtility
 from Outputs.AnimationManager.models import CoreAnimationData
 from Outputs.AnimationManager.ThemeManager.ThemeDataManager import ThemeDataManager
@@ -63,20 +63,21 @@ class ThemeManagerWorker:
             outdata.final_data_path = self.enhancement_applied_objects[_raw.original_id]
             return outdata
 
-        _raw_filename = DataManagerUtil.prepare_raw_data(_raw)
+        _cloud_file = CloudFile(_raw)
 
         rand_enhancement = self.theme.enhancement_groups.filter(post_enhancement=False).filter(applicable_to=RawData.DATA_TYPE['Photo']).order_by('?')[0]
         if not rand_enhancement:  # Check if there is a theme enhancement, set final data to raw data otherwise
-            if _raw_filename.startswith(settings.TMP_FILE_PATH):
-                _raw_filename = _raw_filename.replace(settings.TMP_FILE_PATH, '')
-            outdata.final_data_path = _raw_filename
+            _cloud_file.commit()
+            outdata.final_data_path = _cloud_file.cloud_url
             return outdata
 
-        last_filename = ImageEnhancementUtility.applyThemeEnhancementsOnImage(_raw_filename,
-                                                                              rand_enhancement.enhancement_functions, file_prefix, self.data_manager)
-
-        outdata.final_data_path = last_filename  # Update final data with enhanced one
-        self.enhancement_applied_objects[_raw.original_id] = last_filename
+        _enhanced = ImageEnhancementUtility.applyThemeEnhancementsOnImage(_cloud_file, rand_enhancement.enhancement_functions, file_prefix, self.data_manager)
+        if _enhanced:
+            outdata.final_data_path = _cloud_file.enhanced_path  # Update final data with enhanced one
+            self.enhancement_applied_objects[_raw.original_id] = _cloud_file.enhanced_path
+        else:
+            outdata.final_data_path = _cloud_file.cloud_url
+            self.enhancement_applied_objects[_raw.original_id] = _cloud_file.cloud_url
 
         return outdata
 

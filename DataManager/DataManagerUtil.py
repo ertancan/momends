@@ -72,9 +72,6 @@ class DataManagerUtil:
             _s3_filename = filename.replace(settings.TMP_FILE_PATH, '')
         if prefix:
             _s3_filename = prefix + _s3_filename
-        if default_storage.exists(_s3_filename):
-            Log.info('File already exists! Not uploading.')
-            return _s3_filename
         _s3_file = default_storage.open(_s3_filename, 'w+')
         with open(filename) as _tmp_file:
             _s3_file.write(_tmp_file.read())
@@ -90,7 +87,7 @@ class DataManagerUtil:
         os.environ['PATH'] += ':/usr/local/bin'  # TODO: remove this on prod For mac os
         _file_path = settings.THUMBNAIL_FILE_PATH + _output_name
         _save_file_path = settings.TMP_FILE_PATH + _file_path
-        s = ["convert", _file, '-resize', '500x320^', '-gravity', 'center', '-extent', '500x320', _save_file_path]
+        s = ["convert", _file.local_path, '-resize', '500x320^', '-gravity', 'center', '-extent', '500x320', _save_file_path]
         subprocess.Popen(s).wait()
         DataManagerUtil.upload_data_to_s3(_save_file_path)
         os.remove(_save_file_path)
@@ -160,3 +157,63 @@ class DataManagerUtil:
         except Exception as e:
             Log.error('Error while sending momend share email: '+str(e))
             return False
+
+
+class CloudFile(object):
+    cloud_dirty = False
+    enhanced_dirty = False
+
+    def __init__(self, raw):
+        self.raw = raw
+        self.local_url = None
+        self.cloud_url = raw.data
+        self.enhanced_path = None
+
+    @property
+    def local_path(self):
+        if self.local_url:
+            return self.local_url
+        if self.cloud_url:
+            try:
+                self.local_url = DataManagerUtil.fetch_collected_data_from_s3(self.cloud_url)
+                return self.local_url
+            except Exception as e:
+                Log.error('Exception occurred while downloading file from cloud. Trying to download from provider. :' + str(e))
+
+        # Not downloaded anywhere yet or exception occured above
+        if '.' in self.raw.original_path:
+            _dot_index = self.raw.original_path.rindex('.')
+            _ext_part = self.raw.original_path[_dot_index:]
+        else:
+            _ext_part = '.jpg'
+        self.local_url = DataManagerUtil.download_data_to_tmp(self.raw.original_path, str(self.raw) + _ext_part)
+        self.cloud_dirty = True
+        return self.local_url
+
+    def set_enhanced(self, enhanced_path):
+        if self.enhanced_path == enhanced_path:
+            return
+        self.enhanced_path = enhanced_path
+        self.enhanced_dirty = True
+
+    def commit(self):
+        if self.enhanced_dirty:
+            try:
+                _old_file = self.enhanced_path
+                self.enhanced_path = settings.S3_URL + DataManagerUtil.upload_data_to_s3(self.enhanced_path)
+                self.enhanced_dirty = False
+                os.remove(_old_file)
+            except Exception as e:
+                Log.error('Error occurred while uploading enhanced data. :' + str(e))
+        if self.cloud_dirty:
+            try:
+                self.cloud_url = DataManagerUtil.upload_data_to_s3(self.local_url)
+                self.raw.data = self.cloud_url
+                self.raw.save()
+                self.cloud_dirty = False
+            except Exception as e:
+                Log.error('Error occurred while uploading collected data. :' + str(e))
+        if not self.cloud_url:  # Will be used without enhancements so not downloaded yet
+            self.cloud_url = DataManagerUtil.upload_data_to_s3(self.local_path)  # local_path will download then upload_data_to_s3 will upload back
+            self.raw.data = self.cloud_url
+            self.raw.save()

@@ -519,8 +519,9 @@ var Momend = (function(){
 function _getPhotoIdentifier(fullPath){
     var identifier = null;
     try{
-        var lastPartIndex = fullPath.lastIndexOf('/');
-        var lastStr = fullPath.substring(lastPartIndex + 1);
+        var withoutHost = fullPath.replace(MOMEND_FILE_URL, '');
+        var lastPartIndex = withoutHost.lastIndexOf('/');
+        var lastStr = withoutHost.substring(lastPartIndex + 1);
         var dotIndex = lastStr.indexOf('.');
         identifier = lastStr.substring(0, dotIndex);
     }catch(Exception){

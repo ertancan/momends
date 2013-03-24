@@ -9,25 +9,24 @@ from LogManagers.Log import Log
 
 class ImageEnhancementUtility(object):
     @staticmethod
-    def applyThemeEnhancementsOnImage(filename, enhancement_str, file_prefix, theme_data_manager):
+    def applyThemeEnhancementsOnImage(cloud_file, enhancement_str, file_prefix, theme_data_manager):
         if len(enhancement_str) == 0:
-            if filename.startswith(settings.TMP_FILE_PATH):
-                filename = filename.replace(settings.TMP_FILE_PATH, '')
-            Log.debug('Not applying enhancement returning filename: ' + filename)
-            return filename
+            Log.debug('Not applying enhancement.')
+            cloud_file.commit()
+            return False
         os.environ['PATH'] += ':/usr/local/bin'  # TODO: remove this on prod For mac os
         enhancement_objects = []
         enhancement_ids = enhancement_str.split(',')
         for enh_id in enhancement_ids:
             enhancement_objects.append(ImageEnhancement.objects.get(pk=int(enh_id)))
 
-        _tmp_filename = filename
+        _tmp_filename = cloud_file.local_path
         try:
-            dot_index = filename.rindex('.')
-            name_part = filename[:dot_index]
-            ext_part = filename[dot_index:]
+            dot_index = _tmp_filename.rindex('.')
+            name_part = _tmp_filename[:dot_index]
+            ext_part = _tmp_filename[dot_index:]
         except ValueError:
-            name_part = filename
+            name_part = _tmp_filename
             ext_part = ''  # there is no extension, unlikely but possible
 
         if settings.COLLECTED_FILE_PATH in name_part:
@@ -48,6 +47,6 @@ class ImageEnhancementUtility(object):
                 os.remove(_tmp_filename)
             _tmp_filename = _enh_out_filename
         Log.debug('_tmp_filename:' + _tmp_filename)
-        _final_path = DataManagerUtil.upload_data_to_s3(_tmp_filename)
-        #os.remove(_tmp_filename)
-        return _final_path
+        cloud_file.set_enhanced(_tmp_filename)
+        cloud_file.commit()
+        return True

@@ -12,6 +12,7 @@ from Outputs.AnimationManager.models import OutData
 from social_auth.db.django_models import UserSocialAuth
 from LogManagers.Log import Log
 from DataManagerUtil import DataManagerUtil
+from DataManagerUtil import CloudFile
 from django.db.models import Q
 from django.conf import settings
 import traceback
@@ -209,8 +210,8 @@ class DataManager:
             out_data = self.momend.animationlayer_set.all()[1].outdata_set.order_by('?')
             for data in out_data:
                 if data.raw and data.raw.type == RawData.DATA_TYPE['Photo']:
-                    self.momend.thumbnail = DataManagerUtil.create_photo_thumbnail(settings.TMP_FILE_PATH + data.final_data_path,
-                                                                                   'momend_' + str(self.momend.pk) + '_thumb.jpg')
+                    _cloud_file = CloudFile(data.raw)
+                    self.momend.thumbnail = DataManagerUtil.create_photo_thumbnail(_cloud_file, 'momend_' + str(self.momend.pk) + '_thumb.jpg')
                     break
         except Exception as error:
             Log.error("Couldn't create thumbnail!-->"+str(error))
