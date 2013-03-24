@@ -166,7 +166,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                                          fields='id,place,likes.limit(500),comments.limit(500),created_time,tags')  # TODO hardcoded limits will go to config file
         except:
             Log.error('Exception on collect Checkin')
-            return []]
+            return []
 
         provider = self.getProvider()
 
