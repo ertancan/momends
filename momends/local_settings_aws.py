@@ -2,7 +2,7 @@ __author__ = 'goktan'
 
 #This file stands for keeping environment related settings. Each environment should have its own additional_settings file
 
-DEBUG = True  # For serving static files, TODO: Fix!!!
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 from os import environ
 
@@ -108,3 +108,4 @@ ERROR_EMAIL_RECEIVERS = ['ertan@momends.com',
 HOST_URL = 'http://beta.momends.com'
 
 BROKER_URL = 'sqs://'
+
