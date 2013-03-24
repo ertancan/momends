@@ -13,6 +13,7 @@ class ImageEnhancementUtility(object):
         if len(enhancement_str) == 0:
             Log.debug('Not applying enhancement.')
             cloud_file.commit()
+            cloud_file.clean_local()
             return False
         os.environ['PATH'] += ':/usr/local/bin'  # TODO: remove this on prod For mac os
         enhancement_objects = []
@@ -49,4 +50,5 @@ class ImageEnhancementUtility(object):
         Log.debug('_tmp_filename:' + _tmp_filename)
         cloud_file.set_enhanced(_tmp_filename)
         cloud_file.commit()
+        cloud_file.clean_local()
         return True

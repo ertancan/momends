@@ -217,3 +217,10 @@ class CloudFile(object):
             self.cloud_url = DataManagerUtil.upload_data_to_s3(self.local_path)  # local_path will download then upload_data_to_s3 will upload back
             self.raw.data = self.cloud_url
             self.raw.save()
+
+    def clean_local(self):  # TODO clean enhanced here
+        if self.local_url:
+            try:
+                os.remove(self.local_url)
+            except:
+                Log.error('Couldnot delete local tmp')
