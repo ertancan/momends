@@ -55,7 +55,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                                          fields='likes.limit(500),comments.limit(500),source,name,sharedposts,images,tags')
         except:
             Log.error('Exception on collect Photo')
-            return None
+            return []
         _return_data = []
         Log.info('Found ' + str(len(result['data'])) + ' Photos')
         for obj in result['data']:
@@ -100,7 +100,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                                          fields='id,message,likes.limit(500),comments.limit(500),sharedposts,updated_time,tags')
         except:
             Log.error('Exception on collect Status')
-            return None
+            return []
         _return_data = []
         Log.info('Found ' + str(len(result['data'])) + ' Statuses')
         for obj in result['data']:
@@ -166,7 +166,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
                                          fields='id,place,likes.limit(500),comments.limit(500),created_time,tags')  # TODO hardcoded limits will go to config file
         except:
             Log.error('Exception on collect Checkin')
-            return None
+            return []]
 
         provider = self.getProvider()
 
