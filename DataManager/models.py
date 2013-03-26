@@ -53,8 +53,8 @@ class Momend(BaseDataManagerModel):
 
 class MomendStatus(BaseDataManagerModel):
     class Meta:
-        verbose_name_plural = 'MomendStatuses'
-        verbose_name = 'MomendStatus'
+        verbose_name_plural = 'Momend Statuses'
+        verbose_name = 'Momend Status'
 
     momend = models.ForeignKey(Momend)
     owner = models.ForeignKey(User)  # In order to quickly check if user creating a momend right now

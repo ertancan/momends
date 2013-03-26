@@ -52,7 +52,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         provider = self.getProvider()
         try:
             result = api.get_connections('me', 'photos', limit=200, since=str(since), until=str(until),
-                                         fields='likes.limit(500),comments.limit(500),source,name,sharedposts,images,tags')
+                                         fields='likes.limit(500),from,comments.limit(500),source,name,sharedposts,images,tags')
         except:
             Log.error('Exception on collect Photo')
             return []
@@ -97,7 +97,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         provider = self.getProvider()
         try:
             result = api.get_connections('me', 'statuses', limit=200, since=str(since), until=str(until),
-                                         fields='id,message,likes.limit(500),comments.limit(500),sharedposts,updated_time,tags')
+                                         fields='id,from,message,likes.limit(500),comments.limit(500),sharedposts,updated_time,tags')
         except:
             Log.error('Exception on collect Status')
             return []
@@ -163,7 +163,7 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         api = facebook.GraphAPI(access_token)
         try:
             result = api.get_connections('me', 'checkins', limit=200, since=str(since), until=str(until),
-                                         fields='id,place,likes.limit(500),comments.limit(500),created_time,tags')  # TODO hardcoded limits will go to config file
+                                         fields='id,from,place,likes.limit(500),comments.limit(500),created_time,tags')  # TODO hardcoded limits will go to config file
         except:
             Log.error('Exception on collect Checkin')
             return []
@@ -212,10 +212,14 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
         """
             Returns comma seperated list of ids who likes the given object
         """
-        if 'tags' in obj:
-            _tag_str = ''
-            for _tag in obj['tags']['data']:
-                if 'id' in _tag:
-                    _tag_str += _tag['id'] + ','
-            return _tag_str
-        return None
+        _tag_str = ''
+        try:
+            if 'tags' in obj:
+                for _tag in obj['tags']['data']:
+                    if 'id' in _tag:
+                        _tag_str += _tag['id'] + ','
+            if 'from' in obj:
+                _tag_str += obj['from']['id']
+        except Exception as e:
+            Log.error('Error while exracting tags: ' + str(e))
+        return _tag_str
