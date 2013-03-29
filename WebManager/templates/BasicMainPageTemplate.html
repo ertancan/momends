@@ -135,6 +135,7 @@
         var createState;
         var selectedFriends;
         var createModalMaximized = false;
+        var logger;
 
         window.onpopstate = function(e){ //Play momend if the url bar changed after create and user coming back from history
             if(e.state){
@@ -143,6 +144,8 @@
         };
 
         $('body').ready(function(){
+            logger = MomendsLogger;
+            logger.init('{{ user.username }}', {'page': 'main'});
             for(var i=0;i<5;i++){
                 bgArr.push(STATIC_URL+'img/carousel'+(i+1)+'.jpg');
             }
@@ -178,12 +181,16 @@
                     }
                 };
                 createMomend(postData);
+                logger.logEvent({'msg': 'Create button pressed', 'create_data': postData});
             });
             if(_cid){ //If we have a video to show
+                logger.logEvent({'msg': 'This is actually show page, showing', 'cid': _cid});
                 playMomend(_cid, _type === 'i');
             }else if(user_momend_count === 0 && home === 'True'){ //If home page & user logged in and has no momends
+                logger.logEvent({'msg': 'Momend count is 0, creating one'});
                 welcome();
             }else if(getURLParameter('create') === 'true'){ //Someone told me to show create modal
+                logger.logEvent({'msg': 'Parameters told me to show create dialog'});
                 showCreateModal();
                 _trackPageEvent('Create', 'AutoShowDialog');
             }
@@ -211,6 +218,7 @@
         }
 
         function createMomend(postData){
+            logger.logEvent({'msg': 'Creating screen shown'});
             _trackPageEvent('Create', 'Creating');
             var creatingDialogBg = $('#creating-dialog-bg');
             creatingDialogBg.fadeIn();
@@ -232,12 +240,14 @@
                         setTimeout(function() {checkMomendStatus(result.cid)}, 5000);
                     }else{
                         _trackPageEvent('Momend', 'CreateFailed');
+                        logger.logEvent({'msg': 'Create failed with response', 'response': result.message});
                         creatingDialogBg.fadeOut();
                         _showToast(result.message, '110px');
                     }
                 },
                 error: function(msg){
                     _trackPageEvent('Momend', 'CreateServerError');
+                    logger.logEvent({'msg': 'Create failed with server error'});
                     creatingDialogBg.fadeOut();
                     _showToast('An error occurred! Please try again later.', '90px');
                 }
@@ -247,8 +257,8 @@
         function checkMomendStatus(crypticId){
             var mainURL = '{% url 'momends:momend-status' 'dummy' %}';
             var statusURL = mainURL.replace('dummy', crypticId);
+            var creatingDialogBg = $('#creating-dialog-bg');
             $.getJSON( statusURL, function(data) {
-                var creatingDialogBg = $('#creating-dialog-bg');
                 if(!data.resp){ //Status check request unsuccessful
                     _showToast(data.message, '90px');
                 }else{
@@ -260,6 +270,7 @@
                         }catch(e){
                             console.log('Different domain?');
                         }
+                        logger.logEvent({'msg': 'Created, showing momend'});
                         playMomend(crypticId);
                     }
                     else if(data.status === 'Error'){
@@ -273,6 +284,7 @@
                         _showToast(message, '90px');
                     }else{
                         createState = data.status;
+                        logger.logEvent({'msg': 'Momend status learned', 'status': data.status});
                         setTimeout(function() {checkMomendStatus(crypticId)}, 5000);
                     }
                 }
@@ -346,6 +358,7 @@
          * shows the video and adds a backdrop
          */
         function watchVideo(){
+            logger.logEvent({'msg': 'User pressed watch video'});
             _trackPageEvent('Video', 'Watch');
             var box = $("<div/>").addClass("darkCover").click(function(){
                 $(this).fadeOut();
@@ -364,6 +377,7 @@
 
         function showCreateModal(){
             _trackPageEvent('Create', 'ShowDialog');
+            logger.logEvent({'msg': 'Create modal shown'});
             var modal = $('#create-modal-mini');
             modal.css('margin-left',modal.outerWidth()/-2);
             modal.modal();
@@ -400,6 +414,7 @@
                         data.list[i].engine = Hogan;
                     }
                     $('.friend-typeahead').typeahead(data.list);
+                    logger.logEvent({'msg': 'typeahead initialized'});
                 }
             });
             $('.friend-typeahead').on('typeahead:selected', friendSelected);
@@ -411,6 +426,7 @@
                 var selected = arguments[1];
                 if($.inArray(selected, selectedFriends) === -1){
                     selectedFriends.push(selected);
+                    logger.logEvent({'msg': 'selected a friend from typeahead', 'friend': selected});
                     var listItem = $('<li/>',{
                         text: selected.name
                     }).appendTo($('#with-list'));
@@ -455,6 +471,8 @@
 
         function showAuthModal(_url, title){
             _trackPageEvent('Auth', 'ShowDialog');
+            logger.logEvent({'msg': 'Auth dialog shown'});
+
             var modal =jQuery('<div/>',{
                 'id': 'modal',
                 'class' : 'modal hide fade',
@@ -483,21 +501,26 @@
         }
         function socialToggle(provider){
             if(provider === 'facebook'){
+                logger.logEvent({'msg': 'Tried to disable facebook, not doing it.'});
                 return;
             }
             if($.inArray(provider, auth) >= 0){
                 var button = $('#create-social-'+provider);
                 if(button.hasClass('active')){
+                    logger.logEvent({'msg': 'social toggle on', 'provider_name': provider});
                     button.removeClass('active');
                 }else{
+                    logger.logEvent({'msg': 'social toggle off', 'provider_name': provider});
                     button.addClass('active');
                 }
             }else{ //Show authentication dialog
+                logger.logEvent({'msg': 'Social toggle sign-in dialog shown', 'provider_name': provider});
                 var twitterConnectURL = HOST_URL + '{% url 'socialauth_begin' 'twitter' %}';
                 window.location.replace(twitterConnectURL);
             }
         }
         function dateSelected(type){
+            logger.logEvent({'msg': 'date select button pressed', 'type': type});
             $('.date-selector-link').removeClass('selected');
             var dateContent = $('#date-content');
             dateContent.hide();
@@ -565,8 +588,9 @@
             id : 'momend-player-frame',
             onload : 'frameLoaded()'
         }).appendTo(portablePlayer);
-
+        logger.logEvent({'msg': 'Player shown'});
         playBG.click(function(){ //Pause the momend and minimize it if backdrop pressed
+            logger.logEvent({'msg': 'momend minimized'});
             momendManager.jsAnimate.pause();
             $('#momend-player').animate({'width':0,'height':0,'top':0,'left':'35%'},500);
             setTimeout(function(){
@@ -590,6 +614,7 @@
                 }).appendTo('#header');
                 $('#basic-logout-link').css({float:'right'}); // to send Logout to the right most side again
                 showAgainButton.click(function(event){
+                    logger.logEvent({'msg': 'momend maximized back'});
                     momendPlaying = true;
                     event.preventDefault();
                     playBG.fadeIn();
@@ -602,6 +627,7 @@
         });
     }
         function _showToast(_text, _height){
+            logger.logEvent({'msg': 'showing a tost', 'text': _text});
             var dialog = $('<div/>',{
                 class : 'basic-dialog',
                 id : 'dialog-'+_dialogId,
@@ -632,6 +658,7 @@
         fullscreen_on = false;
         function frameLoaded(){
             console.log('Frame Loaded');
+            logger.logEvent({'msg': 'Player frame loaded'});
             player_frame = document.getElementById('momend-player-frame');
             momendManager = player_frame.contentWindow.momendManager;
             momendManager.setFullscreenFunction(fullscreen);
@@ -640,6 +667,7 @@
             //We may want to open in a new tab?
         }
         function finished(){
+            logger.logEvent({'msg': 'player finished'});
             if(fullscreen_on){
                 fullscreen();
             }
@@ -651,14 +679,17 @@
                 player.addClass('fullscreen');
                 player.removeClass('regular');
                 _trackPageEvent('Fullscreen', 'On');
+                logger.logEvent({'msg': 'Fullscreen!!!'});
             }else{
                 player.removeClass('fullscreen');
                 player.addClass('regular');
                 _trackPageEvent('Fullscreen', 'Off');
+                logger.logEvent({'msg': 'Fulscreen off!!!'});
             }
             fullscreen_on = !fullscreen_on;
         }
         function redirectToPage(url){
+            logger.logEvent({'msg': 'Redirecting to page', 'url': url});
             location.href = url;
         }
         function getURLParameter(name) {

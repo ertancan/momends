@@ -33,12 +33,25 @@ var JSAnimate = (function(){
 
     var isiPad = navigator.userAgent.match(/iPad/i);
 
+    var logger;  // A logger object which has own property of 'logEvent'
+    var logHeartbeat;
+
     function _initAnimation(){
         $.cssEase._default = 'linear';
         $(window).resize(function(){
             _reCalculateDimensions();
         });
         volume = 100; //Default value if there is no cookie and so the callback won't be called
+        if(arguments.length > 0){
+            for(var i=0; i<arguments.length; i++){
+                if(arguments[i].hasOwnProperty('logEvent')){
+                    logger = arguments[i];
+                }
+            }
+        }
+        if(!logger){
+            logger = MomendsLogger;
+        }
     }
     /**
      * Instantiates global variables according to number of levels needed.
@@ -76,7 +89,7 @@ var JSAnimate = (function(){
     }
     /**
      * Starts all animation queues
-     * !!Clears the user interaction timers, do not use unless you are starting a new animation!!
+     * !!Clears the user interaction timers and starts animation heartbeats do not use unless you are starting a new animation!!
      */
     function _startAllQueues(){
         for (var i=0;i<animationQueue.length;i++){
@@ -84,6 +97,12 @@ var JSAnimate = (function(){
         }
         lastUserInteraction = new Date().getTime();
         _isPlaying = true;
+        if(logHeartbeat){
+            clearInterval(logHeartbeat);
+        }
+        logHeartbeat = setInterval(function(){
+            logger.logEvent('Video playing');
+        }, 5000);
     }
 
     /**
@@ -213,14 +232,14 @@ var JSAnimate = (function(){
         if(typeof _animation['name'] !=='undefined'){
             console.log('starting:'+_animation['name']+' on layer:'+_level+ ' called by:');
             if(typeof _caller === 'string'){
-                console.log(_caller)
+                console.log(_caller);
             }else{
                 console.dir(_caller);
             }
         }else{
             console.log('starting:'+_animation['type']+' on layer:'+_level+  ' called by:');
             if(typeof _caller === 'string'){
-                console.log(_caller)
+                console.log(_caller);
             }else{
                 console.dir(_caller);
             }
@@ -245,7 +264,7 @@ var JSAnimate = (function(){
         var _type = _animation['type'];
         var _obj = null;
         if('object' in _animation){
-            var _obj=_animation['object'];
+            _obj = _animation['object'];
             if(typeof _obj === 'string'){
                 _obj = $(_obj);
             }
@@ -372,7 +391,7 @@ var JSAnimate = (function(){
                 }
                 __addInteractionAnimationLayerForObject(_hideAnimation);
                 console.log('added hide animation:');
-                console.dir(_hideAnimation)
+                console.dir(_hideAnimation);
                 return;
             }else{
                 console.log('Hiding now!!!');
@@ -500,8 +519,9 @@ var JSAnimate = (function(){
                 _nextAnimation(_level, 'Wait Prev False');
             }
         }catch(error){
-            console.log('Animation error on level:'+_level+' : '+error);
+            console.log('Animation error on level:' + _level + ' : ' + error);
             console.dir(animationQueue[_level][0]);
+            logger.logEvent({'msg': 'Animation error', 'level': _level, 'error': error});
         }
     }
     /**
@@ -509,6 +529,10 @@ var JSAnimate = (function(){
      * !Also informs finish observers!
      */
     function _finish(){
+        logger.logEvent({'msg': 'animation finished'});
+        if(logHeartbeat){
+            clearInterval(logHeartbeat);
+        }
         $('#finished-bg').fadeIn();
         if(currentMusicObj){
             __musicFade(currentMusicObj, false,1/(2000/MUSIC_ANIMATION_INTERVAL), false); //Fadeout animation for 2 seconds
@@ -545,6 +569,7 @@ var JSAnimate = (function(){
      * Pauses the current animation and saves the current states of animations to be able to resume
      */
     function _pause(){
+        logger.logEvent({'msg': 'animation paused'});
         if(!_isPlaying){
             return;
         }
@@ -597,6 +622,7 @@ var JSAnimate = (function(){
     }
 
     function _resume(){
+        logger.logEvent({'msg': 'animation resumed'});
         for (var k = 0; k < queueOnAction.length; k++){ //Not calling _startAllQueues not to trigger first animations before remainders of previous
             queueOnAction[k] = true;
         }
@@ -658,6 +684,7 @@ var JSAnimate = (function(){
      * @param _val Current value of the slider
      */
     function _volumeSliderChanged(_val){
+        logger.logEvent({'msg': 'volume changed', 'new_value': _val});
         if(!soundAnimationInProcess && currentMusicObj){
             currentMusicObj.jPlayer('volume',_val/100);
         }
@@ -669,12 +696,14 @@ var JSAnimate = (function(){
      */
     function _handleClick(_obj){
         if(!_isPlaying){ //Don't let interactions if paused
+            logger.logEvent({'msg': 'object clicked but player paused'});
             return;
         }
         var click_time = new Date().getTime();
         var _node = __findObjectNode(_obj);
         console.dir(_node);
         var click_animation = _node['animation']['click_animation'];
+        logger.logEvent({'msg': 'Object clicked', 'animation': click_animation});
         for (var i = 0; i<click_animation['animations'].length;i++){
             click_animation['animations'][i]['anim'] = _parseStringToDict(click_animation['animations'][i]['anim']);
             click_animation['animations'][i]['pre'] = _parseStringToDict(click_animation['animations'][i]['pre']);
@@ -704,11 +733,13 @@ var JSAnimate = (function(){
      */
     function _handleMouseEnter(_obj){
         if(!_isPlaying){ //Don't let interactions if paused
+            logger.logEvent({'msg': 'mouse hover but player paused'});
             return;
         }
         var enter_time = new Date().getTime();
         var _node = __findObjectNode(_obj);
         var enter_animation = _node['animation']['hover_animation'];
+        logger.logEvent({'msg': 'Object hovered', 'animation': enter_animation});
         for (var i = 0; i<enter_animation['animations'].length;i++){
             enter_animation['animations'][i]['anim'] = _parseStringToDict(enter_animation['animations'][i]['anim']);
             enter_animation['animations'][i]['pre'] = _parseStringToDict(enter_animation['animations'][i]['pre']);
@@ -819,6 +850,7 @@ var JSAnimate = (function(){
             '{{SCREEN_WIDTH}}' : screen.outerWidth(),
             '{{SCREEN_HEIGHT}}' : screen.outerHeight()
         };
+        logger.logEvent({'msg': 'recalculated dimensions', 'new_table': keywordLookupTable});
     }
 
     function __replaceObjectKeywords(_str, _obj){

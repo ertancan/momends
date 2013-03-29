@@ -118,10 +118,12 @@
 
 {% block default-scripts %}
     <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+    <script src="{{ STATIC_URL }}log.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.isotope.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.touchSwipe.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.hotkeys.min.js" charset='utf-8'></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/functions.min.js"></script>
+    <script src="{{ STATIC_URL }}jquery.cookie.js"></script>
     <script>
         function showAuthModal(_url, title){
             var modal =jQuery('<div/>',{

@@ -10,9 +10,20 @@ var Momend = (function(){
     var _loadCallback;
     var musicObjects;
     var createdObjects;
+    var logger;
 
     function init(){
-        _jsAnimate.initAnimation();
+        if(arguments.length > 0){
+            for(var i=0; i<arguments.length; i++){
+                if(arguments[i].hasOwnProperty('logEvent')){
+                    logger = arguments[i];
+                }
+            }
+        }
+        if(!logger){
+            logger = MomendsLogger;
+        }
+        _jsAnimate.initAnimation(logger);
     }
     function _momendArrived(momend_data){
         _momendData = $.extend(momend_data, {}, true);
@@ -23,6 +34,7 @@ var Momend = (function(){
         }else{
             _createObjectsFromData(_loadSuccessful); //start animation as create objects callback
             _gaq.push(['_trackEvent', 'Player', 'Load', 'Successful']);
+            logger.logEvent({'msg': 'Player is ready to play'});
         }
     }
     function _startAnimation(){
@@ -44,6 +56,7 @@ var Momend = (function(){
                 musicObjects[i].jPlayer('pause');
             }
             _jsAnimate.startAllQueues();
+            logger.logEvent({'msg': 'Player started'});
         },500);
     }
     /**
@@ -59,6 +72,7 @@ var Momend = (function(){
             return;
         }
         console.log('sending');
+        logger.logEvent({'msg': 'sending user interaction to server'});
         var json = _jsAnimate.convertUserInteractionLayerToJSON();
         var token = $('[name="csrfmiddlewaretoken"]')[0].value;
         var momend_id = _momendData['cryptic_id'];
@@ -90,6 +104,7 @@ var Momend = (function(){
         });
     }
     function _loadFailed(){
+        logger.logEvent({'msg': 'momend load failed'});
         jQuery('<h1/>',{
             text : 'Momend could not be found!',
             class : 'error',

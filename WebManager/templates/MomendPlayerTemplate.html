@@ -103,12 +103,14 @@
     <script src="{{ STATIC_URL }}jquery.cookie.js"></script>
     <script src="{{ STATIC_URL }}animation.js"></script>
     <script src="{{ STATIC_URL }}momend.js"></script>
+    <script src="{{ STATIC_URL }}log.js"></script>
     <script src="http://code.jquery.com/ui/1.10.0/jquery-ui.js"></script>
     <script src='http://connect.facebook.net/en_US/all.js'></script>
 
 
     <script type="text/javascript">
         var momendManager;
+        var logger;
         var shareOpen = false, tooltipFocused = false;
         function fetchMomendData(){
             $.getJSON( '{% url 'momends:get-momend' params.type params.id %}', function(data) {
@@ -154,16 +156,19 @@
 
         }
         function playerInit(){
+            logger = MomendsLogger;
             momendManager = Momend;
-            momendManager.init();
+            momendManager.init(logger);
             fetchMomendData();
             if ( window.self === window.top ) {
                 $('#scene').addClass('fullscreen'); //Not in iframe
+                logger.logEvent({'msg':'Fullscreen because player is the window top'});
             }
             var _value = $.cookie('volume-slider-value');
             if(typeof _value === 'undefined'){
                 _value = 100;
             }else{
+                logger.logEvent({'msg':'Found volume slider cookie', 'value': _value});
                 momendManager.jsAnimate.volumeSliderChanged(_value);
                 _handleVolumeIcon(_value);
             }
@@ -184,9 +189,11 @@
             volume_group.mouseenter(function(){
                 $(this).stop(true);
                 $(this).animate({'width': 120},300);
+                logger.logEvent({'msg':'volume group hover'});
             });
             volume_group.mouseleave(function(){
                 $(this).delay(500).animate({'width': 15},300);
+                logger.logEvent({'msg':'volume group shrinking'});
             });
             prepareButtons();
         }
@@ -210,7 +217,9 @@
             }
 
             FB.ui(obj, callback);
-            _trackPlayerEvent('Share','Facebook-'+caller);
+            _trackPlayerEvent('Share','Facebook-' + caller);
+            logger.logEvent({'msg':'Facebook share', 'caller': caller});
+            logger
         }
         function postToTwitter(caller){
             window.open(generateTwitterShareURL(),'Share on Twitter','width=600,height=300,left=300,top=300');
@@ -256,6 +265,7 @@
                     });
                     tooltip.fadeIn();
                 }
+                logger.logEvent({'msg':'tooltip shown', 'text': text});
             });
             item.mouseleave(function(){
                 var tooltip = $('#'+id+'-tooltip');
@@ -341,6 +351,7 @@
          */
         function showLink(){
             _trackPlayerEvent('finish', 'ShowLink');
+            logger.logEvent({'msg': 'showing momend link'});
             var linkModal = jQuery('<div/>',{
                 class : 'modal-panel link-modal',
                 id : 'link-modal'
@@ -353,6 +364,7 @@
             close.click(function(event){
                 event.preventDefault();
                 linkModal.remove();
+                logger.logEvent({'msg': 'Closed momend link'});
             });
             var link = jQuery('<input/>',{
                 type: 'text',
@@ -368,6 +380,7 @@
          */
         function showMail(){
             _trackPlayerEvent('finish', 'ShowMail');
+            logger.logEvent({'msg': 'Showing send as mail screen'});
             var linkModal = jQuery('<div/>',{
                 class : 'modal-panel mail-modal',
                 id : 'mail-modal'
@@ -380,6 +393,7 @@
             close.click(function(event){
                 event.preventDefault();
                 linkModal.remove();
+                logger.logEvent({'msg': 'Closed send mail screen'});
             });
             var mailText = jQuery('<label/>',{
                 text: 'Enter mail address (You can use commas)',
@@ -408,6 +422,7 @@
             var _addresses = $('#momend-mail').val();
             if(_addresses.length == 0){
                 alert('Please enter a mail address');
+                logger.logEvent({'msg': 'Send button pressed but no email given'});
                 return;
             }
             var token = $('[name="csrfmiddlewaretoken"]')[0].value;
@@ -425,14 +440,16 @@
                     var data = jQuery.parseJSON(msg);
                     if(data.resp === true){
                         $('#mail-modal').fadeOut(function(){$(this).remove()});
+                        logger.logEvent({'msg': 'mail sent'});
                     }else{
                         _button.val('Try Again');
+                        logger.logEvent({'msg': 'mail send failed'});
                     }
                 },
                 error: function(msg){
                     _button.removeAttr('disabled');
                     _button.val('Try Again');
-                    var data = jQuery.parseJSON(msg);
+                    logger.logEvent({'msg': 'mail send server error'});
                 }
             });
         }
@@ -440,6 +457,7 @@
          * Navigates to main page to create another momend
          */
     function getAnother(){
+            logger.logEvent({'msg': 'Pressed get another button'});
             _trackPlayerEvent('finish', 'getAnother');
             var url = HOST_URL + '{% url 'momends:home-screen' %}?create=true';
             var page_redirect_function = momendManager.getRedirectFunction();
