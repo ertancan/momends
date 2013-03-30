@@ -430,6 +430,9 @@
                     var listItem = $('<li/>',{
                         text: selected.name
                     }).appendTo($('#with-list'));
+                    listItem.click(function(){
+                        logger.logEvent({'msg': 'Clicked on friend in with-list', 'name': selected.name});
+                    });
                     var liHeight = listItem.outerHeight();
                     _animateCreateModal('+=' + liHeight, '+=' + liHeight, 300);
                 }
