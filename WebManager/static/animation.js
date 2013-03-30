@@ -101,7 +101,9 @@ var JSAnimate = (function(){
             clearInterval(logHeartbeat);
         }
         logHeartbeat = setInterval(function(){
-            logger.logEvent('Video playing');
+            if(_isPlaying){
+                logger.logEvent('Video playing');
+            }
         }, 5000);
     }
 
