@@ -244,14 +244,14 @@
                         _trackPageEvent('Momend', 'CreateFailed');
                         logger.logEvent({'msg': 'Create failed with response', 'response': result.message});
                         creatingDialogBg.fadeOut();
-                        _showToast(result.message, '110px');
+                        _showToast(result.message);
                     }
                 },
                 error: function(msg){
                     _trackPageEvent('Momend', 'CreateServerError');
                     logger.logEvent({'msg': 'Create failed with server error'});
                     creatingDialogBg.fadeOut();
-                    _showToast('An error occurred! Please try again later.', '90px');
+                    _showToast('An error occurred! Please try again later.');
                 }
             });
         }
@@ -262,7 +262,7 @@
             var creatingDialogBg = $('#creating-dialog-bg');
             $.getJSON( statusURL, function(data) {
                 if(!data.resp){ //Status check request unsuccessful
-                    _showToast(data.message, '90px');
+                    _showToast(data.message);
                 }else{
                     if(data.status === 'Success'){
                         creatingDialogBg.fadeOut();
@@ -283,7 +283,7 @@
                             message = 'An error occurred! Please try again later.';
                         }
                         creatingDialogBg.fadeOut();
-                        _showToast(message, '90px');
+                        _showToast(message);
                     }else{
                         createState = data.status;
                         logger.logEvent({'msg': 'Momend status learned', 'status': data.status});
@@ -292,7 +292,7 @@
                 }
 
             }).error(function(){
-                _showToast('An error occurred! Please try again later.', '90px');
+                _showToast('An error occurred! Please try again later.');
                 creatingDialogBg.fadeOut();
             });
         }
@@ -634,7 +634,19 @@
             }
         });
     }
+        /**
+        Shows an error message on the page
+        @param _text: message to show
+        @param [_height]: height of the box
+        */
         function _showToast(_text, _height){
+            if (typeof _height === "undefined"){
+                _height = 90;
+                if(_text.length > 65){
+                    (_text.length / 65) * 20;
+                }
+                height = height + 'px';
+            }
             logger.logEvent({'msg': 'showing a tost', 'text': _text});
             var dialog = $('<div/>',{
                 class : 'basic-dialog',
