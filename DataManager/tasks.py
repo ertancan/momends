@@ -42,7 +42,7 @@ def create_momend_task(user_id, momend_id, duration, mail, theme, scenario, inc_
                 if _photo_count == 0:
                     dm._handle_momend_create_error('Could not collect any photos! Please select a wider time frame')
                 else:
-                    dm._handle_momend_create_error('Only' + str(_photo_count) + ' photos collected! Please select a wider time frame')
+                    dm._handle_momend_create_error('Only ' + str(_photo_count) + ' photos collected! Please select a wider time frame')
             return None
 
         _status.status = MomendStatus.MOMEND_STATUS['Applying Enhancements']
