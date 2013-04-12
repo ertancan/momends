@@ -78,19 +78,19 @@ body{
 }
 @font-face {
     font-family: 'Comfortaa_Regular-webfont';
-    src: url("fonts/comfortaa/Comfortaa_Regular-webfont.ttf");
+    src: url("../fonts/comfortaa/Comfortaa_Regular-webfont.ttf");
     font-weight: normal;
     font-style: normal;
 }
 @font-face {
     font-family: 'Comfortaa_Bold-webfont';
-    src: url("fonts/comfortaa/Comfortaa_Bold-webfont.ttf");
+    src: url("../fonts/comfortaa/Comfortaa_Bold-webfont.ttf");
     font-weight: normal;
     font-style: normal;
 }
 @font-face {
     font-family: 'Futura';
-    src: url("fonts/futura/FuturaStd-Book.otf");
+    src: url("../fonts/futura/FuturaStd-Book.otf");
     font-weight: normal;
     font-style: normal;
 }
