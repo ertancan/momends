@@ -14,6 +14,19 @@ import time
 
 @task()
 def create_momend_task(user_id, momend_id, duration, mail, theme, scenario, inc_photo, inc_status, inc_checkin, enrichment_method, **kwargs):
+    """
+    Async momend create task
+    Delegates creation steps to DataManager
+    @param duration: approximate! duration of the momend (in seconds)
+    @param mail: False; do not send mail to the owner after create
+    @param name: name of the momend. uses directly if given, creates one if not
+    @param theme: Theme to be used on the momend, None for random
+    @param scenario: Should be given if any specific scenario should be used
+    @param inc_photo: Whether we should use photos while creating the momend or not
+    @param inc_status: Whether we should use statuses while creating the momend or not
+    @param inc_checkin: Whether we should use checkins or while creating the momend not
+    @param enrichment_method what kind of enrichment should be used on user data. Decides automatically if None
+    """
     _create_start = time.time()
     _user = User.objects.get(pk=user_id)
     _momend = Momend.objects.get(pk=momend_id)

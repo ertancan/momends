@@ -160,6 +160,11 @@ class DataManagerUtil:
 
 
 class CloudFile(object):
+    """
+    Handles storage of the files on the cloud (currently S3)
+    Initializes with raw data, then automatically returns required files when needed
+    And uploads the files when needed (on commit)
+    """
     cloud_dirty = False
     enhanced_dirty = False
 
@@ -171,6 +176,12 @@ class CloudFile(object):
 
     @property
     def local_path(self):
+        """
+        Returns the local path of the raw data
+        returns the local path directly if we have it in temp directory
+        fetches from the cloud storage if it was downloaded before
+        downloads from the provider if required
+        """
         if self.local_url:
             return self.local_url
         if self.cloud_url:
@@ -191,12 +202,20 @@ class CloudFile(object):
         return self.local_url
 
     def set_enhanced(self, enhanced_path):
+        """
+        Sets the enhanced version of the raw data
+        also marks the current CloudFile object as dirty and uploads the enhanced file to cloud on commit
+        @param enhanced_path: local path of the enhanced file
+        """
         if self.enhanced_path == enhanced_path:
             return
         self.enhanced_path = enhanced_path
         self.enhanced_dirty = True
 
     def commit(self):
+        """
+        Saves the current state of the files to the cloud
+        """
         if self.enhanced_dirty:
             try:
                 _old_file = self.enhanced_path
@@ -219,6 +238,9 @@ class CloudFile(object):
             self.raw.save()
 
     def clean_local(self):  # TODO clean enhanced here
+        """
+        Deletes the local copies of the files (a.k.a temp files)
+        """
         if self.local_url:
             try:
                 os.remove(self.local_url)

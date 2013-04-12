@@ -14,7 +14,6 @@ from LogManagers.Log import Log
 from DataManagerUtil import DataManagerUtil
 from DataManagerUtil import CloudFile
 from django.db.models import Q
-from django.conf import settings
 import traceback
 import tasks
 import datetime
@@ -35,6 +34,22 @@ class DataManager:
     def create_momend(self, duration, send_mail, name=None,
                       privacy=Momend.PRIVACY_CHOICES['Private'], inc_photo=True, inc_status=True, inc_checkin=True,
                       enrichment_method=None, theme=None, scenario=None, **kwargs):
+        """
+        Initiates the momend create process.
+        Checks if it there is any reasons not to create a momends (e.g. creating another momend, problems in parameters)
+        And adds an async task to be processed by celery workers
+        @param duration: approximate! duration of the momend (in seconds)
+        @param send_mail: False; do not send mail to the owner after create
+        @param name: name of the momend. uses directly if given, creates one if not
+        @param inc_photo: Whether we should use photos while creating the momend or not
+        @param inc_status: Whether we should use statuses while creating the momend or not
+        @param inc_checkin: Whether we should use checkins or while creating the momend not
+        @param enrichment_method what kind of enrichment should be used on user data. Decides automatically if None  TODO: don't enrich if None
+        @param theme: Theme to be used on the momend, None for random
+        @param scenario: Should be given if any specific scenario should be used
+        Any additional settings could be given on kwargs (e.g. filters, is_date option etc.)
+        """
+
         try:
             _time_limit = datetime.datetime.now().replace(tzinfo=pytz.UTC) - datetime.timedelta(minutes=5)
             if MomendStatus.objects.filter(owner=self.user)\
@@ -75,6 +90,11 @@ class DataManager:
         return True
 
     def generate_momend_name(self, theme, scenario, **kwargs):
+        """
+        Generates a name for the momend according to the parameters
+        names it user's first momend if it is
+        if the momend create mode is is_date then names according to day count
+        """
         _user_name = self.user.first_name.lower()
         if Momend.objects.filter(owner=self.user).count() == 0:
             return _user_name + "'s first momend"
@@ -217,6 +237,10 @@ class DataManager:
             Log.error("Couldn't create thumbnail!-->"+str(error))
 
     def _calculate_provider_score(self):
+        """
+        Calculates a score for the momends according to the like, share and comment counts of the used data
+        TODO: requires a better scoring algorithm
+        """
         main_layer = self.momend.animationlayer_set.all()[1]
         used_objects = OutData.objects.filter(owner_layer=main_layer).filter(Q(raw__isnull=False))
         _score = 0
@@ -228,6 +252,11 @@ class DataManager:
         return _score
 
     def _handle_momend_create_error(self, user_message, log_message=''):
+        """
+        Saves and logs the momend create process errors
+        @param user_message: message that the user will see
+        @param log_message: message to log/save to db
+        """
         if log_message:
             Log.error(log_message)
         else:
