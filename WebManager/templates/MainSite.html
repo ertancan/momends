@@ -24,8 +24,8 @@
         <script>MOMEND_FILE_URL = '{{ MOMEND_FILE_URL }}';  </script>
         <script>THEME_DATA_URL = '{{ THEME_DATA_URL }}';  </script>
         <link href="{{ STATIC_URL }}fonts/comfortaa/stylesheet.css" rel="stylesheet">
-        <link href="{{ STATIC_URL }}style.min.css" rel="stylesheet">
-        <link href="{{ STATIC_URL }}site.css" rel="stylesheet">
+        <link href="{{ STATIC_URL }}css/style.min.css" rel="stylesheet">
+        <link href="{{ STATIC_URL }}css/site.css" rel="stylesheet">
         <link href="{{ STATIC_URL }}fonts/font-awesome/font-awesome.css" rel="stylesheet">
         <!--[if IE 7]>
 		    <link href="{{ STATIC_URL }}fonts/font-awesome/font-awesome-ie7.css" rel="stylesheet">
@@ -118,12 +118,12 @@
 
 {% block default-scripts %}
     <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
-    <script src="{{ STATIC_URL }}log.js"></script>
+    <script src="{{ STATIC_URL }}js/log.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.isotope.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.touchSwipe.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.hotkeys.min.js" charset='utf-8'></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/functions.min.js"></script>
-    <script src="{{ STATIC_URL }}jquery.cookie.js"></script>
+    <script src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
     <script>
         function showAuthModal(_url, title){
             var modal =jQuery('<div/>',{
