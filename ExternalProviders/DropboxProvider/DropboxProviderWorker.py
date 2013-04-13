@@ -19,7 +19,7 @@ class DropboxProviderWorker(BasePhotoProviderWorker):
         for _photo in selected_photos:
             _url = _photo['link']
             _name = _url[_url.rindex('/')+1:]
-            _original_id = urllib.urlencode(user.username + _name)
+            _original_id = urllib.quote(user.username + _name)
             _raw, _is_new = RawData.objects.get_or_create(original_id=_original_id, provider=_provider,
                                                           defaults={'owner': user, 'type': RawData.DATA_TYPE['Photo'],
                                                                     'original_path': _url})
