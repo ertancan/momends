@@ -77,6 +77,11 @@ class DataManagerUtil:
             _s3_file.write(_tmp_file.read())
         _s3_file.close()
         _tmp_file.close()
+
+        # S3 naturally encodes filenames on urls
+        _path = _s3_filename[:_s3_filename.rindex('/')+1]
+        _name_part = _s3_filename[_s3_filename.rindex('/')+1:]
+        _s3_filename = _path + urllib2.quote(_name_part)
         return _s3_filename
 
     @staticmethod
