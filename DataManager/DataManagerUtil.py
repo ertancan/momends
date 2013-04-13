@@ -72,7 +72,7 @@ class DataManagerUtil:
             _s3_filename = filename.replace(settings.TMP_FILE_PATH, '')
         if prefix:
             _s3_filename = prefix + _s3_filename
-        _s3_file = default_storage.open(_s3_filename, 'w+')
+        _s3_file = default_storage.open(_s3_filename, 'wb+')
         with open(filename) as _tmp_file:
             _s3_file.write(_tmp_file.read())
         _s3_file.close()
