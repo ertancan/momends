@@ -119,6 +119,7 @@
     <script type="text/javascript" src="{{ STATIC_URL }}js/hogan-2.0.0.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap-datepicker.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/typeahead.min.js"></script>
+    <script type="text/javascript" src="https://www.dropbox.com/static/api/1/dropins.js" id="dropboxjs" data-app-key="dgmiy8tg8n6m6ku"></script>
     <script>
         var HOST_URL = '{{ HOST_URL }}';
         var currentBg = 0;
@@ -136,6 +137,7 @@
         var momendPlaying = false;
         var createState;
         var selectedFriends;
+        var selectedData = {};
         var createModalMaximized = false;
         var logger;
 
@@ -164,6 +166,7 @@
                 autoclose: true
             });
             prepareTypeahead();
+            prepareDropbox();
             $('#get-button').click(function(event){
                 event.preventDefault();
                 var postData = {'momend_name': null,
@@ -180,7 +183,8 @@
                             selectedIds.push(selectedFriends[i].id);
                         }
                         return selectedIds;
-                    }
+                    },
+                    'selected': JSON.stringify(selectedData)
                 };
                 createMomend(postData);
                 logger.logEvent({'msg': 'Create button pressed', 'create_data': postData});
@@ -212,7 +216,8 @@
                 'privacy_type': 1,
                 'facebook-active': true,
                 'twitter-active': false,
-                'friends': null
+                'friends': null,
+                'selected': null
             };
             createMomend(postData);
             $('#creating-dialog-bg').addClass('dark');
@@ -424,6 +429,25 @@
             });
             $('.friend-typeahead').on('typeahead:selected', friendSelected);
             selectedFriends = [];
+        }
+
+        function prepareDropbox(){
+            selectedData['dropbox'] = {'photo': []};
+            dropboxOptions = {
+                linkType: "direct",
+                multiselect: true,
+                success: function(files) {
+                    links = [];
+                    for(var i = 0; i < files.length; i++){
+                        console.dir(files[i]);
+                        tmp = {'link': files[i].link, 'thumbnail': files[i]['thumbnails']['64x64']}
+                        links.push(tmp);
+                    }
+                    selectedData['dropbox']['photo'] = selectedData['dropbox']['photo'].concat(links);
+                    },
+                cancel:  function() {
+                    }
+            };
         }
 
         function friendSelected($e){

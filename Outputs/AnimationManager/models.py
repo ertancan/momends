@@ -46,7 +46,8 @@ class OutData(BaseDataManagerModel):
                 if len(self.raw.title) > 0:
                     enc['title'] = self.raw.title
                 else:  # Use photo date as title
-                    enc['title'] = self.raw.create_date.strftime("%Y-%m-%d %H:%M")
+                    if self.raw.create_date:
+                        enc['title'] = self.raw.create_date.strftime("%Y-%m-%d %H:%M")
             enc['date'] = self.raw.create_date
             if not self.final_data_path:
                 enc['final_data_path'] = self.raw.data

@@ -46,7 +46,9 @@ def create_momend_task(user_id, momend_id, duration, mail, theme, scenario, inc_
         # Collected item count check
         _photo_count = len(enriched_data[RawData.DATA_TYPE['Photo']])
         if _photo_count < 10:
-            if 'friends' in kwargs and kwargs['friends']:
+            if 'selected' in kwargs and kwargs['selected']:
+                dm._handle_momend_create_error('You selected less than 10 photos. Please select more')
+            elif 'friends' in kwargs and kwargs['friends']:
                 if _photo_count == 0:
                     dm._handle_momend_create_error('You don\'t have any photos together! Please select a wider time frame')
                 else:

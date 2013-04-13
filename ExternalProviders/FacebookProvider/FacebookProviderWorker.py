@@ -18,8 +18,8 @@ class FacebookProviderWorker(BasePhotoProviderWorker, BaseStatusProviderWorker, 
             _return_data += self._collect_photo_by_date(user, kwargs['since'], kwargs['until'])
         if kwargs.get('albums', None):
             _return_data += self._collect_photo_by_album(user, kwargs['albums'])
-        if kwargs.get('item_id', None):
-            _return_data += self._collect_photo_by_id(user, kwargs['item_id'])
+        if kwargs.get('selected', None):
+            _return_data += self._collect_photo_by_id(user, kwargs['selected'])
         return _return_data
 
     def _collect_photo_by_album(self, user, albums):

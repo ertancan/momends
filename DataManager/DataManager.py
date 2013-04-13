@@ -63,14 +63,20 @@ class DataManager:
                 name = self.generate_momend_name(theme, scenario, **kwargs)
 
             self.momend = Momend(owner=self.user, name=name, privacy=privacy)
-            if kwargs['is_date']:
+            if kwargs['is_date']:  # Collect data by date, all providers but explictly excluded ones.
                 try:
                     self.momend.momend_start_date = kwargs['since']
                     self.momend.momend_end_date = kwargs['until']
                 except KeyError:
                     self._handle_momend_create_error('Parameter error. Please try again')
+            elif 'selected' in kwargs and kwargs['selected']:  # Create momend with selected raw data. Expects dictionary in this format;
+                                                               # selected: {'provider-1':[data1, data2], 'provider-2':[data1, ...]}
+                _now = datetime.datetime.now()
+                _now = _now.replace(tzinfo=pytz.UTC)
+                self.momend.momend_start_date = _now
+                self.momend.momend_end_date = _now
             else:
-                self.status = 'Not supported yet!'
+                self._handle_momend_create_error('Create method not supported')
                 return False
             self.momend.save()
             _cryptic_id = encode_id(self.momend.id)
@@ -161,38 +167,68 @@ class DataManager:
         _raw_data = []
         _collect_count = dict()
         _collect_status = dict()
-        for _provider in Provider.objects.all():
-            if UserSocialAuth.objects.filter(provider=_provider.name).filter(user=self.user).exists():
-                _provider_argument = _provider.name + '-active'
-                if _provider_argument in kwargs and (not kwargs[_provider_argument] or kwargs[_provider_argument].lower() == 'false'):  # Do not use this provider if parameters explicity say so
-                    Log.info('Not collecting data from: ' + _provider.name)
-                    continue
+        if kwargs['is_date']:
+            for _provider in Provider.objects.all():
+                if UserSocialAuth.objects.filter(provider=_provider.name).filter(user=self.user).exists():
+                    _provider_argument = _provider.name + '-active'
+                    if _provider_argument in kwargs and (not kwargs[_provider_argument] or kwargs[_provider_argument].lower() == 'false'):  # Do not use this provider if parameters explicity say so
+                        Log.info('Not collecting data from: ' + _provider.name)
+                        continue
 
-                worker = _provider.instantiate_provider_worker()
-                if inc_photo and issubclass(worker.__class__, BasePhotoProviderWorker):
-                    _collected = worker.collect_photo(self.user, **kwargs)
+                    _worker = _provider.instantiate_provider_worker()
+                    if inc_photo and issubclass(_worker.__class__, BasePhotoProviderWorker):
+                        _collected = _worker.collect_photo(self.user, **kwargs)
+                        if not _collected:
+                            _collect_status[_provider.name + '_photo'] = 'Error'
+                        else:
+                            _raw_data += _collected
+                            _collect_count['photo'] = _collect_count.get('photo', 0) + len(_raw_data)
+                            _collect_status[_provider.name + '_photo'] = 'Success'
+                    if inc_status and issubclass(_worker.__class__, BaseStatusProviderWorker):
+                        _collected = _worker.collect_status(self.user, **kwargs)
+                        if not _collected:
+                            _collect_status[_provider.name + '_status'] = 'Error'
+                        else:
+                            _raw_data += _collected
+                            _collect_count['status'] = _collect_count.get('status', 0) + len(_raw_data)
+                            _collect_status[_provider.name + '_status'] = 'Success'
+                    if inc_checkin and issubclass(_worker.__class__, BaseLocationProviderWorker):
+                        _collected = _worker.collect_checkin(self.user, **kwargs)
+                        if not _collected:
+                            _collect_status[_provider.name + '_checkin'] = 'Error'
+                        else:
+                            _raw_data += _collected
+                            _collect_count['checkin'] = _collect_count.get('checkin', 0) + len(_raw_data)
+                            _collect_status[_provider.name + '_checkin'] = 'Success'
+        elif 'selected' in kwargs and kwargs['selected']:
+            for _provider in kwargs['selected']:
+                _worker = Provider.objects.get(name=_provider).instantiate_provider_worker()
+                _selected_for_provider = kwargs['selected'][_provider]
+                if 'photo' in _selected_for_provider and _selected_for_provider['photo'] and issubclass(_worker.__class__, BasePhotoProviderWorker):
+                        _collected = _worker.collect_photo(self.user, selected=_selected_for_provider['photo'])
+                        if not _collected:
+                            _collect_status[_provider.name + '_photo'] = 'Error'
+                        else:
+                            _raw_data += _collected
+                            _collect_count['photo'] = _collect_count.get('photo', 0) + len(_raw_data)
+                            _collect_status[_provider + '_photo'] = 'Success'
+                if 'status' in _selected_for_provider and _selected_for_provider['status'] and issubclass(_worker.__class__, BaseStatusProviderWorker):
+                    _collected = _worker.collect_status(self.user, selected=_selected_for_provider['status'])
                     if not _collected:
-                        _collect_status[_provider.name + '_photo'] = 'Error'
-                    else:
-                        _raw_data += _collected
-                        _collect_count['photo'] = _collect_count.get('photo', 0) + len(_raw_data)
-                        _collect_status[_provider.name + '_photo'] = 'Success'
-                if inc_status and issubclass(worker.__class__, BaseStatusProviderWorker):
-                    _collected = worker.collect_status(self.user, **kwargs)
-                    if not _collected:
-                        _collect_status[_provider.name + '_status'] = 'Error'
+                        _collect_status[_provider + '_status'] = 'Error'
                     else:
                         _raw_data += _collected
                         _collect_count['status'] = _collect_count.get('status', 0) + len(_raw_data)
-                        _collect_status[_provider.name + '_status'] = 'Success'
-                if inc_checkin and issubclass(worker.__class__, BaseLocationProviderWorker):
-                    _collected = worker.collect_checkin(self.user, **kwargs)
+                        _collect_status[_provider + '_status'] = 'Success'
+                if 'checkin' in _selected_for_provider and _selected_for_provider['checkin'] and issubclass(_worker.__class__, BaseLocationProviderWorker):
+                    _collected = _worker.collect_checkin(self.user, selected=_selected_for_provider['checkin'])
                     if not _collected:
-                        _collect_status[_provider.name + '_checkin'] = 'Error'
+                        _collect_status[_provider + '_checkin'] = 'Error'
                     else:
                         _raw_data += _collected
                         _collect_count['checkin'] = _collect_count.get('checkin', 0) + len(_raw_data)
-                        _collect_status[_provider.name + '_checkin'] = 'Success'
+                        _collect_status[_provider + '_checkin'] = 'Success'
+
         #all incoming data shall be saved here instead of collection place
         Log.debug('status:'+str(_collect_status))
         Log.debug('Collected Objects:'+str(_collect_count))

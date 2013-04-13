@@ -33,6 +33,7 @@ from django.core.files.uploadedfile import UploadedFile
 from DataManager.DataManagerUtil import DataManagerUtil
 from django.conf import settings
 import traceback
+import json
 
 ERROR_TYPES = {'WRONG_PARAMETER': 0,
                'MISSING_PARAMETER': 1,
@@ -278,7 +279,11 @@ class CreateMomendView(View):
             dm = DataManager(_owner)
             try:
                 _args = dict()
-                _args['is_date'] = True
+                if 'selected' in request.POST and request.POST['selected']:
+                    _args['is_date'] = False
+                    _args['selected'] = json.loads(request.POST['selected'])
+                else:
+                    _args['is_date'] = True
                 _args['since'] = _start_date
                 _args['until'] = _finish_date
                 _create_params = request.POST.keys()
