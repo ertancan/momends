@@ -188,6 +188,9 @@ DATABASE_OPTIONS = {
     'use_unicode': True,
     'charset': 'utf8'
 }
+AWS_HEADERS = {
+    'Cache-Control': 'max-age=315360000',
+}
 
 RUNNING_SERVER = environ.get('MOMENDS_HOST')
 if  RUNNING_SERVER == 'dev':
