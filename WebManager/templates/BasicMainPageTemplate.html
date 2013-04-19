@@ -45,7 +45,7 @@
     <div class="social-networks-basic">
         <p>
             <a class="social-network twitter" target="_blank" href="https://twitter.com/momends"></a>
-            <a class="social-network facebook" target)"_blank" href="https://www.facebook.com/momends" style="margin-left: 10px"></a>
+            <a class="social-network facebook" target="_blank" href="https://www.facebook.com/momends" style="margin-left: 10px"></a>
         </p>
     </div>
     <!-- Create Modal -->
@@ -72,6 +72,8 @@
                     </div>
                     <div class="modal-group-container">
                         <div class="modal-tab-content span8">
+                            <div class="selected-content" id="selected-content">
+                            </div>
                             <div class="with-content">
                                 <ul id="with-list">
                                 </ul>
@@ -116,6 +118,7 @@
         </div>
         <button class="button orange basic-dialog-close" id="close-button" onclick="$('#welcome-dialog').fadeOut()">OK!</button>
     </div>
+        <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/hogan-2.0.0.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap-datepicker.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/typeahead.min.js"></script>
@@ -140,6 +143,7 @@
         var selectedData = {};
         var createModalMaximized = false;
         var logger;
+        var validPhotoExtensions = ['png', 'jpg', 'jpeg'];
 
         window.onpopstate = function(e){ //Play momend if the url bar changed after create and user coming back from history
             if(e.state){
@@ -439,15 +443,64 @@
                 success: function(files) {
                     links = [];
                     for(var i = 0; i < files.length; i++){
-                        console.dir(files[i]);
+                        var extension = files[i].link.substring(files[i].link.lastIndexOf('.') + 1);
+                        if(validPhotoExtensions.indexOf(extension) < 0){
+                            continue;
+                        }
                         tmp = {'link': files[i].link, 'thumbnail': files[i]['thumbnails']['64x64']}
                         links.push(tmp);
                     }
                     selectedData['dropbox']['photo'] = selectedData['dropbox']['photo'].concat(links);
+                    updateSelectedContents();
                     },
                 cancel:  function() {
                     }
             };
+        }
+
+        /**
+        Updates the selected data list with the new data set (global)selectedData
+        */
+        function updateSelectedContents(){
+            $('.selected-list').remove();
+            var list = jQuery('<ul/>',{
+                class: 'selected-list'
+            }).appendTo('#selected-content');
+            for(var provider in selectedData){
+                $.each(selectedData[provider]['photo'], function(index, photoObj){
+                        if(typeof photoObj !== 'undefined'){
+                        var li = jQuery('<li/>',{
+                            id: 'selected-' + provider + '-' + index
+                        }).appendTo(list);
+                        var thumbLink = jQuery('<a/>',{
+                            class: 'selected-content-thumb-link',
+                            href: photoObj['link'],
+                            target: '_blank'
+                        }).appendTo(li);
+                        jQuery('<img/>',{
+                            src: photoObj['thumbnail'],
+                            class: 'selected-content-thumb'
+                        }).appendTo(thumbLink);
+                        if(provider === 'dropbox'){
+                            var name = decodeURIComponent(photoObj['link'].substring(photoObj['link'].lastIndexOf('/') + 1));
+                            jQuery('<span/>',{
+                                text: name,
+                                class: 'selected-content-text'
+                            }).appendTo(li);
+                            jQuery('<a/>',{
+                                class: 'close',
+                                href: '#',
+                                text: 'x',
+                                click: function(){
+                                    delete selectedData[provider]['photo'][index];
+                                    li.remove();
+                                    //updateSelectedContents();  // In case something goes wrong, this is a brutal but solid solution
+                                }
+                            }).appendTo(li);
+                        }
+                    }
+                });
+            }
         }
 
         function friendSelected($e){

@@ -71,7 +71,7 @@ body{
     font-size:6em;
     z-index:1;
     color:white;
-
+    display: inline;
 }
 .logo-div{
     padding-left:4%;
@@ -353,4 +353,13 @@ a.selected{
 
 .tt-suggestion p {
   margin: 0;
+}
+
+.selected-list{
+    width: 350px;
+}
+.selected-content-thumb{
+    width: 50px;
+    height: 50px;
+    margin: 5px;
 }
