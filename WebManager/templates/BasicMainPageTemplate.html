@@ -303,7 +303,7 @@
                         }
                         return selectedIds;
                     },
-                    'selected': JSON.stringify(selectedData)
+                    'selected': selectionMode?JSON.stringify(selectedData):null
                 };
                 createMomend(postData);
                 logger.logEvent({'msg': 'Create button pressed', 'create_data': postData});
