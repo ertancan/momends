@@ -289,7 +289,7 @@ class CreateMomendView(View):
                     if '-active' in _param:  # Provider disable requests
                         _args[_param] = request.POST[_param]
 
-                if 'friends' in request.POST:
+                if 'friends' in request.POST and len(request.POST['friends']) > 0:
                     _args['friends'] = request.POST['friends'].split(',')
                 else:
                     _args['friends'] = False

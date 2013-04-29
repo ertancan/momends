@@ -143,7 +143,7 @@ class DataManager:
                 return _momend_name
 
         _friends = kwargs.get('friends', None)
-        if _friends:
+        if _friends and len(_friends) > 0:
             if len(_friends) > 1:
                 _momend_name += ' with friends'
             else:

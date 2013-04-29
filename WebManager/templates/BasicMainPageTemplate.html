@@ -53,7 +53,6 @@
     <div id="create-modal-mini" class="modal hide in fade" tabindex="-1" role="dialog" aria-labelledby="create-modal" aria-hidden="true" data-backdrop="true">
         <form class="form-horizontal" id="create-form" method="post" action="">{% csrf_token %}
             <div class="modal-body" id="create-modal-body-mini">
-
                 <div>
                     <input type="hidden" name="momend_name" id="id_momend_name">
                     <input type="hidden" name="momend_theme" id="id_momend_theme">
@@ -161,6 +160,15 @@
                         </div>
                     </div>
                 </div>
+                <div id="selected-content-holder">
+                    <div id="selected-top" class="create-modal-group-title">
+                        <a href="#" id="selected-back-button" onclick="hideSelected()">Back</a>
+                        <div id="selected-text">You Selected These Photos</div>
+                        <div id="selected-content"></div>
+                        <div id="add-more" onclick="Dropbox.choose(dropboxOptions);">Add More?</div>
+                    </div>
+                </div>
+                <div id="get-button">Create Now!</div>
             </div>
         </form>
     </div>
@@ -210,6 +218,7 @@
         var selectedData = {};
         var createModalMaximized = false;
         var logger;
+        var selectionMode = false;
         var validPhotoExtensions = ['png', 'jpg', 'jpeg'];
 
         window.onpopstate = function(e){ //Play momend if the url bar changed after create and user coming back from history
@@ -252,15 +261,42 @@
             prepareDropbox();
             $('#get-button').click(function(event){
                 event.preventDefault();
+                var startDate, endDate;
+                if($('#interval-all').hasClass('active')){
+                    var date = new Date();
+                    endDate = formatDate("d M, yy", date);
+                    startDate = formatDate("d M, yy", new Date(1970, 1, 1, 0, 0, 0, 0));
+                }else if($('#interval-year').hasClass('active')){
+                    var date = new Date();
+                    endDate = formatDate("d M, yy", date);
+                    date.setDate(date.getDate() - (365 * 1) );
+                    startDate = formatDate("d M, yy", date);
+                }else{
+                    endDate = $('#date-selector-end-text').text();
+                    startDate = $('#date-selector-start-text').text();
+                }
+
+                var twitterActive = $($('#create-modal-twitter-row').children()[0]).hasClass('active');
+                var facebookActive = $($('#create-modal-facebook-row').children()[0]).hasClass('active');
+                if(!selectionMode){
+                    if(!twitterActive && !facebookActive){
+                        _showToast('Please select at least one data source (Facebook, Twitter or Dropbox)');
+                        return;
+                    }
+                }else{
+                    if(selectedData['dropbox']['photo'].length < 10 ){
+                        _showToast('Please select at least 10 photos');
+                        return;
+                    }
+                }
                 var postData = {'momend_name': null,
-                    'start_date': $('#id_start_date').val(),
-                    'finish_date': $('#id_finish_date').val(),
+                    'start_date': startDate,
+                    'finish_date': endDate,
                     'momend_theme': 0,
                     'privacy_type': 1,
-                    'facebook-active': $('#create-social-facebook').hasClass('active'),
-                    'twitter-active': $('#create-social-twitter').hasClass('active'),
+                    'facebook-active': facebookActive,
+                    'twitter-active': twitterActive,
                     'friends': function(){
-
                         var selectedIds = [];
                         for(var i=0; i < selectedFriends.length; i++){
                             selectedIds.push(selectedFriends[i].id);
@@ -475,7 +511,7 @@
             modal.css('margin-left',modal.outerWidth()/-2);
             modal.modal();
             for(var i = 0;i<auth.length; i++){ //Mark authenticated providers as active
-                socialToggle(auth[i]);
+                socialToggle(auth[i], true);
             }
             var startDate = $('#date-selector-start-text');
             var endDate = $('#date-selector-end-text');
@@ -520,13 +556,19 @@
         }
         function friendSelected($e){
             if(arguments.length == 2){
+                var photoContainer = $('#friend-photo-container');
                 var selected = arguments[1];
                 if($.inArray(selected, selectedFriends) === -1){
+
+                    if(selectedFriends.length > 0){  // We currently allow only 1 friend
+                        selectedFriends.pop();
+                        photoContainer.children().remove();
+                    }
+
                     selectedFriends.push(selected);
                     logger.logEvent({'msg': 'selected a friend from typeahead', 'friend': selected});
                     var parts = selected.id.split('-');
                     if(parts[0] === 'facebook'){
-                        var photoContainer = $('#friend-photo-container');
                         jQuery('<img/>',{
                             src: 'http://graph.facebook.com/' + parts[1] + '/picture?type=square'
                         }).appendTo(photoContainer);
@@ -560,12 +602,26 @@
                         tmp = {'link': files[i].link, 'thumbnail': files[i]['thumbnails']['64x64']}
                         links.push(tmp);
                     }
+                    showSelectedContentsModal();
                     selectedData['dropbox']['photo'] = selectedData['dropbox']['photo'].concat(links);
                     updateSelectedContents();
                     },
                 cancel:  function() {
                     }
             };
+        }
+
+        function showSelectedContentsModal(){
+            var contentHolder = $('#selected-content-holder');
+            var modal = $('#create-modal-mini');
+            contentHolder.show();
+            selectionMode = true;
+        }
+        function hideSelected(){
+            selectedData['dropbox'] = {'photo': []};
+            var contentHolder = $('#selected-content-holder');
+            contentHolder.hide();
+            selectionMode = false;
         }
 
         /**
@@ -598,7 +654,7 @@
                                 class: 'selected-content-text'
                             }).appendTo(li);
                             jQuery('<a/>',{
-                                class: 'close',
+                                class: 'close selected-remove',
                                 href: '#',
                                 text: 'x',
                                 click: function(){
@@ -674,7 +730,7 @@
                 $(this).remove();
             });
         }
-        function socialToggle(provider){
+        function socialToggle(provider, forceTo){
             if($.inArray(provider, auth) >= 0){
                 var row = $('#create-modal-'+provider+'-row');
                 var rowsChildren = row.children();
@@ -683,7 +739,7 @@
                 var text = $('#create-modal-' + provider + '-text');
                 var subtext = $('#create-modal-' + provider + '-subtext');
                 var providerCapitalizedName = provider.charAt(0).toUpperCase() + provider.slice(1);
-                if($(rowsChildren[0]).hasClass('active')){
+                if(forceTo !== true && (forceTo === false || $(rowsChildren[0]).hasClass('active'))){
                     logger.logEvent({'msg': 'social toggle off', 'provider_name': provider});
                     iconBorder.removeClass('active');
                     icon.removeClass('active');
@@ -814,11 +870,11 @@
                 id : 'dialog-'+_dialogId,
                 style : 'height: '+_height
             }).appendTo('body');
-            $('<p/>',{
+            $('<div/>',{
                 text : _text
             }).appendTo(dialog);
             var closeButton = $('<button/>',{
-                class : 'button orange basic-dialog-close',
+                class : 'button basic-dialog-close',
                 id : 'close-'+_dialogId,
                 text : 'OK'
             }).appendTo(dialog);
