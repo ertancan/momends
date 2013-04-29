@@ -280,7 +280,7 @@ class CreateMomendView(View):
                     _args['selected'] = json.loads(request.POST['selected'])
                 else:
                     _args['is_date'] = True
-                    _args['selected'] = []
+                    _args['selected'] = False
                     _args['since'] = datetime.strptime(request.POST['start_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
                     _args['until'] = datetime.strptime(request.POST['finish_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
 
@@ -292,7 +292,7 @@ class CreateMomendView(View):
                 if 'friends' in request.POST and len(request.POST['friends']) > 0:
                     _args['friends'] = request.POST['friends'].split(',')
                 else:
-                    _args['friends'] = []
+                    _args['friends'] = False
 
                 if 'chronological' in request.POST:
                     _args['chronological'] = request.POST['chronological']

@@ -41,7 +41,7 @@ class DataEnrichManager(object):
         for _type in _provider_raw_data_group:
             for _provider_group in _type:
                 if len(_type[_provider_group]) > 0:
-                    if 'friends' in filter_to_apply:
+                    if 'friends' in filter_to_apply and filter_to_apply['friends']:
                         Log.info('Applying friend filter')
                         _type[_provider_group] = _provider_workers[_provider_group].filter_for_friends(_type[_provider_group], filter_to_apply['friends'])
 
