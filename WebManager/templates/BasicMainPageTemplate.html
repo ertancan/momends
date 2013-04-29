@@ -701,7 +701,7 @@
             }else{ //Show authentication dialog
                 logger.logEvent({'msg': 'Social toggle sign-in dialog shown', 'provider_name': provider});
                 var connectURL = HOST_URL + '{% url 'socialauth_begin' 'provider_name' %}';
-                connectURL.replace('provider_name', provider_name);
+                connectURL = connectURL.replace('provider_name', provider);
                 window.location.replace(connectURL);
             }
         }
