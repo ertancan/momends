@@ -9,6 +9,8 @@
 
     <title>{% block title %} momends {% endblock title %}</title>
     {% block default_meta %}
+        <meta name="Description" content="You can create entertaining animations with your photos!">
+        <meta name="Keywords" content="photo animation, animation generator, photo slideshow">
         <meta property="og:site_name" content="momends"/>
         <meta property="og:url" content="{{ request.build_absolute_uri }}"/>
         <meta property="fb:app_id" content="125999474230740"/>
@@ -16,7 +18,7 @@
     {% endblock default_meta %}
     {% block meta %} {% endblock meta %}
     {% block jquery %}
-        <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <script src="{{ STATIC_URL }}js/jquery.js"></script>
     {% endblock jquery %}
 
     {% block default_include %} <!--includes for whole site -->
@@ -104,8 +106,8 @@
                 </div>
                 <div class="span4 social-networks">
                     <p>
-                        <a class="social-network twitter" target="_blank" href="https://twitter.com/momends"></a>
-                        <a class="social-network facebook" target="_blank" href="https://www.facebook.com/momends"></a>
+                        <a class="social-network twitter" target="_blank" href="https://twitter.com/momends">Twit</a>
+                        <a class="social-network facebook" target="_blank" href="https://www.facebook.com/momends">Feys</a>
                         <!--<a class="social-network linkedin"></a>
                         <a class="social-network dribbble"></a>
                         <a class="social-network pinterest"></a> -->

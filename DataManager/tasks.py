@@ -26,6 +26,11 @@ def create_momend_task(user_id, momend_id, duration, mail, theme, scenario, inc_
     @param inc_status: Whether we should use statuses while creating the momend or not
     @param inc_checkin: Whether we should use checkins or while creating the momend not
     @param enrichment_method what kind of enrichment should be used on user data. Decides automatically if None
+
+    uses parameters from kwargs
+    selected: Indicates selected photos, won't collect photos from providers
+    friends: Selected friends to filter
+    chronological: Preserve chronological order
     """
     _create_start = time.time()
     _user = User.objects.get(pk=user_id)
@@ -37,18 +42,21 @@ def create_momend_task(user_id, momend_id, duration, mail, theme, scenario, inc_
         _status.save()
         raw_data, collect_status = dm.collect_user_data(inc_photo, inc_status, inc_checkin, **kwargs)
 
-        # Filter collected data according to the parameters
-        _enrich_filter = dict()
-        if 'friends' in kwargs:
+        if kwargs['selected']:  # Do not filter or enrich user selected data
+            enriched_data = raw_data
+        else:
+            # Filter collected data according to the parameters
+            _enrich_filter = dict()
             _enrich_filter['friends'] = kwargs['friends']
-        enriched_data = dm.enrich_user_data(raw_data, _enrich_filter, enrichment_method)
+            _enrich_filter['chronological'] = kwargs['chronological']
+            enriched_data = dm.enrich_user_data(raw_data, _enrich_filter, enrichment_method)
 
         # Collected item count check
         _photo_count = len(enriched_data[RawData.DATA_TYPE['Photo']])
         if _photo_count < 10:
-            if 'selected' in kwargs and kwargs['selected']:
+            if kwargs['selected']:
                 dm._handle_momend_create_error('You selected less than 10 photos. Please select more')
-            elif 'friends' in kwargs and kwargs['friends']:
+            elif kwargs['friends']:
                 if _photo_count == 0:
                     dm._handle_momend_create_error('You don\'t have any photos together! Please select a wider time frame')
                 else:

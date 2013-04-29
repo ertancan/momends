@@ -69,7 +69,7 @@ class DataManager:
                     self.momend.momend_end_date = kwargs['until']
                 except KeyError:
                     self._handle_momend_create_error('Parameter error. Please try again')
-            elif 'selected' in kwargs and kwargs['selected']:  # Create momend with selected raw data. Expects dictionary in this format;
+            elif kwargs['selected']:  # Create momend with selected raw data. Expects dictionary in this format;
                                                                # selected: {'provider-1':[data1, data2], 'provider-2':[data1, ...]}
                 _now = datetime.datetime.now()
                 _now = _now.replace(tzinfo=pytz.UTC)
@@ -200,7 +200,7 @@ class DataManager:
                             _raw_data += _collected
                             _collect_count['checkin'] = _collect_count.get('checkin', 0) + len(_raw_data)
                             _collect_status[_provider.name + '_checkin'] = 'Success'
-        elif 'selected' in kwargs and kwargs['selected']:
+        elif kwargs['selected']:
             for _provider in kwargs['selected']:
                 _worker = Provider.objects.get(name=_provider).instantiate_provider_worker()
                 _selected_for_provider = kwargs['selected'][_provider]
@@ -244,7 +244,8 @@ class DataManager:
         """
         Enrich collected raw data according to the parameters.
         @param raw_data_filter: filters to be applied to the collected data, (Dictionary):
-            Currently only supports 'friends' filter, an array of friend ids, in format 'providername-id', should be mapped to key 'friends'
+            'friends' filter, an array of friend ids, in format 'providername-id', should be mapped to key 'friends'
+            'chronological', boolean, preserves chronological order of collected data
         """
         if not method:
             method = 'date'
@@ -254,6 +255,8 @@ class DataManager:
         if raw_data_filter:
             _enrich_manager.filter_user_data(raw_data_filter)
         _enriched_data = _enrich_manager.get_enriched_user_raw_data()
+        if raw_data_filter['chronological']:  # TODO: TEST!
+            _enriched_data = sorted(_enriched_data, key=lambda enriched: enriched.raw.create_date)
         return _enriched_data
 
     def _create_momend_thumbnail(self):
