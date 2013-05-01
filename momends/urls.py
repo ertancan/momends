@@ -22,6 +22,6 @@ urlpatterns = patterns('',
     url(r'', include('social_auth.urls')),
 
     #enable registration
-    (r'^accounts/', include('momends.registration_urls')),
+    (r'^accounts/', include('registration.backends.simple.urls')),
 
 )

@@ -1,8 +1,15 @@
 {% extends "MainSite.html" %}
 {% load url from future %}
 
+{% block heading %} {# empty for login #}  {% endblock heading %}
+{% block footer %} {# empty for login #}  {% endblock footer %}
+{% block jquery %} {# empty for login #} {% endblock jquery %}
 {% block content %}
-
-Logout
-
+    <script type="text/javascript">
+        window.location.href = "{% url 'momends:front-page' %}"
+    </script>
+    If you are not redirected automatically, <a href='{% url 'momends:front-page' %}'>please click here</a>
+    </body>
+</html>
 {% endblock content %}
+{% block feedback %}{# empty for login #}{% endblock feedback %}

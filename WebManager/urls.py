@@ -21,6 +21,8 @@ from views import GetUserFriendsView
 from django.contrib.auth.decorators import login_required
 from registration.backends.default.urls import *
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.core.urlresolvers import reverse
+
 
 # momends web manager urls
 urlpatterns = patterns('',
@@ -41,5 +43,6 @@ url(r'^create/$', login_required(CreateMomendView.as_view()), name='create-momen
 url(r'^fileupload/$', login_required(FileUploadView.as_view()), name='file-upload'),
 url(r'^send/$', SendAnimationAsMail.as_view(), name='send-mail'),
 url(r'^upload/$', login_required(UploadFormView.as_view()), name='upload'),
+url(r'^users/(?P<username>\w+)/$', login_required(HomePageLoggedFormView.as_view()), name='login-success'),
 )
 urlpatterns += staticfiles_urlpatterns()

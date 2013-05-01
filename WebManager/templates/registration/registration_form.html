@@ -6,11 +6,58 @@
 {% block jquery %} {# empty for signup #} {% endblock jquery %}
 
 {% block content %}
-    <a href="{% url 'socialauth_begin' 'facebook' %}">Register with Facebook</a>
-    <form action="" method="post">{% csrf_token %}
-        {{ form.as_p }}
-        {{ script }}
-        <input type="submit" value="Submit" />
-    </form>
+    <script type="text/javascript">
+            if(window.location.href.indexOf('accounts/register/') > 0){
+                var redirectLocation = "{% url 'momends:main-screen' %}";
+                {% if form.errors %}
+                var errors = [];
+                {% for key, value in form.errors.items %}
+                errors.push('{{ value.as_text }}');
+                {% endfor %} 
+                redirectLocation += '?registration-error=' + errors.join('<br/>');
+                {% endif %}
+                window.location.href = redirectLocation;            
+            }
+    </script>
+    <div class="authenticate-content">
 
+        <form action="{% url 'registration_register' %}" method="post" id="register-form">{% csrf_token %}
+            {{ form.as_p }}
+            {{ script }}
+            <input type="button" value="Submit" id="register-button"/>
+        </form>
+    </div>
+    <script type="text/javascript">
+        $('body').ready(function(){
+            $('#register-button').click(function(event){
+                event.preventDefault();
+                var valid = true;
+                var form = $('#register-form');
+                form.find('input').each(function(){
+                    if($(this).val().length === 0){
+                        $(this).addClass('invalid');
+                        valid = false;
+                    }else{
+                        $(this).removeClass('invalid');
+                    }
+                });
+                var passwordFields = form.find('input[type=password]');
+                var first = passwordFields[0].value;
+                var second = passwordFields[1].value;
+                if(first !== second){
+                    _showToast('Password fields don\'t match');
+                    valid = false;
+                }
+                var emailField = form.find('input[name=email]')[0].value;
+                var simpleMailCheck = /\S+@\S+\.\S+/;
+                if(valid && !simpleMailCheck.test(emailField)){
+                    _showToast('Please enter a valid email address');
+                    valid = false;
+                }
+                if(valid){
+                    $('#register-form').submit();
+                }
+            });
+        });
+    </script>
 {% endblock content %}

@@ -54,7 +54,7 @@
                 <div class="navbar-inner">
                     <div class="container">
                         <!-- Logo -->
-                        <a class="brand" href={% url 'momends:front-page' %}>
+                        <a class="brand" href="{% url 'momends:front-page' %}">
                             <img src="{{ STATIC_URL }}/img/logo.png" class="logo">
                         </a>
                         <ul class="nav">
@@ -125,7 +125,12 @@
     <script src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
     <script>
         function showAuthModal(_url, title){
-            var modal =jQuery('<div/>',{
+            var modal = $('#auth-modal');
+            if(modal){
+                modal.modal('hide');
+                modal.remove();
+            }
+            modal =jQuery('<div/>',{
                 'id': 'auth-modal',
                 'class' : 'modal fade',
                 'tabindex' : '-1',
@@ -140,7 +145,8 @@
                 'text' : title
             }).appendTo(header);
             var modal_body = jQuery('<div/>',{
-                class : 'modal-body'
+                class : 'modal-body',
+                id : 'connect-modal'
             }).appendTo(modal);
             modal.ready(function(){
                 modal.modal({
@@ -151,6 +157,42 @@
                 $(this).remove();
             });
             modal.css('top','10%');
+        }
+        /**
+        Shows an error message on the page
+        @param _text: message to show
+        @param [_height]: height of the box
+        */
+        function _showToast(_text, _height){
+            if (typeof _height === "undefined"){
+                _height = 90;
+                if(_text.length > 65){
+                    (_text.length / 65) * 20;
+                }
+                _height = _height + 'px';
+            }
+            logger.logEvent({'msg': 'showing a tost', 'text': _text});
+            var dialog = $('<div/>',{
+                class : 'basic-dialog',
+                id : 'dialog-'+_dialogId,
+                style : 'height: '+_height
+            }).appendTo('body');
+            $('<div/>',{
+                text : _text
+            }).appendTo(dialog);
+            var closeButton = $('<button/>',{
+                class : 'button basic-dialog-close',
+                id : 'close-'+_dialogId,
+                text : 'OK'
+            }).appendTo(dialog);
+            closeButton.click(function(){
+                dialog.fadeOut();
+            });
+            dialog.fadeIn();
+            _dialogId++;
+        }
+        function _trackPageEvent(_group, _event){
+            _gaq.push(['_trackEvent', 'Page', _group, _event])
         }
     </script>
 {% endblock %}

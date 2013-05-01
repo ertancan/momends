@@ -45,8 +45,12 @@
     </div>
     <div class="social-networks-basic">
         <p>
-            <a class="social-network twitter" target="_blank" href="https://twitter.com/momends">Twit</a>
-            <a class="social-network facebook" target="_blank" href="https://www.facebook.com/momends" style="margin-left: 10px">Feys</a>
+            <a class="social-network twitter" target="_blank" href="https://twitter.com/momends">
+                <img src="{{ STATIC_URL }}img/tw-small.png">
+            </a>
+            <a class="social-network facebook" target="_blank" href="https://www.facebook.com/momends" style="margin-left: 10px">
+                <img src="{{ STATIC_URL }}img/fb-small.png">
+            </a>
         </p>
     </div>
     <!-- Create Modal -->
@@ -318,7 +322,32 @@
                 logger.logEvent({'msg': 'Parameters told me to show create dialog'});
                 showCreateModal();
                 _trackPageEvent('Create', 'AutoShowDialog');
+            }else if(getURLParameter('login-error') === 'true'){ 
+                showAuthModal("{% url 'auth_login' %}","Sign in");
+                var showErrorInterval = setInterval(function(){  // Wait until modal loads
+                    var orText = $('#connect-or-div');
+                    if(orText){
+                        $('<div/>',{
+                            text: 'Please enter a valid username-password combination',
+                            class: 'login-form-error'
+                        }).insertAfter(orText);
+                        clearInterval(showErrorInterval);
+                    }
+                },500);
+            }else if(getURLParameter('registration-error')){ 
+                showAuthModal("{% url 'registration_register' %}","Sign up");
+                var showErrorInterval = setInterval(function(){  // Wait until modal loads
+                    var content = $('.authenticate-content');
+                    if(content){
+                        $('<div/>',{
+                            text: getURLParameter('registration-error'),
+                            class: 'login-form-error'
+                        }).insertBefore(content);
+                        clearInterval(showErrorInterval);
+                    }
+                },500);
             }
+
         });
 
         /**
@@ -360,7 +389,6 @@
                 beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', token);},
                 data: postData,
                 success: function(msg){
-                    console.log(msg);
                     var result = JSON.parse(msg);
                     if(result.resp){ //Create requested successfully 
                         setTimeout(function() {checkMomendStatus(result.cid)}, 5000);
@@ -394,7 +422,7 @@
                         try{
                             window.history.pushState({'type':'m','cid':result.cid},"", HOST_URL+'/show/m/'+result.cid);
                         }catch(e){
-                            console.log('Different domain?');
+                            //console.log('Different domain?');
                         }
                         logger.logEvent({'msg': 'Created, showing momend'});
                         playMomend(crypticId);
@@ -441,7 +469,6 @@
             }).appendTo(bgContainer);
             bgImg.ready(function(){
                 lastLoaded++;
-                console.log('loaded:'+lastLoaded);
                 loadNext();
                 if(lastLoaded>0){
                     bgContainer.hide();
@@ -851,42 +878,6 @@
             }
         });
     }
-        /**
-        Shows an error message on the page
-        @param _text: message to show
-        @param [_height]: height of the box
-        */
-        function _showToast(_text, _height){
-            if (typeof _height === "undefined"){
-                _height = 90;
-                if(_text.length > 65){
-                    (_text.length / 65) * 20;
-                }
-                _height = _height + 'px';
-            }
-            logger.logEvent({'msg': 'showing a tost', 'text': _text});
-            var dialog = $('<div/>',{
-                class : 'basic-dialog',
-                id : 'dialog-'+_dialogId,
-                style : 'height: '+_height
-            }).appendTo('body');
-            $('<div/>',{
-                text : _text
-            }).appendTo(dialog);
-            var closeButton = $('<button/>',{
-                class : 'button basic-dialog-close',
-                id : 'close-'+_dialogId,
-                text : 'OK'
-            }).appendTo(dialog);
-            closeButton.click(function(){
-                dialog.fadeOut();
-            });
-            dialog.fadeIn();
-            _dialogId++;
-        }
-        function _trackPageEvent(_group, _event){
-            _gaq.push(['_trackEvent', 'Page', _group, _event])
-        }
     </script>
     <script>
         /**
@@ -894,7 +885,6 @@
          */
         fullscreen_on = false;
         function frameLoaded(){
-            console.log('Frame Loaded');
             logger.logEvent({'msg': 'Player frame loaded'});
             player_frame = document.getElementById('momend-player-frame');
             momendManager = player_frame.contentWindow.momendManager;

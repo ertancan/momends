@@ -1,6 +1,10 @@
 .momend-word{
     font-family: comfortaabold,sans-serif;
 }
+h1,h2,h3{
+    font-family: PTSansBold, sans-serif;
+    color: #646464;
+}
 .logo{
     width: 100px;
 }
@@ -9,112 +13,75 @@
     position: relative;
     top: -10px;
 }
-/* Home Page */
-div#create-modal-body.modal-body{
-    overflow-x: hidden;
+#auth-modal{
+    font-family: PTSansRegular, sans-serif;
+    font-size: 20px;
+    color: #646464;
+    width: 400px;
+    background-color: #e9e9e9;
 }
-.modal-group-container{
+.authenticate-content{
+    width: 370px;
+    margin-left: auto;
+    margin-right: auto;
 }
-.modal-icon-group{
-    height: 250px;
-    overflow-y: auto;
-    margin-left: 0;
+#facebook-connect-text{
+    color: #e08f8f;
 }
-.model-icon-button {
-    color: rgb(102, 102, 102);
-    cursor: pointer;
+#facebook-connect-text:visited{
+    color: #e08f8f;
 }
-.model-icon-button:hover{
-    color: rgb(150, 150, 150);
-    text-decoration: none;
+#connect-or-div{
+    color: #646464;
+    text-align: center;
 }
-.model-icon-button.active{
-    color: rgb(0, 115, 205)
+.login-form-error{
+    font-size: 16px;
+    color: #e08f8f;
 }
-.modal-tab-content{
-    height: 250px;
-    margin-top: 2px;
-}
-.homepage-carousel-item{
-    height: 306px;
-}
-.momend-carousel-picture{
-    height: 306px;
-    width: 515px;
-}
-#create-form.form-horizontal{
-    margin: 0;
-}
-.ui-datepicker-month{
-    display: inline-block;
-}
-.ui-datepicker-year{
-    display: inline-block;
-}
-.modal-nav-tabs{
-    margin: 0;
-}
-input.modal-form-item{
-    width: 270px;
-    margin-bottom: 10px;
-}
-input.modal-form-item-small{
-    width: 180px;
-    margin-bottom: 10px;
-}
-input.modal-form-item-medium{
-    width: 223px;
-    margin-bottom: 10px;
-}
-input.modal-form-item-large{
-    width: 324px;
-    margin-bottom: 10px;
-}
-select.modal-form-item{
-    width: 120px;
-    margin-bottom: 10px;
-}
-label.modal-form-item{
-    display: inline-block;
+label.login-label{
     width: 90px;
+    display: inline-block;
 }
-.form-input-error{
-    border-color: red !important;
-}
-.upload-button{
-    position: absolute;
-    right: 30px;
-    top: 85px;
-    color: rgb(102, 102, 102);
-}
-#upload-button-icon{
-    position: relative;
-    left:3px;
-}
-#get-button.button{
+#id_username, #id_password{
+    margin-top: 5px;
+    border: 2px dashed #c6c6c6;
+    background-color: #e9e9e9;
+    color: #646464;
     width: 200px;
+    float: right;
 }
-.more-clickable{
-    display: block;
-    padding: 10px;
+#id_username.invalid, #id_password.invalid{
+    border: solid 1px red;
 }
-a.upload-button{
-    text-decoration: none;
+#id_username:focus, #id_password:focus{
+    border-color: #e08f8f;
+    outline: none;
 }
-a.delete-button{
-    top: 0 !important;
-    position: relative !important;
-    margin-right: 10px;
+input#connect-login-button{
+    width: 260px;
 }
-.delete-button{
-    color: rgb(102, 102, 102);
-    font-size: 15px;
+a#connect-signup-text{
+    font-size: 12px;
+    color: #646464;
+    float: right;
+    position: relative;
+    top: 6px;
 }
-.delete-button:hover{
-    font-size: 17px;
-    color: rgb(185, 31, 31);
-    text-decoration: none;
-    cursor: pointer;
+input.required{
+    margin-top: 5px;
+    border: 2px dashed #c6c6c6;
+    background-color: #e9e9e9;
+    color: #646464;
+    width: 200px;
+    float: right;
+}
+input.required:active{
+    border-color: #e08f8f;
+    outline: none;
+}
+input.required.invalid{
+    border: solid 1px red;
 }
 .creating-dialog-bg{
     z-index: 9999;
@@ -159,39 +126,4 @@ a.delete-button{
 #collecting-text{
     position: absolute;
     left: 30%;
-}
-/* Show Page */
-.interaction-list{
-    width: 100%;
-    max-height:200px;
-    overflow: auto;
-}
-.interaction{
-    width: 100%;
-}
-.used-media-list{
-    width: 100%;
-    height: 250px;
-    overflow: auto;
-    margin-left: -10px;
-}
-.used-media{
-    width: 100%;
-}
-.player{
-    margin-top:5px;
-    height:460px;
-    background-color:rgba(51,51,51,0.8);
-}
-.player-fullscreen{
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255,255,255,1) !important;
-    z-index: 9999;
-}
-#uvTab{
-    top: 90% !important;
 }
