@@ -122,8 +122,8 @@ class DataManagerUtil:
                     'HOST_URL': settings.HOST_URL,
                     'finish_date': momend.momend_end_date.strftime("%d %h %Y"),
                     }
-        if not momend.momends_start_date == datetime(1970, 1, 1, 0, 0, 0):
-            ctx_dict['start_date'] = momend.momends_start_date.strftime("%d %h %Y")
+        if not momend.momend_start_date == datetime(1970, 1, 1, 0, 0, 0):
+            ctx_dict['start_date'] = momend.momend_start_date.strftime("%d %h %Y")
 
         subject = render_to_string('MomendCreatedMailSubjectTemplate.html', ctx_dict)
         # Email subject *must not* contain newlines
