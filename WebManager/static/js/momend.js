@@ -71,7 +71,7 @@ var Momend = (function(){
         if(_interactionSent){
             return;
         }
-        console.log('sending');
+        //console.log('sending');
         logger.logEvent({'msg': 'sending user interaction to server'});
         var json = _jsAnimate.convertUserInteractionLayerToJSON();
         var token = $('[name="csrfmiddlewaretoken"]')[0].value;
@@ -372,8 +372,8 @@ var Momend = (function(){
     */
     function __createTitle(node, layer, order){
         var owner = createdObjects[_getPhotoIdentifier(node['final_data_path'])];  // Photo object
-        console.log('Appending to:');
-        console.dir(owner);
+        //console.log('Appending to:');
+        //console.dir(owner);
         var _id = 'title' + layer + '' + order;
         var created_div = jQuery('<div/>',{
             id: _id,
