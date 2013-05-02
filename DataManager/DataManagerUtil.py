@@ -10,7 +10,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from django.core.urlresolvers import reverse_lazy
 from django.core.files.storage import default_storage
-
+from datetime import datetime
 from LogManagers.Log import Log
 
 
@@ -120,9 +120,11 @@ class DataManagerUtil:
                     'owner': momend.owner,
                     'STATIC_URL': settings.STATIC_URL,
                     'HOST_URL': settings.HOST_URL,
-                    'start_date': momend.momend_start_date.strftime("%d %h %Y"),
-                    'finish_date': momend.momend_end_date.strftime("%d %h %Y")
+                    'finish_date': momend.momend_end_date.strftime("%d %h %Y"),
                     }
+        if not momend.momends_start_date == datetime(1970, 1, 1, 0, 0, 0):
+            ctx_dict['start_date'] = momend.momends_start_date.strftime("%d %h %Y")
+
         subject = render_to_string('MomendCreatedMailSubjectTemplate.html', ctx_dict)
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
