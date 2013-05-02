@@ -323,6 +323,7 @@
                 showCreateModal();
                 _trackPageEvent('Create', 'AutoShowDialog');
             }else if(getURLParameter('login-error') === 'true'){ 
+                logger.logEvent({'msg': 'Login error'});
                 showAuthModal("{% url 'auth_login' %}","Sign in");
                 var showErrorInterval = setInterval(function(){  // Wait until modal loads
                     var orText = $('#connect-or-div');
@@ -334,13 +335,15 @@
                         clearInterval(showErrorInterval);
                     }
                 },500);
-            }else if(getURLParameter('registration-error')){ 
+            }else if(getURLParameter('registration-error') !== 'null'){ 
+                var error = getURLParameter('registration-error');
+                logger.logEvent({'msg': 'Registration Error', 'error': error});
                 showAuthModal("{% url 'registration_register' %}","Sign up");
                 var showErrorInterval = setInterval(function(){  // Wait until modal loads
                     var content = $('.authenticate-content');
                     if(content){
                         $('<div/>',{
-                            text: getURLParameter('registration-error'),
+                            text: error,
                             class: 'login-form-error'
                         }).insertBefore(content);
                         clearInterval(showErrorInterval);
@@ -590,6 +593,7 @@
                     if(selectedFriends.length > 0){  // We currently allow only 1 friend
                         selectedFriends.pop();
                         photoContainer.children().remove();
+                        logger.logEvent({'msg': 'previously selected friend popped out'});
                     }
 
                     selectedFriends.push(selected);
@@ -611,6 +615,7 @@
                 selectedFriends.pop();
                 photoContainer.children().remove();
                 photoContainer.animate({'opacity': 0}, 200);
+                logger.logEvent({'msg': 'Friend selection cleared'});
             }
         }
 
@@ -643,12 +648,14 @@
             var modal = $('#create-modal-mini');
             contentHolder.show();
             selectionMode = true;
+            logger.logEvent({'msg': 'showing selected data modal'});
         }
         function hideSelected(){
             selectedData['dropbox'] = {'photo': []};
             var contentHolder = $('#selected-content-holder');
             contentHolder.hide();
             selectionMode = false;
+            logger.logEvent({'msg': 'hiding selected data modal'});
         }
 
         /**
@@ -767,14 +774,14 @@
                 var subtext = $('#create-modal-' + provider + '-subtext');
                 var providerCapitalizedName = provider.charAt(0).toUpperCase() + provider.slice(1);
                 if(forceTo !== true && (forceTo === false || $(rowsChildren[0]).hasClass('active'))){
-                    logger.logEvent({'msg': 'social toggle off', 'provider_name': provider});
+                    logger.logEvent({'msg': 'social toggle off', 'provider_name': provider, 'forcedTo': forceTo});
                     iconBorder.removeClass('active');
                     icon.removeClass('active');
                     text.removeClass('active');
                     text.text(providerCapitalizedName + ' Off');
                     subtext.text('We won\'t collect data from your ' + providerCapitalizedName + ' account');
                 }else{
-                    logger.logEvent({'msg': 'social toggle on', 'provider_name': provider});
+                    logger.logEvent({'msg': 'social toggle on', 'provider_name': provider, 'forcedTo': forceTo});
                     iconBorder.addClass('active');
                     icon.addClass('active');
                     text.addClass('active');
@@ -803,15 +810,6 @@
                     break;
             }
         }
-    function modalResize(toBig){
-        if(toBig && !createModalMaximized){
-            _animateCreateModal('+=100', '+=100', 500);
-            createModalMaximized = true;
-        }else if(createModalMaximized){
-            _animateCreateModal('-=100', '-=100', 500);
-            createModalMaximized = false;
-        }
-    }
 
     function _animateCreateModal(modalSize, bodySize, duration){
         var modal = $('#create-modal-mini');
