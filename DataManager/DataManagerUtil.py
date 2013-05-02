@@ -11,6 +11,7 @@ from django.utils.html import strip_tags
 from django.core.urlresolvers import reverse_lazy
 from django.core.files.storage import default_storage
 from datetime import datetime
+import pytz
 from LogManagers.Log import Log
 
 
@@ -122,7 +123,7 @@ class DataManagerUtil:
                     'HOST_URL': settings.HOST_URL,
                     'finish_date': momend.momend_end_date.strftime("%d %h %Y"),
                     }
-        if not momend.momend_start_date == datetime(1970, 1, 1, 0, 0, 0):
+        if not momend.momend_start_date == datetime(1970, 1, 1, 0, 0, 0).replace(tzinfo=pytz.UTC):
             ctx_dict['start_date'] = momend.momend_start_date.strftime("%d %h %Y")
 
         subject = render_to_string('MomendCreatedMailSubjectTemplate.html', ctx_dict)
