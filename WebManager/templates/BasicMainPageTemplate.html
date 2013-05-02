@@ -38,7 +38,7 @@
                     <b style="font-size: 20px;color: #ffffff; margin: 0 9px 0 9px">|</b> <!-- I had to! (pixel perfection :)) -->
                     <a href="#" class="white-link" onclick='showAuthModal("{% url 'auth_login' %}","Sign in")'>Get yours now!</a>
                 {% else %}
-                    <a href="#" class="white-link" onclick='showCreateModal()'>Hello {{ user.first_name }}, click to create a momend?</a>
+                    <a href="#" class="white-link" onclick='showCreateModal()'>Hello{%if user.first_name %} {{ user.first_name }}{% endif %}, click to create a momend?</a>
                 {% endif %}
             </div>
         </div>
@@ -81,7 +81,7 @@
                                             Facebook
                                         </span>
                                     <div id="create-modal-facebook-subtext" class="provider-row-subtext">
-                                        </br>We will collect data from </br>your Facebook account
+                                        </br>We won't collect data from </br>your Facebook account
                                     </div>
                                     </div>
                                 </div>
@@ -190,12 +190,6 @@
                     height: 110px;right: 40px;top:270px;position: absolute;opacity: 0"></span>
             <h3 style="position: absolute;bottom: -2px">This may take a couple of minutes, and we will also send it via email (to {{ user.email }}) when it is ready!</h3>
         </div>
-    </div>
-    <div class="basic-dialog" id="welcome-dialog" style="height: 130px">
-        <div>
-            It seems you don't have any momend yet, here comes your first! </br>(your last 3 years)
-        </div>
-        <button class="button orange basic-dialog-close" id="close-button" onclick="$('#welcome-dialog').fadeOut()">OK!</button>
     </div>
     <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/hogan-2.0.0.min.js"></script>
@@ -316,7 +310,7 @@
                 logger.logEvent({'msg': 'This is actually show page, showing', 'cid': _cid});
                 playMomend(_cid, _type === 'i');
             }else if(user_momend_count === 0 && home === 'True'){ //If home page & user logged in and has no momends
-                logger.logEvent({'msg': 'Momend count is 0, creating one'});
+                logger.logEvent({'msg': 'Momend count is 0'});
                 welcome();
             }else if(getURLParameter('create') === 'true'){ //Someone told me to show create modal
                 logger.logEvent({'msg': 'Parameters told me to show create dialog'});
@@ -354,25 +348,16 @@
         });
 
         /**
-         * Welcomes and creates the first momend for the user
+         * Welcomes the user  -- Used to create the first momend
          */
         function welcome(){
-            _trackPageEvent('Page', 'Welcome');
-            var date = new Date();
-            date.setDate(date.getDate() - (365 * 3) );
-            var postData = {'momend_name':null,
-                'start_date': formatDate("d M, yy", date),
-                'finish_date': formatDate("d M, yy", new Date()), //Today
-                'momend_theme': 0,
-                'privacy_type': 1,
-                'facebook-active': true,
-                'twitter-active': false,
-                'friends': null,
-                'selected': null
-            };
-            createMomend(postData);
-            $('#creating-dialog-bg').addClass('dark');
-            $('#welcome-dialog').show();
+            if(auth.length > 0){
+                _trackPageEvent('Page', 'Welcome social');
+                showCreateModal();
+            }else{  // Registered with username
+                _trackPageEvent('Page', 'Welcome username');
+                showCreateModal();
+            }
         }
 
         function createMomend(postData){
@@ -535,6 +520,9 @@
         }
 
         function showCreateModal(){
+            if(auth.length === 0){  // Hide create options & button if not authenticated to any social provider
+                $('#create-modal-mini').css({'height': 250, overflow:'hidden'}); 
+            }
             _trackPageEvent('Create', 'ShowDialog');
             logger.logEvent({'msg': 'Create modal shown'});
             var modal = $('#create-modal-mini');
@@ -644,6 +632,7 @@
         }
 
         function showSelectedContentsModal(){
+            $('#create-modal-mini').css({'height': 520, overflow:'visible'});  // In case it is minimized
             var contentHolder = $('#selected-content-holder');
             var modal = $('#create-modal-mini');
             contentHolder.show();
@@ -651,6 +640,9 @@
             logger.logEvent({'msg': 'showing selected data modal'});
         }
         function hideSelected(){
+            if(auth.length === 0){
+                $('#create-modal-mini').css({'height': 250, overflow:'hidden'}); 
+            }
             selectedData['dropbox'] = {'photo': []};
             var contentHolder = $('#selected-content-holder');
             contentHolder.hide();
