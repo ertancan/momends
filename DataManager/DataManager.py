@@ -14,7 +14,6 @@ from LogManagers.Log import Log
 from DataManagerUtil import DataManagerUtil
 from DataManagerUtil import CloudFile
 from django.db.models import Q
-from django.conf import settings
 import traceback
 import tasks
 import datetime
@@ -35,6 +34,22 @@ class DataManager:
     def create_momend(self, duration, send_mail, name=None,
                       privacy=Momend.PRIVACY_CHOICES['Private'], inc_photo=True, inc_status=True, inc_checkin=True,
                       enrichment_method=None, theme=None, scenario=None, **kwargs):
+        """
+        Initiates the momend create process.
+        Checks if it there is any reasons not to create a momends (e.g. creating another momend, problems in parameters)
+        And adds an async task to be processed by celery workers
+        @param duration: approximate! duration of the momend (in seconds)
+        @param send_mail: False; do not send mail to the owner after create
+        @param name: name of the momend. uses directly if given, creates one if not
+        @param inc_photo: Whether we should use photos while creating the momend or not
+        @param inc_status: Whether we should use statuses while creating the momend or not
+        @param inc_checkin: Whether we should use checkins or while creating the momend not
+        @param enrichment_method what kind of enrichment should be used on user data. Decides automatically if None  TODO: don't enrich if None
+        @param theme: Theme to be used on the momend, None for random
+        @param scenario: Should be given if any specific scenario should be used
+        Any additional settings could be given on kwargs (e.g. filters, is_date option etc.)
+        """
+
         try:
             _time_limit = datetime.datetime.now().replace(tzinfo=pytz.UTC) - datetime.timedelta(minutes=5)
             if MomendStatus.objects.filter(owner=self.user)\
@@ -48,14 +63,20 @@ class DataManager:
                 name = self.generate_momend_name(theme, scenario, **kwargs)
 
             self.momend = Momend(owner=self.user, name=name, privacy=privacy)
-            if kwargs['is_date']:
+            if kwargs['is_date']:  # Collect data by date, all providers but explictly excluded ones.
                 try:
                     self.momend.momend_start_date = kwargs['since']
                     self.momend.momend_end_date = kwargs['until']
                 except KeyError:
                     self._handle_momend_create_error('Parameter error. Please try again')
+            elif kwargs['selected']:  # Create momend with selected raw data. Expects dictionary in this format;
+                                                               # selected: {'provider-1':[data1, data2], 'provider-2':[data1, ...]}
+                _now = datetime.datetime.now()
+                _now = _now.replace(tzinfo=pytz.UTC)
+                self.momend.momend_start_date = _now
+                self.momend.momend_end_date = _now
             else:
-                self.status = 'Not supported yet!'
+                self._handle_momend_create_error('Create method not supported')
                 return False
             self.momend.save()
             _cryptic_id = encode_id(self.momend.id)
@@ -75,6 +96,11 @@ class DataManager:
         return True
 
     def generate_momend_name(self, theme, scenario, **kwargs):
+        """
+        Generates a name for the momend according to the parameters
+        names it user's first momend if it is
+        if the momend create mode is is_date then names according to day count
+        """
         _user_name = self.user.first_name.lower()
         if Momend.objects.filter(owner=self.user).count() == 0:
             return _user_name + "'s first momend"
@@ -117,7 +143,7 @@ class DataManager:
                 return _momend_name
 
         _friends = kwargs.get('friends', None)
-        if _friends:
+        if _friends and len(_friends) > 0:
             if len(_friends) > 1:
                 _momend_name += ' with friends'
             else:
@@ -141,38 +167,68 @@ class DataManager:
         _raw_data = []
         _collect_count = dict()
         _collect_status = dict()
-        for _provider in Provider.objects.all():
-            if UserSocialAuth.objects.filter(provider=_provider.name).filter(user=self.user).exists():
-                _provider_argument = _provider.name + '-active'
-                if _provider_argument in kwargs and (not kwargs[_provider_argument] or kwargs[_provider_argument].lower() == 'false'):  # Do not use this provider if parameters explicity say so
-                    Log.info('Not collecting data from: ' + _provider.name)
-                    continue
+        if kwargs['is_date']:
+            for _provider in Provider.objects.all():
+                if UserSocialAuth.objects.filter(provider=_provider.name).filter(user=self.user).exists():
+                    _provider_argument = _provider.name + '-active'
+                    if _provider_argument in kwargs and (not kwargs[_provider_argument] or kwargs[_provider_argument].lower() == 'false'):  # Do not use this provider if parameters explicity say so
+                        Log.info('Not collecting data from: ' + _provider.name)
+                        continue
 
-                worker = _provider.instantiate_provider_worker()
-                if inc_photo and issubclass(worker.__class__, BasePhotoProviderWorker):
-                    _collected = worker.collect_photo(self.user, **kwargs)
+                    _worker = _provider.instantiate_provider_worker()
+                    if inc_photo and issubclass(_worker.__class__, BasePhotoProviderWorker):
+                        _collected = _worker.collect_photo(self.user, **kwargs)
+                        if not _collected:
+                            _collect_status[_provider.name + '_photo'] = 'Error'
+                        else:
+                            _raw_data += _collected
+                            _collect_count['photo'] = _collect_count.get('photo', 0) + len(_raw_data)
+                            _collect_status[_provider.name + '_photo'] = 'Success'
+                    if inc_status and issubclass(_worker.__class__, BaseStatusProviderWorker):
+                        _collected = _worker.collect_status(self.user, **kwargs)
+                        if not _collected:
+                            _collect_status[_provider.name + '_status'] = 'Error'
+                        else:
+                            _raw_data += _collected
+                            _collect_count['status'] = _collect_count.get('status', 0) + len(_raw_data)
+                            _collect_status[_provider.name + '_status'] = 'Success'
+                    if inc_checkin and issubclass(_worker.__class__, BaseLocationProviderWorker):
+                        _collected = _worker.collect_checkin(self.user, **kwargs)
+                        if not _collected:
+                            _collect_status[_provider.name + '_checkin'] = 'Error'
+                        else:
+                            _raw_data += _collected
+                            _collect_count['checkin'] = _collect_count.get('checkin', 0) + len(_raw_data)
+                            _collect_status[_provider.name + '_checkin'] = 'Success'
+        elif kwargs['selected']:
+            for _provider in kwargs['selected']:
+                _worker = Provider.objects.get(name=_provider).instantiate_provider_worker()
+                _selected_for_provider = kwargs['selected'][_provider]
+                if 'photo' in _selected_for_provider and _selected_for_provider['photo'] and issubclass(_worker.__class__, BasePhotoProviderWorker):
+                        _collected = _worker.collect_photo(self.user, selected=_selected_for_provider['photo'])
+                        if not _collected:
+                            _collect_status[_provider.name + '_photo'] = 'Error'
+                        else:
+                            _raw_data += _collected
+                            _collect_count['photo'] = _collect_count.get('photo', 0) + len(_raw_data)
+                            _collect_status[_provider + '_photo'] = 'Success'
+                if 'status' in _selected_for_provider and _selected_for_provider['status'] and issubclass(_worker.__class__, BaseStatusProviderWorker):
+                    _collected = _worker.collect_status(self.user, selected=_selected_for_provider['status'])
                     if not _collected:
-                        _collect_status[_provider.name + '_photo'] = 'Error'
-                    else:
-                        _raw_data += _collected
-                        _collect_count['photo'] = _collect_count.get('photo', 0) + len(_raw_data)
-                        _collect_status[_provider.name + '_photo'] = 'Success'
-                if inc_status and issubclass(worker.__class__, BaseStatusProviderWorker):
-                    _collected = worker.collect_status(self.user, **kwargs)
-                    if not _collected:
-                        _collect_status[_provider.name + '_status'] = 'Error'
+                        _collect_status[_provider + '_status'] = 'Error'
                     else:
                         _raw_data += _collected
                         _collect_count['status'] = _collect_count.get('status', 0) + len(_raw_data)
-                        _collect_status[_provider.name + '_status'] = 'Success'
-                if inc_checkin and issubclass(worker.__class__, BaseLocationProviderWorker):
-                    _collected = worker.collect_checkin(self.user, **kwargs)
+                        _collect_status[_provider + '_status'] = 'Success'
+                if 'checkin' in _selected_for_provider and _selected_for_provider['checkin'] and issubclass(_worker.__class__, BaseLocationProviderWorker):
+                    _collected = _worker.collect_checkin(self.user, selected=_selected_for_provider['checkin'])
                     if not _collected:
-                        _collect_status[_provider.name + '_checkin'] = 'Error'
+                        _collect_status[_provider + '_checkin'] = 'Error'
                     else:
                         _raw_data += _collected
                         _collect_count['checkin'] = _collect_count.get('checkin', 0) + len(_raw_data)
-                        _collect_status[_provider.name + '_checkin'] = 'Success'
+                        _collect_status[_provider + '_checkin'] = 'Success'
+
         #all incoming data shall be saved here instead of collection place
         Log.debug('status:'+str(_collect_status))
         Log.debug('Collected Objects:'+str(_collect_count))
@@ -188,7 +244,8 @@ class DataManager:
         """
         Enrich collected raw data according to the parameters.
         @param raw_data_filter: filters to be applied to the collected data, (Dictionary):
-            Currently only supports 'friends' filter, an array of friend ids, in format 'providername-id', should be mapped to key 'friends'
+            'friends' filter, an array of friend ids, in format 'providername-id', should be mapped to key 'friends'
+            'chronological', boolean, preserves chronological order of collected data
         """
         if not method:
             method = 'date'
@@ -198,6 +255,8 @@ class DataManager:
         if raw_data_filter:
             _enrich_manager.filter_user_data(raw_data_filter)
         _enriched_data = _enrich_manager.get_enriched_user_raw_data()
+        if raw_data_filter['chronological']:  # TODO: TEST!
+            _enriched_data = sorted(_enriched_data, key=lambda enriched: enriched.raw.create_date)
         return _enriched_data
 
     def _create_momend_thumbnail(self):
@@ -217,6 +276,10 @@ class DataManager:
             Log.error("Couldn't create thumbnail!-->"+str(error))
 
     def _calculate_provider_score(self):
+        """
+        Calculates a score for the momends according to the like, share and comment counts of the used data
+        TODO: requires a better scoring algorithm
+        """
         main_layer = self.momend.animationlayer_set.all()[1]
         used_objects = OutData.objects.filter(owner_layer=main_layer).filter(Q(raw__isnull=False))
         _score = 0
@@ -228,6 +291,11 @@ class DataManager:
         return _score
 
     def _handle_momend_create_error(self, user_message, log_message=''):
+        """
+        Saves and logs the momend create process errors
+        @param user_message: message that the user will see
+        @param log_message: message to log/save to db
+        """
         if log_message:
             Log.error(log_message)
         else:

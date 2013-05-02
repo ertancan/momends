@@ -9,6 +9,8 @@
 
     <title>{% block title %} momends {% endblock title %}</title>
     {% block default_meta %}
+        <meta name="Description" content="You can create entertaining animations with your photos!">
+        <meta name="Keywords" content="photo animation, animation generator, photo slideshow">
         <meta property="og:site_name" content="momends"/>
         <meta property="og:url" content="{{ request.build_absolute_uri }}"/>
         <meta property="fb:app_id" content="125999474230740"/>
@@ -16,7 +18,7 @@
     {% endblock default_meta %}
     {% block meta %} {% endblock meta %}
     {% block jquery %}
-        <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <script src="{{ STATIC_URL }}js/jquery.js"></script>
     {% endblock jquery %}
 
     {% block default_include %} <!--includes for whole site -->
@@ -24,8 +26,8 @@
         <script>MOMEND_FILE_URL = '{{ MOMEND_FILE_URL }}';  </script>
         <script>THEME_DATA_URL = '{{ THEME_DATA_URL }}';  </script>
         <link href="{{ STATIC_URL }}fonts/comfortaa/stylesheet.css" rel="stylesheet">
-        <link href="{{ STATIC_URL }}style.min.css" rel="stylesheet">
-        <link href="{{ STATIC_URL }}site.css" rel="stylesheet">
+        <link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet">
+        <link href="{{ STATIC_URL }}css/site.css" rel="stylesheet">
         <link href="{{ STATIC_URL }}fonts/font-awesome/font-awesome.css" rel="stylesheet">
         <!--[if IE 7]>
 		    <link href="{{ STATIC_URL }}fonts/font-awesome/font-awesome-ie7.css" rel="stylesheet">
@@ -52,7 +54,7 @@
                 <div class="navbar-inner">
                     <div class="container">
                         <!-- Logo -->
-                        <a class="brand" href={% url 'momends:front-page' %}>
+                        <a class="brand" href="{% url 'momends:front-page' %}">
                             <img src="{{ STATIC_URL }}/img/logo.png" class="logo">
                         </a>
                         <ul class="nav">
@@ -104,8 +106,8 @@
                 </div>
                 <div class="span4 social-networks">
                     <p>
-                        <a class="social-network twitter" target="_blank" href="https://twitter.com/momends"></a>
-                        <a class="social-network facebook" target="_blank" href="https://www.facebook.com/momends"></a>
+                        <a class="social-network twitter" target="_blank" href="https://twitter.com/momends">Twit</a>
+                        <a class="social-network facebook" target="_blank" href="https://www.facebook.com/momends">Feys</a>
                         <!--<a class="social-network linkedin"></a>
                         <a class="social-network dribbble"></a>
                         <a class="social-network pinterest"></a> -->
@@ -117,18 +119,20 @@
 {% endblock footer %}
 
 {% block default-scripts %}
-    <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
-    <script src="{{ STATIC_URL }}log.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.isotope.min.js"></script>
+    <script src="{{ STATIC_URL }}js/log.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.touchSwipe.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.hotkeys.min.js" charset='utf-8'></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/functions.min.js"></script>
-    <script src="{{ STATIC_URL }}jquery.cookie.js"></script>
+    <script src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
     <script>
         function showAuthModal(_url, title){
-            var modal =jQuery('<div/>',{
-                'id': 'modal',
-                'class' : 'modal hide fade',
+            var modal = $('#auth-modal');
+            if(modal){
+                modal.modal('hide');
+                modal.remove();
+            }
+            modal =jQuery('<div/>',{
+                'id': 'auth-modal',
+                'class' : 'modal fade',
                 'tabindex' : '-1',
                 'role' : 'dialog',
                 'aria-labelledby' : 'modal-label',
@@ -141,7 +145,8 @@
                 'text' : title
             }).appendTo(header);
             var modal_body = jQuery('<div/>',{
-                class : 'modal-body'
+                class : 'modal-body',
+                id : 'connect-modal'
             }).appendTo(modal);
             modal.ready(function(){
                 modal.modal({
@@ -151,6 +156,43 @@
             modal.bind('hidden',function(){
                 $(this).remove();
             });
+            modal.css('top','10%');
+        }
+        /**
+        Shows an error message on the page
+        @param _text: message to show
+        @param [_height]: height of the box
+        */
+        function _showToast(_text, _height){
+            if (typeof _height === "undefined"){
+                _height = 90;
+                if(_text.length > 65){
+                    (_text.length / 65) * 20;
+                }
+                _height = _height + 'px';
+            }
+            logger.logEvent({'msg': 'showing a tost', 'text': _text});
+            var dialog = $('<div/>',{
+                class : 'basic-dialog',
+                id : 'dialog-'+_dialogId,
+                style : 'height: '+_height
+            }).appendTo('body');
+            $('<div/>',{
+                text : _text
+            }).appendTo(dialog);
+            var closeButton = $('<button/>',{
+                class : 'button basic-dialog-close',
+                id : 'close-'+_dialogId,
+                text : 'OK'
+            }).appendTo(dialog);
+            closeButton.click(function(){
+                dialog.fadeOut();
+            });
+            dialog.fadeIn();
+            _dialogId++;
+        }
+        function _trackPageEvent(_group, _event){
+            _gaq.push(['_trackEvent', 'Page', _group, _event])
         }
     </script>
 {% endblock %}

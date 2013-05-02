@@ -16,8 +16,8 @@ class TwitterProviderWorker(BaseStatusProviderWorker):
             _return_data += self._collect_status_by_date(user, kwargs['since'], kwargs['until'])
         if kwargs.get('keywords', None):
             _return_data += self._collect_status_by_keywords(user, kwargs['keywords'])
-        if kwargs.get('item_id', None):
-            _return_data += self._collect_status_by_id(user, kwargs['item_id'])
+        if kwargs.get('selected', None):
+            _return_data += self._collect_status_by_id(user, kwargs['selected'])
         return _return_data
 
     def _collect_status_by_id(self, user, status_ids):

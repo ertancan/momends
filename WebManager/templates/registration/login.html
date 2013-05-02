@@ -6,19 +6,44 @@
 {% block footer %} {# empty for login #}  {% endblock footer %}
 {% block jquery %} {# empty for login #} {% endblock jquery %}
 {% block content %}
-     <a href="{% url 'socialauth_begin' 'facebook' %}"><img src="{{ STATIC_URL }}img/facebook.png"></img></a>
-    <form name="login_form" action="{% url 'auth_login' %}" method="post" style="display: none">{% csrf_token %}
-        {{ form.non_field_errors }}
-
-        <label for="id_username" >Username</label>
-        {{ form.username }}
-        <label for="id_password" >Password</label>
-        {{ form.password }}
-
-        <input type="hidden" name="next" value="{{ next }}" />
-        <input name="login" type="submit" value="Login" id="login-form-submit"/>
-
-    </form>
-
+    <script type="text/javascript">
+        if(window.location.href.indexOf('accounts/login/') > 0){
+            var redirectLocation = "{% url 'momends:main-screen' %}";
+            {% if form.errors %}
+            redirectLocation += '?login-error=true';
+            {% endif %}
+            window.location.href = redirectLocation;
+        }
+    </script>
+    <div class="authenticate-content">
+        <a href="{% url 'socialauth_begin' 'facebook' %}" id="facebook-connect-text"><img src="{{ STATIC_URL }}img/fb-medium.png" style="margin-right: 10px"></img>You can connect with Facebook</a>
+        <div id="connect-or-div">
+            ~ Or ~
+        </div>
+        <form name="login_form" id="login-form" action="{% url 'auth_login' %}" method="post">{% csrf_token %}
+            {{ form.as_p }}
+            <input id="connect-login-button" type="submit" value="Login" />
+            <a id="connect-signup-text" href="#" onclick='showAuthModal("{% url 'registration_register' %}","Sign up")'> Not a member yet?</a>
+        </form>
+    </div>
+    <script type="text/javascript">
+        $('body').ready(function(){
+            $('#connect-login-button').click(function(event){
+                event.preventDefault();
+                var valid = true;
+                $('#login-form').find('input').each(function(){
+                    if($(this).val().length === 0){
+                        $(this).addClass('invalid');
+                        valid = false;
+                    }else{
+                        $(this).removeClass('invalid');
+                    }
+                });
+                if(valid){
+                    $('#login-form').submit();
+                }
+            });
+        });
+    </script>
 {% endblock content %}
 {% block feedback %}{# empty for login #}{% endblock feedback %}

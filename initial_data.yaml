@@ -12,6 +12,13 @@
     package_name: TwitterProvider
     worker_name: TwitterProviderWorker
 
+- model: DataManager.Provider
+  pk: 3
+  fields:
+    name: dropbox
+    package_name: DropboxProvider
+    worker_name: DropboxProviderWorker
+
 - model: DataManager.ImageEnhancement
   pk: 1
   fields:

@@ -1,8 +1,9 @@
 {% extends "MainSite.html" %}
 {% load url from future %}
 {% block include %}
-    <link href="{{ STATIC_URL }}basicmain_style.css" rel="stylesheet"> 
-    <link href="{{ STATIC_URL }}datepicker.css" rel="stylesheet">
+    <link href="{{ STATIC_URL }}css/basicmain_style.css" rel="stylesheet">
+    <link href="{{ STATIC_URL }}css/datepicker.css" rel="stylesheet">
+    <link href="{{ STATIC_URL }}fonts/PTSans/stylesheet.css" rel="stylesheet">
 {% endblock include %},
 {% block meta %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -44,54 +45,134 @@
     </div>
     <div class="social-networks-basic">
         <p>
-            <a class="social-network twitter" target="_blank" href="https://twitter.com/momends"></a>
-            <a class="social-network facebook" target)"_blank" href="https://www.facebook.com/momends" style="margin-left: 10px"></a>
+            <a class="social-network twitter" target="_blank" href="https://twitter.com/momends">
+                <img src="{{ STATIC_URL }}img/tw-small.png">
+            </a>
+            <a class="social-network facebook" target="_blank" href="https://www.facebook.com/momends" style="margin-left: 10px">
+                <img src="{{ STATIC_URL }}img/fb-small.png">
+            </a>
         </p>
     </div>
     <!-- Create Modal -->
-    <div id="create-modal-mini" class="modal hide fade span6" tabindex="-1" role="dialog" aria-labelledby="create-modal" aria-hidden="true" data-backdrop="true">
+    <div id="create-modal-mini" class="modal hide in fade" tabindex="-1" role="dialog" aria-labelledby="create-modal" aria-hidden="true" data-backdrop="true">
         <form class="form-horizontal" id="create-form" method="post" action="">{% csrf_token %}
             <div class="modal-body" id="create-modal-body-mini">
-
-                <div class="span6">
+                <div>
                     <input type="hidden" name="momend_name" id="id_momend_name">
                     <input type="hidden" name="momend_theme" id="id_momend_theme">
                     <input type="hidden" name="privacy_type" id="id_privacy_type">
-                    <div class="create-social-media">
-                                <i class="icon-facebook icon-3x create-social-button" id="create-social-facebook" onclick="socialToggle('facebook')"></i>
-                                <i class="icon-twitter icon-3x create-social-button" id="create-social-twitter" onclick="socialToggle('twitter')"></i>
-
-                    </div>
-                    <div class="pagination">
-                        <ul>
-                            <li><a id="date-1y" class="date-selector-link selected"href="#" onclick="dateSelected('year')">Last Year</a> </li>
-                            <li><a id="date-6m" class="date-selector-link" href="#" onclick="dateSelected('6mon')">Last 6 Months</a> </li>
-                            <li><a id="date-1m" class="date-selector-link" href="#" onclick="dateSelected('1mon')">Last Month</a> </li>
-                            <li><a id="date-custom" class="date-selector-link" href="#" onclick="dateSelected('custom')">Custom</a> </li>
-                        </ul>
-                    </div>
-                    <div class="modal-group-container">
-                        <div class="modal-tab-content span8">
-                            <div class="with-content">
-                                <ul id="with-list">
-                                </ul>
-                                <label for="with-box" id="with-label" class="modal-form-item">With:</label>
-                                <input id="with-box" type="text" class="modal-form-item-medium friend-typeahead" name="with-box">
+                    <div id="main-chooser-box">
+                        <div class="create-modal-group-title">
+                            <span class="create-modal-group-title bold-title">
+                                1
+                            </span>
+                            <span>
+                                What do you want to see in your momend?
+                            </span>
+                        </div>
+                        <div class="main-chooser-content">
+                            <div id="provider-content">
+                                <div id="create-modal-facebook-row" class="provider-row" onclick="socialToggle('facebook')">
+                                    <div class="provider-icon-container">
+                                        <div id="facebook-icon" class="provider-icon"></div>
+                                    </div>
+                                    <div class="provider-row-text">
+                                        <span id="create-modal-facebook-text" class="provider-row-text-title">
+                                            Facebook
+                                        </span>
+                                    <div id="create-modal-facebook-subtext" class="provider-row-subtext">
+                                        </br>We will collect data from </br>your Facebook account
+                                    </div>
+                                    </div>
+                                </div>
+                                <div id="create-modal-twitter-row" class="provider-row" onclick="socialToggle('twitter')">
+                                    <div class="provider-icon-container">
+                                        <div id="twitter-icon" class="provider-icon"></div>
+                                    </div>
+                                    <div class="provider-row-text">
+                                        <div id="create-modal-twitter-text" class="provider-row-text-title">
+                                            Twitter
+                                        </div>
+                                        <div id="create-modal-twitter-subtext" class="provider-row-subtext">
+                                            </br>We won't collect data from </br>your Twitter account
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div id="date-content" style="display: none">
-                                <label for="id_start_date" class="modal-form-item">From:</label>
-                                <input id="id_start_date" type="text" class="modal-form-item-medium modal-date-input" name="start_date">
-                                <br/>
-                                <label for="id_finish_date" class="modal-form-item">To:</label>
-                                <input id="id_finish_date" type="text" class="modal-form-item-medium modal-date-input" name="finish_date">
+                            <div id="dropbox-content">
+                                <div id="dropbox-inner-content" onclick="Dropbox.choose(dropboxOptions);">
+                                    <div id="dropbox-text">
+                                        Or you can</br>select photos</br>from your
+                                    </div>
+                                    <img src="{{ STATIC_URL }}img/dropbox.png" id="dropbox-img">
+                                </div>
                             </div>
                         </div>
                     </div>
-
+                    <div class="modal-seperator" style="background:url('{{ STATIC_URL }}img/seperator.png')"></div>
+                    <div id="interval-chooser">
+                        <div class="create-modal-group-title">
+                            <span class="create-modal-group-title bold-title">
+                                2
+                            </span>
+                            <span>
+                                Select time interval for your momend
+                            </span>
+                        </div>
+                        <div class="interval-selectors">
+                            <div class="interval-container active" id='interval-all' onclick="dateSelected('all')">
+                                ALL</br>DATA
+                            </div>
+                            <div class="interval-container" id='interval-year' onclick="dateSelected('year')">
+                                LAST</br>YEAR
+                            </div>
+                            <div class="interval-container long" id='interval-custom' onclick="dateSelected('custom')">
+                                CUSTOM</br>INTERVAL
+                            </div>
+                        </div>
+                        <div id="date-selector-group">
+                            <div class="interval-date-selector" id="date-selector-start">
+                                <div class="date-selector-description" >
+                                    start
+                                </div>
+                                <div class="date-selector-text" id="date-selector-start-text"></div>
+                                <img src="{{ STATIC_URL }}img/downarrow.png">
+                            </div>
+                            <div class="interval-date-selector" id="date-selector-end">
+                                <div class="date-selector-description">
+                                    end
+                                </div>
+                                <div class="date-selector-text" id="date-selector-end-text"></div>
+                                <img src="{{ STATIC_URL }}img/downarrow.png">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-seperator" style="background:url('{{ STATIC_URL }}img/seperator.png')"></div>
+                    <div id="friend-chooser">
+                        <div class="create-modal-group-title">
+                            <span class="create-modal-group-title bold-title">
+                                3
+                            </span>
+                            <span>
+                                Filter for a friend (optional)
+                            </span>
+                        </div>
+                        <div class="friend-content">
+                            <input id="with-box" type="text" name="with-box">
+                            <div class="friend-photo pull-right" id="friend-photo-container">
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer" id="create-modal-footer">
-                <button class="button orange" id="get-button" type="submit">Get it!</button>
+                <div id="selected-content-holder">
+                    <div id="selected-top" class="create-modal-group-title">
+                        <a href="#" id="selected-back-button" onclick="hideSelected()">Back</a>
+                        <div id="selected-text">You Selected These Photos</div>
+                        <div id="selected-content"></div>
+                        <div id="add-more" onclick="Dropbox.choose(dropboxOptions);">Add More?</div>
+                    </div>
+                </div>
+                <div id="get-button">Create Now!</div>
             </div>
         </form>
     </div>
@@ -107,7 +188,7 @@
                     height: 110px;left: 40px;top: 270px;position: absolute; opacity: 0.33"></span>
             <span id="arrow-4" style="background: url('{{ STATIC_URL }}img/arrows.png') 140px 140px;width: 150px;
                     height: 110px;right: 40px;top:270px;position: absolute;opacity: 0"></span>
-            <h3 style="position: absolute;bottom: 10px">This may take a couple of minutes, and we will also send it via email (to {{ user.email }}) when it is ready!</h3>
+            <h3 style="position: absolute;bottom: -2px">This may take a couple of minutes, and we will also send it via email (to {{ user.email }}) when it is ready!</h3>
         </div>
     </div>
     <div class="basic-dialog" id="welcome-dialog" style="height: 130px">
@@ -116,9 +197,11 @@
         </div>
         <button class="button orange basic-dialog-close" id="close-button" onclick="$('#welcome-dialog').fadeOut()">OK!</button>
     </div>
+    <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/hogan-2.0.0.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap-datepicker.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/typeahead.min.js"></script>
+    <script type="text/javascript" src="https://www.dropbox.com/static/api/1/dropins.js" id="dropboxjs" data-app-key="dgmiy8tg8n6m6ku"></script>
     <script>
         var HOST_URL = '{{ HOST_URL }}';
         var currentBg = 0;
@@ -136,8 +219,11 @@
         var momendPlaying = false;
         var createState;
         var selectedFriends;
+        var selectedData = {};
         var createModalMaximized = false;
         var logger;
+        var selectionMode = false;
+        var validPhotoExtensions = ['png', 'jpg', 'jpeg'];
 
         window.onpopstate = function(e){ //Play momend if the url bar changed after create and user coming back from history
             if(e.state){
@@ -158,29 +244,70 @@
                 bgArr[j] = temp;
             }
             loadNext();
-            $('.modal-date-input').datepicker({
-                endDate: new Date(),
-                format: "d M, yyyy",
-                autoclose: true
-            });
+            $('.interval-date-selector').each(function(){
+                $(this).click(function(){
+                    if($(this).data('pickerVisible')){
+                        $(this).datepicker('remove');
+                        $(this).data('pickerVisible', false);
+                    }else{
+                        $(this).datepicker({
+                            endDate: new Date(),
+                            format: "d M, yyyy",
+                        }).on('changeDate', function(ev){
+                            $(this).datepicker('remove');
+                            $('#' + this.id + '-text').text(formatDate("d M, yy", ev.date));
+                        });
+                        $(this).data('pickerVisible', true);
+                    }
+                });
+            })  
             prepareTypeahead();
+            prepareDropbox();
             $('#get-button').click(function(event){
                 event.preventDefault();
+                var startDate, endDate;
+                if($('#interval-all').hasClass('active')){
+                    var date = new Date();
+                    endDate = formatDate("d M, yy", date);
+                    startDate = formatDate("d M, yy", new Date(1970, 0, 1, 0, 0, 0, 0));
+                }else if($('#interval-year').hasClass('active')){
+                    var date = new Date();
+                    endDate = formatDate("d M, yy", date);
+                    date.setDate(date.getDate() - (365 * 1) );
+                    startDate = formatDate("d M, yy", date);
+                }else{
+                    endDate = $('#date-selector-end-text').text();
+                    startDate = $('#date-selector-start-text').text();
+                }
+
+                var twitterActive = $($('#create-modal-twitter-row').children()[0]).hasClass('active');
+                var facebookActive = $($('#create-modal-facebook-row').children()[0]).hasClass('active');
+                if(!selectionMode){
+                    if(!twitterActive && !facebookActive){
+                        _showToast('Please select at least one data source (Facebook, Twitter or Dropbox)');
+                        return;
+                    }
+                }else{
+                    if(selectedData['dropbox']['photo'].length < 10 ){
+                        _showToast('Please select at least 10 photos');
+                        return;
+                    }
+                }
                 var postData = {'momend_name': null,
-                    'start_date': $('#id_start_date').val(),
-                    'finish_date': $('#id_finish_date').val(),
+                    'start_date': startDate,
+                    'finish_date': endDate,
                     'momend_theme': 0,
                     'privacy_type': 1,
-                    'facebook-active': $('#create-social-facebook').hasClass('active'),
-                    'twitter-active': $('#create-social-twitter').hasClass('active'),
+                    'facebook-active': facebookActive,
+                    'twitter-active': twitterActive,
                     'friends': function(){
-
                         var selectedIds = [];
                         for(var i=0; i < selectedFriends.length; i++){
                             selectedIds.push(selectedFriends[i].id);
                         }
                         return selectedIds;
-                    }
+                    },
+                    'selected': selectionMode?JSON.stringify(selectedData):null
                 };
                 createMomend(postData);
                 logger.logEvent({'msg': 'Create button pressed', 'create_data': postData});
@@ -195,7 +322,35 @@
                 logger.logEvent({'msg': 'Parameters told me to show create dialog'});
                 showCreateModal();
                 _trackPageEvent('Create', 'AutoShowDialog');
+            }else if(getURLParameter('login-error') === 'true'){ 
+                logger.logEvent({'msg': 'Login error'});
+                showAuthModal("{% url 'auth_login' %}","Sign in");
+                var showErrorInterval = setInterval(function(){  // Wait until modal loads
+                    var orText = $('#connect-or-div');
+                    if(orText){
+                        $('<div/>',{
+                            text: 'Please enter a valid username-password combination',
+                            class: 'login-form-error'
+                        }).insertAfter(orText);
+                        clearInterval(showErrorInterval);
+                    }
+                },500);
+            }else if(getURLParameter('registration-error') !== 'null'){ 
+                var error = getURLParameter('registration-error');
+                logger.logEvent({'msg': 'Registration Error', 'error': error});
+                showAuthModal("{% url 'registration_register' %}","Sign up");
+                var showErrorInterval = setInterval(function(){  // Wait until modal loads
+                    var content = $('.authenticate-content');
+                    if(content){
+                        $('<div/>',{
+                            text: error,
+                            class: 'login-form-error'
+                        }).insertBefore(content);
+                        clearInterval(showErrorInterval);
+                    }
+                },500);
             }
+
         });
 
         /**
@@ -212,7 +367,8 @@
                 'privacy_type': 1,
                 'facebook-active': true,
                 'twitter-active': false,
-                'friends': null
+                'friends': null,
+                'selected': null
             };
             createMomend(postData);
             $('#creating-dialog-bg').addClass('dark');
@@ -232,11 +388,10 @@
             $.ajax({
                 type: 'POST',
                 timeout: 10*60*1000,
-		        url: '{% url 'momends:create-momend'%}',
+                url: '{% url 'momends:create-momend'%}',
                 beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', token);},
                 data: postData,
                 success: function(msg){
-                    console.log(msg);
                     var result = JSON.parse(msg);
                     if(result.resp){ //Create requested successfully 
                         setTimeout(function() {checkMomendStatus(result.cid)}, 5000);
@@ -270,7 +425,7 @@
                         try{
                             window.history.pushState({'type':'m','cid':result.cid},"", HOST_URL+'/show/m/'+result.cid);
                         }catch(e){
-                            console.log('Different domain?');
+                            //console.log('Different domain?');
                         }
                         logger.logEvent({'msg': 'Created, showing momend'});
                         playMomend(crypticId);
@@ -317,7 +472,6 @@
             }).appendTo(bgContainer);
             bgImg.ready(function(){
                 lastLoaded++;
-                console.log('loaded:'+lastLoaded);
                 loadNext();
                 if(lastLoaded>0){
                     bgContainer.hide();
@@ -387,18 +541,21 @@
             modal.css('margin-left',modal.outerWidth()/-2);
             modal.modal();
             for(var i = 0;i<auth.length; i++){ //Mark authenticated providers as active
-                $('#create-social-'+auth[i]).addClass('active');
+                socialToggle(auth[i], true);
             }
-            var start = $('#id_start_date');  //Assing initial values of date boxes
-            var finish =$('#id_finish_date');
-            finish.datepicker('update', new Date());
-            var date = new Date();
-            date.setDate(date.getDate() -365 ); //Go back 1 year fo start date
-            start.datepicker('update', date);
-
+            var startDate = $('#date-selector-start-text');
+            var endDate = $('#date-selector-end-text');
+            if(startDate.text().length == 0){
+                var date = new Date();
+                endDate.text(formatDate("d M, yy", date));
+                date.setDate(date.getDate() -365 ); //Go back 1 year fo start date
+                startDate.text(formatDate("d M, yy", date));
+            }
         }
 
         function prepareTypeahead(){
+            var withBox = $('#with-box');
+            withBox.val('Loading friend lists...');
             $.getJSON('{% url 'momends:user-friends' %}', function(data){
                 if(data.resp){
                     for(var i=0; i<data.list.length; i++){
@@ -418,31 +575,131 @@
                         data.list[i].template =  '<p><i class="icon-'+_providerName+'" style="margin-right:5px"></i>{% templatetag openvariable %}value{% templatetag closevariable %}</strong><span class="tt-suggested-id">'+_providerName+'-{% templatetag openvariable %}id{% templatetag closevariable %}</span></p>';
                         data.list[i].engine = Hogan;
                     }
-                    $('.friend-typeahead').typeahead(data.list);
+                    withBox.val('');
+                    withBox.typeahead(data.list);
                     logger.logEvent({'msg': 'typeahead initialized'});
                 }
             });
-            $('.friend-typeahead').on('typeahead:selected', friendSelected);
+            withBox.on('typeahead:selected', friendSelected);
+            withBox.bind('change', friendBoxChanged);
             selectedFriends = [];
         }
-
         function friendSelected($e){
             if(arguments.length == 2){
+                var photoContainer = $('#friend-photo-container');
                 var selected = arguments[1];
                 if($.inArray(selected, selectedFriends) === -1){
+
+                    if(selectedFriends.length > 0){  // We currently allow only 1 friend
+                        selectedFriends.pop();
+                        photoContainer.children().remove();
+                        logger.logEvent({'msg': 'previously selected friend popped out'});
+                    }
+
                     selectedFriends.push(selected);
                     logger.logEvent({'msg': 'selected a friend from typeahead', 'friend': selected});
-                    var listItem = $('<li/>',{
-                        text: selected.name
-                    }).appendTo($('#with-list'));
-                    listItem.click(function(){
-                        logger.logEvent({'msg': 'Clicked on friend in with-list', 'name': selected.name});
-                    });
-                    var liHeight = listItem.outerHeight();
-                    _animateCreateModal('+=' + liHeight, '+=' + liHeight, 300);
+                    var parts = selected.id.split('-');
+                    if(parts[0] === 'facebook'){
+                        jQuery('<img/>',{
+                            src: 'http://graph.facebook.com/' + parts[1] + '/picture?type=square'
+                        }).appendTo(photoContainer);
+                        photoContainer.animate({'opacity': 1}, 200);
+                    }
                 }
-                //$('.friend-typeahead').val('');
-                $('.friend-typeahead').attr("disabled", "disabled"); 
+            }
+        }
+
+        function friendBoxChanged(event){
+            var photoContainer = $('#friend-photo-container');
+            if(selectedFriends.length > 0){
+                selectedFriends.pop();
+                photoContainer.children().remove();
+                photoContainer.animate({'opacity': 0}, 200);
+                logger.logEvent({'msg': 'Friend selection cleared'});
+            }
+        }
+
+        function prepareDropbox(){
+            selectedData['dropbox'] = {'photo': []};
+            dropboxOptions = {
+                linkType: "direct",
+                multiselect: true,
+                success: function(files) {
+                    links = [];
+                    for(var i = 0; i < files.length; i++){
+                        var extension = files[i].link.substring(files[i].link.lastIndexOf('.') + 1);
+                        if(validPhotoExtensions.indexOf(extension) < 0){
+                            continue;
+                        }
+                        tmp = {'link': files[i].link, 'thumbnail': files[i]['thumbnails']['64x64']}
+                        links.push(tmp);
+                    }
+                    showSelectedContentsModal();
+                    selectedData['dropbox']['photo'] = selectedData['dropbox']['photo'].concat(links);
+                    updateSelectedContents();
+                    },
+                cancel:  function() {
+                    }
+            };
+        }
+
+        function showSelectedContentsModal(){
+            var contentHolder = $('#selected-content-holder');
+            var modal = $('#create-modal-mini');
+            contentHolder.show();
+            selectionMode = true;
+            logger.logEvent({'msg': 'showing selected data modal'});
+        }
+        function hideSelected(){
+            selectedData['dropbox'] = {'photo': []};
+            var contentHolder = $('#selected-content-holder');
+            contentHolder.hide();
+            selectionMode = false;
+            logger.logEvent({'msg': 'hiding selected data modal'});
+        }
+
+        /**
+        Updates the selected data list with the new data set (global)selectedData
+        */
+        function updateSelectedContents(){
+            $('.selected-list').remove();
+            var list = jQuery('<ul/>',{
+                class: 'selected-list'
+            }).appendTo('#selected-content');
+            for(var provider in selectedData){
+                $.each(selectedData[provider]['photo'], function(index, photoObj){
+                        if(typeof photoObj !== 'undefined'){
+                        var li = jQuery('<li/>',{
+                            id: 'selected-' + provider + '-' + index
+                        }).appendTo(list);
+                        var thumbLink = jQuery('<a/>',{
+                            class: 'selected-content-thumb-link',
+                            href: photoObj['link'],
+                            target: '_blank'
+                        }).appendTo(li);
+                        jQuery('<img/>',{
+                            src: photoObj['thumbnail'],
+                            class: 'selected-content-thumb'
+                        }).appendTo(thumbLink);
+                        if(provider === 'dropbox'){
+                            var name = decodeURIComponent(photoObj['link'].substring(photoObj['link'].lastIndexOf('/') + 1));
+                            jQuery('<span/>',{
+                                text: name,
+                                class: 'selected-content-text'
+                            }).appendTo(li);
+                            jQuery('<a/>',{
+                                class: 'close selected-remove',
+                                href: '#',
+                                text: 'x',
+                                click: function(){
+                                    delete selectedData[provider]['photo'][index];
+                                    li.remove();
+                                    //updateSelectedContents();  // In case something goes wrong, this is a brutal but solid solution
+                                }
+                            }).appendTo(li);
+                        }
+                    }
+                });
             }
         }
 
@@ -507,67 +764,52 @@
                 $(this).remove();
             });
         }
-        function socialToggle(provider){
-            if(provider === 'facebook'){
-                logger.logEvent({'msg': 'Tried to disable facebook, not doing it.'});
-                return;
-            }
+        function socialToggle(provider, forceTo){
             if($.inArray(provider, auth) >= 0){
-                var button = $('#create-social-'+provider);
-                if(button.hasClass('active')){
-                    logger.logEvent({'msg': 'social toggle on', 'provider_name': provider});
-                    button.removeClass('active');
+                var row = $('#create-modal-'+provider+'-row');
+                var rowsChildren = row.children();
+                var iconBorder = $(rowsChildren[0]);
+                var icon = $('#' + provider + '-icon');
+                var text = $('#create-modal-' + provider + '-text');
+                var subtext = $('#create-modal-' + provider + '-subtext');
+                var providerCapitalizedName = provider.charAt(0).toUpperCase() + provider.slice(1);
+                if(forceTo !== true && (forceTo === false || $(rowsChildren[0]).hasClass('active'))){
+                    logger.logEvent({'msg': 'social toggle off', 'provider_name': provider, 'forcedTo': forceTo});
+                    iconBorder.removeClass('active');
+                    icon.removeClass('active');
+                    text.removeClass('active');
+                    text.text(providerCapitalizedName + ' Off');
+                    subtext.text('We won\'t collect data from your ' + providerCapitalizedName + ' account');
                 }else{
-                    logger.logEvent({'msg': 'social toggle off', 'provider_name': provider});
-                    button.addClass('active');
+                    logger.logEvent({'msg': 'social toggle on', 'provider_name': provider, 'forcedTo': forceTo});
+                    iconBorder.addClass('active');
+                    icon.addClass('active');
+                    text.addClass('active');
+                    text.text(providerCapitalizedName + ' On');
+                    subtext.text('We will collect data from your ' + providerCapitalizedName + ' account');
                 }
             }else{ //Show authentication dialog
                 logger.logEvent({'msg': 'Social toggle sign-in dialog shown', 'provider_name': provider});
-                var twitterConnectURL = HOST_URL + '{% url 'socialauth_begin' 'twitter' %}';
-                window.location.replace(twitterConnectURL);
+                var connectURL = HOST_URL + '{% url 'socialauth_begin' 'provider_name' %}';
+                connectURL = connectURL.replace('provider_name', provider);
+                window.location.replace(connectURL);
             }
         }
         function dateSelected(type){
             logger.logEvent({'msg': 'date select button pressed', 'type': type});
-            $('.date-selector-link').removeClass('selected');
-            var dateContent = $('#date-content');
-            dateContent.hide();
-            var start = $('#id_start_date');
-            var date = new Date();
-            switch (type){
-                case 'year':
-                    date.setDate(date.getDate() -365 );
-                    start.datepicker('update', date);
-                    $('#date-1y').addClass('selected');
-                    modalResize(false);
-                    break;
-                case '6mon':
-                    date.setDate(date.getDate() -180 );
-                    start.datepicker('update', date);
-                    $('#date-6m').addClass('selected');
-                    modalResize(false);
-                    break;
-                case '1mon':
-                    date.setDate(date.getDate() -30 );
-                    start.datepicker('update', date);
-                    $('#date-1m').addClass('selected');
-                    modalResize(false);
-                    break;
+            $('.interval-container').each(function(){
+                $(this).removeClass('active');
+            });
+            $('#interval-'+type).addClass('active');
+            switch(type){
                 case 'custom':
-                    $('#date-custom').addClass('selected');
-                    dateContent.show();
-                    modalResize(true);
+                    $('#date-selector-group').animate({'opacity':1}, 200);
+                    break;
+                default:
+                    $('#date-selector-group').animate({'opacity':0}, 200);
+                    break;
             }
         }
-    function modalResize(toBig){
-        if(toBig && !createModalMaximized){
-            _animateCreateModal('+=100', '+=100', 500);
-            createModalMaximized = true;
-        }else if(createModalMaximized){
-            _animateCreateModal('-=100', '-=100', 500);
-            createModalMaximized = false;
-        }
-    }
 
     function _animateCreateModal(modalSize, bodySize, duration){
         var modal = $('#create-modal-mini');
@@ -634,42 +876,6 @@
             }
         });
     }
-        /**
-        Shows an error message on the page
-        @param _text: message to show
-        @param [_height]: height of the box
-        */
-        function _showToast(_text, _height){
-            if (typeof _height === "undefined"){
-                _height = 90;
-                if(_text.length > 65){
-                    (_text.length / 65) * 20;
-                }
-                _height = _height + 'px';
-            }
-            logger.logEvent({'msg': 'showing a tost', 'text': _text});
-            var dialog = $('<div/>',{
-                class : 'basic-dialog',
-                id : 'dialog-'+_dialogId,
-                style : 'height: '+_height
-            }).appendTo('body');
-            $('<p/>',{
-                text : _text
-            }).appendTo(dialog);
-            var closeButton = $('<button/>',{
-                class : 'button orange basic-dialog-close',
-                id : 'close-'+_dialogId,
-                text : 'OK'
-            }).appendTo(dialog);
-            closeButton.click(function(){
-                dialog.fadeOut();
-            });
-            dialog.fadeIn();
-            _dialogId++;
-        }
-        function _trackPageEvent(_group, _event){
-            _gaq.push(['_trackEvent', 'Page', _group, _event])
-        }
     </script>
     <script>
         /**
@@ -677,7 +883,6 @@
          */
         fullscreen_on = false;
         function frameLoaded(){
-            console.log('Frame Loaded');
             logger.logEvent({'msg': 'Player frame loaded'});
             player_frame = document.getElementById('momend-player-frame');
             momendManager = player_frame.contentWindow.momendManager;

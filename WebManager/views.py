@@ -33,6 +33,7 @@ from django.core.files.uploadedfile import UploadedFile
 from DataManager.DataManagerUtil import DataManagerUtil
 from django.conf import settings
 import traceback
+import json
 
 ERROR_TYPES = {'WRONG_PARAMETER': 0,
                'MISSING_PARAMETER': 1,
@@ -265,12 +266,8 @@ class CreateMomendView(View):
                 if request.user.is_superuser:
                     _owner = User.objects.get(pk=request.POST['owner'])
             _momend_name = request.POST['momend_name']
-            _start_date = datetime.strptime(request.POST['start_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
-            _finish_date = datetime.strptime(request.POST['finish_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
             _privacy = request.POST['privacy_type']
-            _friends = None
-            if 'friends' in request.POST:
-                _friends = request.POST['friends']
+
             _theme = request.POST['momend_theme']
             _theme = 1  # TODO remove after showing theme selection combo
 
@@ -278,17 +275,30 @@ class CreateMomendView(View):
             dm = DataManager(_owner)
             try:
                 _args = dict()
-                _args['is_date'] = True
-                _args['since'] = _start_date
-                _args['until'] = _finish_date
-                _create_params = request.POST.keys()
+                if 'selected' in request.POST and request.POST['selected']:
+                    _args['is_date'] = False
+                    _args['selected'] = json.loads(request.POST['selected'])
+                else:
+                    _args['is_date'] = True
+                    _args['selected'] = False
+                    _args['since'] = datetime.strptime(request.POST['start_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
+                    _args['until'] = datetime.strptime(request.POST['finish_date'], '%d %b, %Y').replace(tzinfo=pytz.UTC)
 
+                _create_params = request.POST.keys()
                 for _param in _create_params:
                     if '-active' in _param:  # Provider disable requests
                         _args[_param] = request.POST[_param]
 
-                if _friends:
-                    _args['friends'] = _friends.split(',')
+                if 'friends' in request.POST and len(request.POST['friends']) > 0:
+                    _args['friends'] = request.POST['friends'].split(',')
+                else:
+                    _args['friends'] = False
+
+                if 'chronological' in request.POST:
+                    _args['chronological'] = request.POST['chronological']
+                else:
+                    _args['chronological'] = False
+
                 _cryptic_id = dm.create_momend(name=_momend_name, duration=60, privacy=_privacy,
                                                theme=Theme.objects.get(pk=_theme), send_mail=_send_mail, **_args)
                 if _cryptic_id:  # If created momend successfully

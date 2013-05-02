@@ -10,7 +10,8 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from django.core.urlresolvers import reverse_lazy
 from django.core.files.storage import default_storage
-
+from datetime import datetime
+import pytz
 from LogManagers.Log import Log
 
 
@@ -72,11 +73,16 @@ class DataManagerUtil:
             _s3_filename = filename.replace(settings.TMP_FILE_PATH, '')
         if prefix:
             _s3_filename = prefix + _s3_filename
-        _s3_file = default_storage.open(_s3_filename, 'w+')
+        _s3_file = default_storage.open(_s3_filename, 'wb+')
         with open(filename) as _tmp_file:
             _s3_file.write(_tmp_file.read())
         _s3_file.close()
         _tmp_file.close()
+
+        # S3 naturally encodes filenames on urls
+        _path = _s3_filename[:_s3_filename.rindex('/')+1]
+        _name_part = _s3_filename[_s3_filename.rindex('/')+1:]
+        _s3_filename = _path + urllib2.quote(_name_part)
         return _s3_filename
 
     @staticmethod
@@ -115,9 +121,11 @@ class DataManagerUtil:
                     'owner': momend.owner,
                     'STATIC_URL': settings.STATIC_URL,
                     'HOST_URL': settings.HOST_URL,
-                    'start_date': momend.momend_start_date.strftime("%d %h %Y"),
-                    'finish_date': momend.momend_end_date.strftime("%d %h %Y")
+                    'finish_date': momend.momend_end_date.strftime("%d %h %Y"),
                     }
+        if not momend.momend_start_date == datetime(1970, 1, 1, 0, 0, 0).replace(tzinfo=pytz.UTC):
+            ctx_dict['start_date'] = momend.momend_start_date.strftime("%d %h %Y")
+
         subject = render_to_string('MomendCreatedMailSubjectTemplate.html', ctx_dict)
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
@@ -160,6 +168,11 @@ class DataManagerUtil:
 
 
 class CloudFile(object):
+    """
+    Handles storage of the files on the cloud (currently S3)
+    Initializes with raw data, then automatically returns required files when needed
+    And uploads the files when needed (on commit)
+    """
     cloud_dirty = False
     enhanced_dirty = False
 
@@ -171,6 +184,12 @@ class CloudFile(object):
 
     @property
     def local_path(self):
+        """
+        Returns the local path of the raw data
+        returns the local path directly if we have it in temp directory
+        fetches from the cloud storage if it was downloaded before
+        downloads from the provider if required
+        """
         if self.local_url:
             return self.local_url
         if self.cloud_url:
@@ -191,12 +210,20 @@ class CloudFile(object):
         return self.local_url
 
     def set_enhanced(self, enhanced_path):
+        """
+        Sets the enhanced version of the raw data
+        also marks the current CloudFile object as dirty and uploads the enhanced file to cloud on commit
+        @param enhanced_path: local path of the enhanced file
+        """
         if self.enhanced_path == enhanced_path:
             return
         self.enhanced_path = enhanced_path
         self.enhanced_dirty = True
 
     def commit(self):
+        """
+        Saves the current state of the files to the cloud
+        """
         if self.enhanced_dirty:
             try:
                 _old_file = self.enhanced_path
@@ -219,6 +246,9 @@ class CloudFile(object):
             self.raw.save()
 
     def clean_local(self):  # TODO clean enhanced here
+        """
+        Deletes the local copies of the files (a.k.a temp files)
+        """
         if self.local_url:
             try:
                 os.remove(self.local_url)
