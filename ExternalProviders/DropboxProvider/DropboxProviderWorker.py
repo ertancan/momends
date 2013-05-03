@@ -25,6 +25,7 @@ class DropboxProviderWorker(BasePhotoProviderWorker):
             if _is_new:
                 _raw.title = _name
                 _raw.thumbnail = _photo['thumbnail']
+                _raw.save()
             Log.debug('Dropbox photo: ' + str(_raw))
             _collected.append(_raw)
         return _collected

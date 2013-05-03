@@ -43,7 +43,7 @@ def create_momend_task(user_id, momend_id, duration, mail, theme, scenario, inc_
         raw_data, collect_status = dm.collect_user_data(inc_photo, inc_status, inc_checkin, **kwargs)
 
         if kwargs['selected']:  # Do not filter or enrich user selected data
-            enriched_data = raw_data
+            enriched_data = dm.encapsulate_raw_data(raw_data)
         else:
             # Filter collected data according to the parameters
             _enrich_filter = dict()

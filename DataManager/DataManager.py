@@ -3,6 +3,7 @@ from django.db import IntegrityError
 __author__ = 'goktan'
 from models import Provider
 from DataEnrich.DataEnrichManager import DataEnrichManager
+from DataEnrich.DataEnrichManager import TemporaryEnrichedObjectHolder
 from ExternalProviders.BaseProviderWorker import BasePhotoProviderWorker, BaseStatusProviderWorker, BaseLocationProviderWorker
 from models import encode_id
 from models import Momend, MomendStatus
@@ -182,7 +183,7 @@ class DataManager:
                             _collect_status[_provider.name + '_photo'] = 'Error'
                         else:
                             _raw_data += _collected
-                            _collect_count['photo'] = _collect_count.get('photo', 0) + len(_raw_data)
+                            _collect_count['photo'] = _collect_count.get('photo', 0) + len(_collected)
                             _collect_status[_provider.name + '_photo'] = 'Success'
                     if inc_status and issubclass(_worker.__class__, BaseStatusProviderWorker):
                         _collected = _worker.collect_status(self.user, **kwargs)
@@ -190,7 +191,7 @@ class DataManager:
                             _collect_status[_provider.name + '_status'] = 'Error'
                         else:
                             _raw_data += _collected
-                            _collect_count['status'] = _collect_count.get('status', 0) + len(_raw_data)
+                            _collect_count['status'] = _collect_count.get('status', 0) + len(_collected)
                             _collect_status[_provider.name + '_status'] = 'Success'
                     if inc_checkin and issubclass(_worker.__class__, BaseLocationProviderWorker):
                         _collected = _worker.collect_checkin(self.user, **kwargs)
@@ -198,9 +199,12 @@ class DataManager:
                             _collect_status[_provider.name + '_checkin'] = 'Error'
                         else:
                             _raw_data += _collected
-                            _collect_count['checkin'] = _collect_count.get('checkin', 0) + len(_raw_data)
+                            _collect_count['checkin'] = _collect_count.get('checkin', 0) + len(_collected)
                             _collect_status[_provider.name + '_checkin'] = 'Success'
+
         elif kwargs['selected']:
+            for i in range(len(RawData.DATA_TYPE)):
+                _raw_data.append([])
             for _provider in kwargs['selected']:
                 _worker = Provider.objects.get(name=_provider).instantiate_provider_worker()
                 _selected_for_provider = kwargs['selected'][_provider]
@@ -209,34 +213,29 @@ class DataManager:
                         if not _collected:
                             _collect_status[_provider.name + '_photo'] = 'Error'
                         else:
-                            _raw_data += _collected
-                            _collect_count['photo'] = _collect_count.get('photo', 0) + len(_raw_data)
+                            _raw_data[RawData.DATA_TYPE['Photo']] += _collected
+                            _collect_count['photo'] = _collect_count.get('photo', 0) + len(_collected)
                             _collect_status[_provider + '_photo'] = 'Success'
                 if 'status' in _selected_for_provider and _selected_for_provider['status'] and issubclass(_worker.__class__, BaseStatusProviderWorker):
                     _collected = _worker.collect_status(self.user, selected=_selected_for_provider['status'])
                     if not _collected:
                         _collect_status[_provider + '_status'] = 'Error'
                     else:
-                        _raw_data += _collected
-                        _collect_count['status'] = _collect_count.get('status', 0) + len(_raw_data)
+                        _raw_data[RawData.DATA_TYPE['Status']] += _collected
+                        _collect_count['status'] = _collect_count.get('status', 0) + len(_collected)
                         _collect_status[_provider + '_status'] = 'Success'
                 if 'checkin' in _selected_for_provider and _selected_for_provider['checkin'] and issubclass(_worker.__class__, BaseLocationProviderWorker):
                     _collected = _worker.collect_checkin(self.user, selected=_selected_for_provider['checkin'])
                     if not _collected:
                         _collect_status[_provider + '_checkin'] = 'Error'
                     else:
-                        _raw_data += _collected
-                        _collect_count['checkin'] = _collect_count.get('checkin', 0) + len(_raw_data)
+                        _raw_data[RawData.DATA_TYPE['Checkin']] += _collected
+                        _collect_count['checkin'] = _collect_count.get('checkin', 0) + len(_collected)
                         _collect_status[_provider + '_checkin'] = 'Success'
 
         #all incoming data shall be saved here instead of collection place
         Log.debug('status:'+str(_collect_status))
         Log.debug('Collected Objects:'+str(_collect_count))
-        for _obj in _raw_data:
-            try:
-                _obj.save()
-            except IntegrityError as e:
-                Log.debug('Raw data save error:'+str(e))
 
         return _raw_data, _collect_status
 
@@ -258,6 +257,19 @@ class DataManager:
         if raw_data_filter['chronological']:  # TODO: TEST!
             _enriched_data = sorted(_enriched_data, key=lambda enriched: enriched.raw.create_date)
         return _enriched_data
+
+    """
+    Encapsulates the given RawData array. Places RawData objects into temporary wrapper (TemporaryEnrichedObjectHolder)
+    @param raw_data: 2D array of RawData
+    @return 2D array of TemporaryEnrichedObjectHolder
+    """
+    def encapsulate_raw_data(self, raw_data):
+        _encapsualted = []
+        for i in range(len(RawData.DATA_TYPE)):
+                _encapsualted.append([])
+                for _raw in raw_data[i]:
+                    _encapsualted[i].append(TemporaryEnrichedObjectHolder(_raw, finalize=True))
+        return _encapsualted
 
     def _create_momend_thumbnail(self):
         """

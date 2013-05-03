@@ -187,11 +187,19 @@ class DataEnrichManager(object):
 
 
 class TemporaryEnrichedObjectHolder(object):
-    def __init__(self, raw):
+    """
+    @param finalize: will not create arrays for criteria, multiplier and priority. (Means the object won't go through regular enrichment process)
+    """
+    def __init__(self, raw, finalize=False):
         self.raw = raw
-        self.criteria = []
-        self.multiplier = []
-        self.priority = []
+        if finalize:
+            self.criteria = None
+            self.multiplier = 0
+            self.priority = 0
+        else:
+            self.criteria = []
+            self.multiplier = []
+            self.priority = []
 
     def __str__(self):
         return str(self.raw) + '=' + str(self.criteria) + ':' + str(self.priority)
