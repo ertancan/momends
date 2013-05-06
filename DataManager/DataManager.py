@@ -103,6 +103,7 @@ class DataManager:
         if the momend create mode is is_date then names according to day count
         """
         _user_name = self.user.first_name.lower()
+        print _user_name
         if _user_name == '':
             _user_name = self.user.username
         if Momend.objects.filter(owner=self.user).count() == 0:
@@ -110,6 +111,8 @@ class DataManager:
 
         _momend_name = _user_name + "'s"
 
+        if kwargs['selected']:
+            return _momend_name + ' momend'
         if kwargs['is_date']:
             try:
                 _name_date_part = ''
