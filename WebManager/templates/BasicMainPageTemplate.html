@@ -615,7 +615,7 @@
                 success: function(files) {
                     links = [];
                     for(var i = 0; i < files.length; i++){
-                        var extension = files[i].link.substring(files[i].link.lastIndexOf('.') + 1);
+                        var extension = files[i].link.substring(files[i].link.lastIndexOf('.') + 1).toLowerCase();
                         if(validPhotoExtensions.indexOf(extension) < 0){
                             continue;
                         }
