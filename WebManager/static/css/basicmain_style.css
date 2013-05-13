@@ -408,7 +408,7 @@ a.selected{
     border-width: 2px;
     border-color: #c6c6c6;
     position: relative;
-    top: -33px;
+    top: -28px;
 }
 #selected-content-holder{
     display: none;
