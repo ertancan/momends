@@ -206,6 +206,12 @@ a.get-yours-link:hover{
     display: inline-block;
     margin-right: 10px;
 }
+.provider-icon-container:hover {
+    border-color: #d4d4d4;
+}
+.provider-icon-container:active {
+    border-color: #bbb;
+}
 .provider-icon{
     height: 56px;
     width: 56px;
@@ -263,6 +269,12 @@ a.get-yours-link:hover{
     position: absolute;
     margin-top: 25px;
 }
+#dropbox-content:hover {
+    border-color: #d4d4d4;
+}
+#dropbox-content:active {
+    border-color: #bbb;
+}
 #dropbox-inner-content{
     background-color: #d8dfe5;
     padding: 10px;
@@ -318,6 +330,9 @@ a.selected{
     font-size: 16px;
     cursor: pointer;
     color: #646464;
+}
+.interval-container:hover {
+    border-color: #d4d4d4;
 }
 .interval-container.long{
     width: 85px;
