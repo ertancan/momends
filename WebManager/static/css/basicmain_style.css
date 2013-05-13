@@ -376,6 +376,7 @@ a.selected{
     background-color: #e9e9e9;
     color: #646464;
     width: 249px;
+    padding: 4px 8px;
 }
 #with-box:focus{
     border-color: #e08f8f;
@@ -552,7 +553,8 @@ a.selected{
 }
 
 .tt-hint {
-  color: #999
+  color: #999; 
+  padding: 4px 8px;
 }
 
 .tt-dropdown-menu {
